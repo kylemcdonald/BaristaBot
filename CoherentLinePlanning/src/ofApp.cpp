@@ -90,9 +90,9 @@ void ofApp::setup() {
 	gui.addSlider("sigma1", 0.4, 0.01, 2.0, false);
 	gui.addSlider("sigma2", 3.0, 0.01, 10.0, false);
 	gui.addSlider("tau", 0.97, 0.8, 1.0, false);
-	gui.addSlider("thresh", 128, 0, 255, false);
 	gui.addSlider("halfw", 4, 1, 8, true);
 	gui.addSlider("smoothPasses", 2, 1, 4, true);
+	gui.addSlider("thresh", 128, 0, 255, false);
 	gui.addSlider("minGapLength", 2, 2, 12, false);
 	gui.addSlider("minPathLength", 0, 0, 50, true);
 	gui.loadSettings("settings.xml");
