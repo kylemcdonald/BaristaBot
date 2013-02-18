@@ -16,3 +16,7 @@ The thresh setting is post-CLD but is an important number to tweak before the re
 ## StepperTest
 
 This app is based on firmataExample. It's modified to control a stepper motor via arduino and the EasyShield stepper driver. 
+
+## ArduinoCode
+
+Contains Arduino firmware, currently this is just Standard Firmata
