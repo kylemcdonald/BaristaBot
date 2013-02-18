@@ -3,6 +3,8 @@
 using namespace ofxCv;
 using namespace cv;
 
+
+//--------------------------------------------------------------
 void removeIslands(ofPixels& img) {
 	int w = img.getWidth(), h = img.getHeight();
 	int ia1=-w-1,ia2=-w-0,ia3=-w+1,ib1=-0-1,ib3=-0+1,ic1=+w-1,ic2=+w-0,ic3=+w+1;
@@ -19,6 +21,8 @@ void removeIslands(ofPixels& img) {
 	}
 }
 
+
+//--------------------------------------------------------------
 typedef std::pair<int, int> intPair;
 vector<ofPolyline> getPaths(ofPixels& img, float minGapLength = 2, int minPathLength = 0) {
 	float minGapSquared = minGapLength * minGapLength;
@@ -70,10 +74,13 @@ vector<ofPolyline> getPaths(ofPixels& img, float minGapLength = 2, int minPathLe
 	return paths;
 }
 
+
+//--------------------------------------------------------------
 void ofApp::setup() {
 	ofSetVerticalSync(true);
 	ofSetFrameRate(120);
 	ofEnableSmoothing();
+    font.loadFont("franklinGothic.otf", 20);
 	
 	camWidth = 640, camHeight = 480;
 	cam.initGrabber(camWidth, camHeight);
@@ -96,8 +103,23 @@ void ofApp::setup() {
 	gui.addSlider("minGapLength", 2, 2, 12, false);
 	gui.addSlider("minPathLength", 0, 0, 50, true);
 	gui.loadSettings("settings.xml");
+    
+    // ARDUINO
+    
+    // replace the string below with the serial port for your Arduino board
+    // you can get this from the Arduino application or via command line
+    // for OSX, in your terminal type "ls /dev/tty.*" to get a list of serial devices
+	ard.connect("/dev/tty.usbmodem1421", 57600);
+	
+	// listen for EInitialized notification. this indicates that
+	// the arduino is ready to receive commands and it is safe to
+	// call setupArduino()
+	ofAddListener(ard.EInitialized, this, &ofApp::setupArduino);
+	bSetupArduino	= false;	// flag so we setup arduino when its ready, you don't need to touch this :)
 }
 
+
+//--------------------------------------------------------------
 void ofApp::update(){
 	cam.update();
 	if(cam.isFrameNew() && needToUpdate) {		
@@ -145,8 +167,71 @@ void ofApp::update(){
 		
 		needToUpdate = false;
 	}
+    
+    // ARDUINO
+    
+    updateArduino();
+
 }
 
+
+//--------------------------------------------------------------
+void ofApp::setupArduino(const int & version) {
+	
+	// remove listener because we don't need it anymore
+	ofRemoveListener(ard.EInitialized, this, &ofApp::setupArduino);
+    
+    // it is now safe to send commands to the Arduino
+    bSetupArduino = true;
+    
+    // print firmware name and version to the console
+    cout << ard.getFirmwareName() << endl;
+    cout << "firmata v" << ard.getMajorFirmwareVersion() << "." << ard.getMinorFirmwareVersion() << endl;
+    
+    // Note: pins A0 - A5 can be used as digital input and output.
+    // Refer to them as pins 14 - 19 if using StandardFirmata from Arduino 1.0.
+    // If using Arduino 0022 or older, then use 16 - 21.
+    // Firmata pin numbering changed in version 2.3 (which is included in Arduino 1.0)
+    
+    // set pins 3 and 4 to digital outputs
+    ard.sendDigitalPinMode(DIR_PIN, ARD_OUTPUT);
+    ard.sendDigitalPinMode(STEP_PIN, ARD_OUTPUT);
+}
+
+
+//--------------------------------------------------------------
+void ofApp::updateArduino(){
+	// update the arduino, get any data or messages.
+    // the call to ard.update() is required
+	ard.update();
+}
+
+
+//--------------------------------------------------------------
+void ofApp::moveStepper(int steps, float speed){
+    //rotate a specific number of microsteps (8 microsteps per step) - (negitive for reverse movement)
+    //speed is any number from .01 -> 1 with 1 being fastest - Slower is stronger
+    int dir = (steps > 0)? ARD_HIGH:ARD_LOW;
+    steps = abs(steps);
+    
+    ard.sendDigital(DIR_PIN, ARD_HIGH);
+    
+    //70 min for 1/8 stepping, 580 min for full stepping on EasyDriver
+    // in microseconds
+    float delay = (1/speed) * 700;
+    
+    for(int i=0; i < steps; i++){
+        ard.sendDigital(STEP_PIN, ARD_HIGH);
+        
+        ofSleepMillis(delay / 1000);
+        ard.sendDigital(STEP_PIN, ARD_LOW);
+        ofSleepMillis(delay / 1000);
+    }
+}
+
+
+
+//--------------------------------------------------------------
 void ofApp::draw() {
 	ofBackground(0);
 	
@@ -166,10 +251,43 @@ void ofApp::draw() {
 			ofLine(endPoint, startPoint);
 		}
 	}
+    
+    // ARDUINO
+    
+	if (!bSetupArduino){
+		cout << "arduino not ready..." << endl;
+	} else {
+		cout << "arduino connected\n" << endl; 
+    }
 }
 
+
+//--------------------------------------------------------------
 void ofApp::keyPressed(int key) {
-	if(key == ' ') {
-		needToUpdate = true;
-	}
+
+    switch (key) {
+        case ' ':
+            needToUpdate = true;
+            break;
+        case '1':
+            moveStepper(100, 1);
+            break;
+        case '2':
+            moveStepper(200, 1);
+            break;
+        case '5':
+            moveStepper(500, 1);
+            break;
+        case 'q':
+            moveStepper(100, .1);
+            break;
+        case 'w':
+            moveStepper(200, .1);
+            break;
+        case 't':
+            moveStepper(500, .1);
+            break;
+        default:
+            break;
+    }
 }
