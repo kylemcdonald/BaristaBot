@@ -122,14 +122,31 @@ void ofApp::setup() {
 //--------------------------------------------------------------
 void ofApp::update(){
 	cam.update();
-	if(cam.isFrameNew() && needToUpdate) {		
+	if(cam.isFrameNew() && needToUpdate) {
+        // tied to threshold somehow, maybe prethreshold
 		int black = gui.getValueI("black");
+        
+        // level of detail, freq of image
+        // if both low, super detailed and jittery data
+        // if sigma2 or both high, all features will be swirly lower freq
+        // both high yields thick lines, most dominant edges; also ghost lines
 		float sigma1 = gui.getValueF("sigma1");
 		float sigma2 = gui.getValueF("sigma2");
+        
+        // kind of related to high pass HDR look
+        // value of 1 (high) will create edges everwhere it can imaging
 		float tau = gui.getValueF("tau");
+        
+        // high thresh gives more lines (more black), low gives less
 		float thresh = gui.getValueF("thresh");
+        
+        // some measure of local vs. global complexity
+        // low gives lots of swirls, high gives longer lines
 		int halfw = gui.getValueI("halfw");
+        
+        // tries to make contours smoother, low number is sharper
 		int smoothPasses = gui.getValueI("smoothPasses");
+        
 		float minGapLength = gui.getValueF("minGapLength");
 		int minPathLength = gui.getValueI("minPathLength");
 		
@@ -172,6 +189,10 @@ void ofApp::update(){
     
     updateArduino();
 
+    // set position of steppers to origin
+    curX = 0;
+    curY = 0;
+
 }
 
 
@@ -183,6 +204,7 @@ void ofApp::setupArduino(const int & version) {
     
     // it is now safe to send commands to the Arduino
     bSetupArduino = true;
+    cout << "arduino connected\n" << endl; 
     
     // print firmware name and version to the console
     cout << ard.getFirmwareName() << endl;
@@ -193,9 +215,11 @@ void ofApp::setupArduino(const int & version) {
     // If using Arduino 0022 or older, then use 16 - 21.
     // Firmata pin numbering changed in version 2.3 (which is included in Arduino 1.0)
     
-    // set pins 3 and 4 to digital outputs
-    ard.sendDigitalPinMode(DIR_PIN, ARD_OUTPUT);
-    ard.sendDigitalPinMode(STEP_PIN, ARD_OUTPUT);
+    // set digital outputs
+    ard.sendDigitalPinMode(X_DIR_PIN, ARD_OUTPUT);
+    ard.sendDigitalPinMode(X_STEP_PIN, ARD_OUTPUT);
+    ard.sendDigitalPinMode(Y_DIR_PIN, ARD_OUTPUT);
+    ard.sendDigitalPinMode(Y_STEP_PIN, ARD_OUTPUT);
 }
 
 
@@ -208,10 +232,14 @@ void ofApp::updateArduino(){
 
 
 //--------------------------------------------------------------
-void ofApp::moveStepper(int steps, float speed){
+void ofApp::moveStepper(int num, int steps, float speed){
+    
+    int DIR_PIN = (num == 0) ? X_DIR_PIN : Y_DIR_PIN;
+    int STEP_PIN = (num == 0) ? X_STEP_PIN : Y_STEP_PIN;
+    
     //rotate a specific number of microsteps (8 microsteps per step) - (negitive for reverse movement)
     //speed is any number from .01 -> 1 with 1 being fastest - Slower is stronger
-    int dir = (steps > 0)? ARD_HIGH:ARD_LOW;
+    int dir = (steps > 0) ? ARD_HIGH : ARD_LOW;
     steps = abs(steps);
     
     ard.sendDigital(DIR_PIN, ARD_HIGH);
@@ -256,8 +284,23 @@ void ofApp::draw() {
     
 	if (!bSetupArduino){
 		cout << "arduino not ready..." << endl;
-	} else {
-		cout << "arduino connected\n" << endl; 
+	}
+    
+    // Draw the polylines
+    
+    for (paths_iter = paths.begin(); paths_iter < paths.end(); paths_iter++) {
+        vector<ofPoint> points = paths_iter->getVertices();
+        for (points_iter = points.begin(); points_iter < points.end(); points_iter++) {
+            float targetX = points_iter->x;
+            float targetY = points_iter->y;
+            float stepsX = targetX - curX;
+            float stepsY = targetY - curY;
+            moveStepper(0, stepsX, 1);
+            moveStepper(1, stepsY, 1);
+            curX = targetX;
+            curY = targetY;
+            // do we need a delay here before going to next point or is that covered in moveStepper?
+        }
     }
 }
 
@@ -270,22 +313,22 @@ void ofApp::keyPressed(int key) {
             needToUpdate = true;
             break;
         case '1':
-            moveStepper(100, 1);
+            moveStepper(0, 100, 1);
             break;
         case '2':
-            moveStepper(200, 1);
+            moveStepper(0, 200, 1);
             break;
         case '5':
-            moveStepper(500, 1);
+            moveStepper(0, 500, 1);
             break;
         case 'q':
-            moveStepper(100, .1);
+            moveStepper(1, 100, 1);
             break;
         case 'w':
-            moveStepper(200, .1);
+            moveStepper(1, 200, 1);
             break;
         case 't':
-            moveStepper(500, .1);
+            moveStepper(1, 500, 1);
             break;
         default:
             break;

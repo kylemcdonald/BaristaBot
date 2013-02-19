@@ -22,6 +22,8 @@ public:
 	int camWidth, camHeight;
 	
 	vector<ofPolyline> paths;
+    vector<ofPolyline>::iterator paths_iter;
+    vector<ofPoint>::iterator points_iter;
 	
 	imatrix img;
 	ETF etf;
@@ -34,12 +36,19 @@ public:
 	ofxAutoControlPanel gui;
     
     // ARDUINO
-    void moveStepper (int steps, float speed);
+    void moveStepper (int num, int steps, float speed);
+    float curX, curY;
 
     ofArduino	ard;
 	bool		bSetupArduino;			// flag variable for setting up arduino once
-    int DIR_PIN = 3;
-    int STEP_PIN = 4;
+    int X_DIR_PIN = 3;
+    int X_STEP_PIN = 4;
+    int Y_DIR_PIN = 5;
+    int Y_STEP_PIN = 6;
+    // TESTING
+    
+    ofRectangle rect;
+    
     
 private:
     
