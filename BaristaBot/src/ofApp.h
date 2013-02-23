@@ -35,9 +35,12 @@ public:
 	
 	ofxAutoControlPanel gui;
     
-    // ARDUINO
+    // STEPPERS
     void moveStepper (int num, int steps, float speed);
-    float curX, curY;
+    void pushInk ();
+    void stopInk ();
+    float startX, startY, endX, endY, stepsX, stepsY;
+    
 
     ofArduino	ard;
 	bool		bSetupArduino;			// flag variable for setting up arduino once

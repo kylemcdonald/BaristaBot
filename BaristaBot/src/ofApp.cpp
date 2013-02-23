@@ -220,6 +220,8 @@ void ofApp::setupArduino(const int & version) {
     ard.sendDigitalPinMode(X_STEP_PIN, ARD_OUTPUT);
     ard.sendDigitalPinMode(Y_DIR_PIN, ARD_OUTPUT);
     ard.sendDigitalPinMode(Y_STEP_PIN, ARD_OUTPUT);
+    
+    startX = startY = 0;
 }
 
 
@@ -234,6 +236,12 @@ void ofApp::updateArduino(){
 //--------------------------------------------------------------
 void ofApp::moveStepper(int num, int steps, float speed){
     
+    /* NOTE: earliest code that moved the servo at speed '1' had a delay of 7/10 miliseconds
+     * trying a delay of 1 milisecond now as max speed
+     * speed should be from 0 – 1 with 1 being maximum speed
+     */
+    
+    
     int DIR_PIN = (num == 0) ? X_DIR_PIN : Y_DIR_PIN;
     int STEP_PIN = (num == 0) ? X_STEP_PIN : Y_STEP_PIN;
     
@@ -244,16 +252,14 @@ void ofApp::moveStepper(int num, int steps, float speed){
     
     ard.sendDigital(DIR_PIN, ARD_HIGH);
     
-    //70 min for 1/8 stepping, 580 min for full stepping on EasyDriver
-    // in microseconds
-    float delay = (1/speed) * 700;
+    // delay is inversely related to speed
+    float delay = (1/speed);
     
     for(int i=0; i < steps; i++){
         ard.sendDigital(STEP_PIN, ARD_HIGH);
-        
-        ofSleepMillis(delay / 1000);
+        ofSleepMillis(delay);
         ard.sendDigital(STEP_PIN, ARD_LOW);
-        ofSleepMillis(delay / 1000);
+        ofSleepMillis(delay);
     }
 }
 
@@ -291,17 +297,36 @@ void ofApp::draw() {
     for (paths_iter = paths.begin(); paths_iter < paths.end(); paths_iter++) {
         vector<ofPoint> points = paths_iter->getVertices();
         for (points_iter = points.begin(); points_iter < points.end(); points_iter++) {
-            float targetX = points_iter->x;
-            float targetY = points_iter->y;
-            float stepsX = targetX - curX;
-            float stepsY = targetY - curY;
+           
+            if (points_iter == points.begin()) pushInk();
+                
+            endX = points_iter->x;
+            endY = points_iter->y;
+            
+            stepsX = endX - startX;
+            stepsY = endY - startY;
+            
             moveStepper(0, stepsX, 1);
             moveStepper(1, stepsY, 1);
-            curX = targetX;
-            curY = targetY;
-            // do we need a delay here before going to next point or is that covered in moveStepper?
+            
+            startX = endX;
+            startY = endY;
+            
+            if (points_iter == points.end()) stopInk();
+
         }
     }
+}
+
+
+//--------------------------------------------------------------
+void ofApp::pushInk() {
+
+}
+
+//--------------------------------------------------------------
+void ofApp::stopInk() {
+    
 }
 
 
