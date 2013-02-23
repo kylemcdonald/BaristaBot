@@ -39,7 +39,7 @@ public:
     void moveStepper (int num, int steps, float speed);
     void pushInk ();
     void stopInk ();
-    float startX, startY, endX, endY, stepsX, stepsY;
+    float startX, startY, endX, endY, stepsX, stepsY, speedX, speedY;
     
 
     ofArduino	ard;

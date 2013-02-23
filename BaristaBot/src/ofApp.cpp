@@ -189,10 +189,6 @@ void ofApp::update(){
     
     updateArduino();
 
-    // set position of steppers to origin
-    curX = 0;
-    curY = 0;
-
 }
 
 
@@ -222,6 +218,7 @@ void ofApp::setupArduino(const int & version) {
     ard.sendDigitalPinMode(Y_STEP_PIN, ARD_OUTPUT);
     
     startX = startY = 0;
+    speedX = speedY = 1;
 }
 
 
@@ -304,10 +301,23 @@ void ofApp::draw() {
             endY = points_iter->y;
             
             stepsX = endX - startX;
-            stepsY = endY - startY;
+            stepsY = endY - startY;            
             
-            moveStepper(0, stepsX, 1);
-            moveStepper(1, stepsY, 1);
+            // scale the speed 
+            if (stepsX > stepsY) {
+                speedX = 1;
+                speedY = abs(stepsY / stepsX);
+            } else {
+                speedY = 1;
+                speedX = abs(stepsX / stepsY);
+            }
+            
+            cout << "MOVING STEPPERS" << endl;
+            cout << "startX: " << startX << " endX: " << endX << " stepsX: " << stepsX << " speedX: " << speedX << endl;
+            cout << "startY: " << startY << " endY: " << endY << " stepsY: " << stepsY << " speedY: " << speedY << endl;
+            
+            moveStepper(0, stepsX, speedX);
+            moveStepper(1, stepsY, speedY);
             
             startX = endX;
             startY = endY;
