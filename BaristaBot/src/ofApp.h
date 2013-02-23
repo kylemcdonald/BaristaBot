@@ -52,6 +52,16 @@ public:
     
     ofRectangle rect;
     
+    enum state {
+        IDLE,
+        FACE_PHOTO,
+        UPLOAD_FACE,
+        PRINT,
+        COFFEE_PHOTO,
+        UPLOAD_COFFEE,
+    };
+    
+    state curState;
     
 private:
     

@@ -116,6 +116,8 @@ void ofApp::setup() {
 	// call setupArduino()
 	ofAddListener(ard.EInitialized, this, &ofApp::setupArduino);
 	bSetupArduino	= false;	// flag so we setup arduino when its ready, you don't need to touch this :)
+    
+    curState = IDLE;
 }
 
 
@@ -188,7 +190,7 @@ void ofApp::update(){
     // ARDUINO
     
     updateArduino();
-
+    
 }
 
 
@@ -247,10 +249,10 @@ void ofApp::moveStepper(int num, int steps, float speed){
     int dir = (steps > 0) ? ARD_HIGH : ARD_LOW;
     steps = abs(steps);
     
-    ard.sendDigital(DIR_PIN, ARD_HIGH);
+    ard.sendDigital(DIR_PIN, dir);
     
     // delay is inversely related to speed
-    float delay = (1/speed);
+    float delay = (1/speed) / 2;
     
     for(int i=0; i < steps; i++){
         ard.sendDigital(STEP_PIN, ARD_HIGH);
@@ -289,41 +291,52 @@ void ofApp::draw() {
 		cout << "arduino not ready..." << endl;
 	}
     
+    cout << endl;
+    cout << "curState = " << curState << endl;
+    
     // Draw the polylines
     
-    for (paths_iter = paths.begin(); paths_iter < paths.end(); paths_iter++) {
-        vector<ofPoint> points = paths_iter->getVertices();
-        for (points_iter = points.begin(); points_iter < points.end(); points_iter++) {
-           
-            if (points_iter == points.begin()) pushInk();
+    if (curState == PRINT) {
+        for (paths_iter = paths.begin(); paths_iter < paths.end(); ++paths_iter) {
+            cout << "\n\n\n\nPath " << paths_iter - paths.begin() << " of " << paths.size() << endl;
+            vector<ofPoint> points = paths_iter->getVertices();
+            for (points_iter = points.begin(); points_iter < points.end(); ++points_iter) {
+               
+                if (points_iter == points.begin()) pushInk();
+                    
+                endX = points_iter->x;
+                endY = points_iter->y;
                 
-            endX = points_iter->x;
-            endY = points_iter->y;
-            
-            stepsX = endX - startX;
-            stepsY = endY - startY;            
-            
-            // scale the speed 
-            if (stepsX > stepsY) {
-                speedX = 1;
-                speedY = abs(stepsY / stepsX);
-            } else {
-                speedY = 1;
-                speedX = abs(stepsX / stepsY);
+                stepsX = endX - startX;
+                stepsY = endY - startY;            
+                
+                // scale the speed 
+                if (abs(stepsX) > abs(stepsY)) {
+                    speedX = 1;
+                    speedY = abs(stepsY) / abs(stepsX);
+                } else {
+                    speedY = 1;
+                    speedX = abs(stepsX) / abs(stepsY);
+                }
+                
+                cout << "\nMOVING STEPPERS" << endl;
+                cout << "startX: " << startX << " endX: " << endX << " stepsX: " << stepsX << " speedX: " << speedX << endl;
+                cout << "startY: " << startY << " endY: " << endY << " stepsY: " << stepsY << " speedY: " << speedY << endl;
+                
+                moveStepper(0, stepsX, speedX);
+                moveStepper(1, stepsY, speedY);
+                
+                startX = endX;
+                startY = endY;
+                
+                if (points_iter == points.end()) {
+                    stopInk();
+                }
             }
-            
-            cout << "MOVING STEPPERS" << endl;
-            cout << "startX: " << startX << " endX: " << endX << " stepsX: " << stepsX << " speedX: " << speedX << endl;
-            cout << "startY: " << startY << " endY: " << endY << " stepsY: " << stepsY << " speedY: " << speedY << endl;
-            
-            moveStepper(0, stepsX, speedX);
-            moveStepper(1, stepsY, speedY);
-            
-            startX = endX;
-            startY = endY;
-            
-            if (points_iter == points.end()) stopInk();
-
+            if (paths_iter == paths.end()-1) {
+                curState == COFFEE_PHOTO;
+                cout << "\n\n\n\n\n*************************************COFFEE_PHOTO" << endl;
+            }
         }
     }
 }
@@ -346,15 +359,17 @@ void ofApp::keyPressed(int key) {
     switch (key) {
         case ' ':
             needToUpdate = true;
+            curState = PRINT;
             break;
         case '1':
             moveStepper(0, 100, 1);
             break;
         case '2':
-            moveStepper(0, 200, 1);
+            moveStepper(0, -200, 1);
             break;
         case '5':
             moveStepper(0, 500, 1);
+            curState = FACE_PHOTO;
             break;
         case 'q':
             moveStepper(1, 100, 1);
