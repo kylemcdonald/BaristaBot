@@ -342,7 +342,7 @@ void ofApp::moveStepper(int num, int steps, float speed){
     ard.sendDigital(DIR_PIN, dir);
     
     // delay is inversely related to speed
-    float delay = (1/speed) / 2;
+    float delay = (1/speed);
     
     for(int i=0; i < steps; i++){
         ard.sendDigital(STEP_PIN, ARD_HIGH);
