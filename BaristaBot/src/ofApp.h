@@ -22,8 +22,6 @@ public:
 	int camWidth, camHeight;
 	
 	vector<ofPolyline> paths;
-    vector<ofPolyline>::iterator paths_iter;
-    vector<ofPoint>::iterator points_iter;
 	
 	imatrix img;
 	ETF etf;
