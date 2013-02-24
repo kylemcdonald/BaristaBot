@@ -37,6 +37,7 @@ public:
     
     // STEPPERS
     void moveStepper (int num, int steps, float speed);
+    void moveTo (float exx, float wyy);
     void pushInk ();
     void stopInk ();
     float startX, startY, endX, endY, stepsX, stepsY, speedX, speedY;

@@ -101,7 +101,7 @@ void ofApp::setup() {
 	gui.addSlider("smoothPasses", 2, 1, 4, true);
 	gui.addSlider("thresh", 128, 0, 255, false);
 	gui.addSlider("minGapLength", 2, 2, 12, false);
-	gui.addSlider("minPathLength", 0, 0, 50, true);
+	gui.addSlider("minPathLength", 10, 0, 50, true);
 	gui.loadSettings("settings.xml");
     
     // ARDUINO
@@ -234,6 +234,93 @@ void ofApp::updateArduino(){
 
 
 //--------------------------------------------------------------
+void ofApp::draw() {
+	ofBackground(0);
+	
+	ofSetColor(255);
+	gray.draw(0, 0);
+	cld.draw(0, 480);
+	thresholded.draw(640, 0);
+	thinned.draw(640, 480);
+	
+	for(int i = 0; i < paths.size(); i++) {
+		ofSetColor(yellowPrint);
+		paths[i].draw();
+		if(i + 1 < paths.size()) {
+			ofVec2f endPoint = paths[i].getVertices()[paths[i].size() - 1];
+			ofVec2f startPoint = paths[i + 1].getVertices()[0];
+			ofSetColor(magentaPrint, 128);
+			ofLine(endPoint, startPoint);
+		}
+	}
+    
+    // ARDUINO
+    
+	if (!bSetupArduino){
+		cout << "arduino not ready..." << endl;
+	}
+    
+    cout << "\n\n curState = " << curState << endl;
+    
+    // Draw the polylines on the coffee
+    
+    if (curState == PRINT) {
+        for (paths_iter = paths.begin(); paths_iter < paths.end(); ++paths_iter) {
+            cout << "\n\n\nPath " << paths_iter-paths.begin() << " / " << paths.size() << endl;
+            vector<ofPoint> points = paths_iter->getVertices();
+            for (points_iter = points.begin(); points_iter < points.end(); ++points_iter) { 
+                if (points_iter == points.begin()) {
+                    pushInk();
+                } else if (points_iter == points.end()) {
+                    stopInk();
+                } else {
+                    moveTo (points_iter->x, points_iter->y);
+                }
+            }
+            if (paths_iter == paths.end()-1) {
+                curState = COFFEE_PHOTO;
+                cout << "\n\n\n\n\n"
+                    "\n***************************************************************"
+                    "\n************************ COFFEE_PHOTO *************************"
+                    "\n***************************************************************"
+                     << "\n\n\n\n\n" << endl;
+            }
+        }
+    }
+}
+
+
+//--------------------------------------------------------------
+void ofApp::moveTo (float exx, float wyy) {
+    endX = exx;
+    endY = wyy;
+    stepsX = endX - startX;
+    stepsY = endY - startY;
+    
+    // scale the speed
+    if (abs(stepsX) > abs(stepsY)) {
+        speedX = 1;
+        speedY = abs(stepsY) / abs(stepsX);
+    } else {
+        speedY = 1;
+        speedX = abs(stepsX) / abs(stepsY);
+    }
+    
+    cout << "\nMOVING STEPPERS" << endl;
+    cout << "startX: " << startX << " endX: " << endX << " stepsX: " << stepsX << " speedX: " << speedX << endl;
+    cout << "startY: " << startY << " endY: " << endY << " stepsY: " << stepsY << " speedY: " << speedY << endl;
+    
+    // this means that aside from 0, the shortest movement will be 1/64th of an inch
+    // becuase min path is 10 and 400 steps per 1/16th of an inch
+    // 10*10 = 100 --> 1/64th of an inch
+    moveStepper(0, stepsX*10, speedX);
+    moveStepper(1, stepsY*10, speedY);
+    startX = endX;
+    startY = endY;
+}
+
+
+//--------------------------------------------------------------
 void ofApp::moveStepper(int num, int steps, float speed){
     
     /* NOTE: earliest code that moved the servo at speed '1' had a delay of 7/10 miliseconds
@@ -263,88 +350,6 @@ void ofApp::moveStepper(int num, int steps, float speed){
     }
 }
 
-
-
-//--------------------------------------------------------------
-void ofApp::draw() {
-	ofBackground(0);
-	
-	ofSetColor(255);
-	gray.draw(0, 0);
-	cld.draw(0, 480);
-	thresholded.draw(640, 0);
-	thinned.draw(640, 480);
-	
-	for(int i = 0; i < paths.size(); i++) {
-		ofSetColor(yellowPrint);
-		paths[i].draw();
-		if(i + 1 < paths.size()) {
-			ofVec2f endPoint = paths[i].getVertices()[paths[i].size() - 1];
-			ofVec2f startPoint = paths[i + 1].getVertices()[0];
-			ofSetColor(magentaPrint, 128);
-			ofLine(endPoint, startPoint);
-		}
-	}
-    
-    // ARDUINO
-    
-	if (!bSetupArduino){
-		cout << "arduino not ready..." << endl;
-	}
-    
-    cout << endl;
-    cout << "curState = " << curState << endl;
-    
-    // Draw the polylines
-    
-    if (curState == PRINT) {
-        for (paths_iter = paths.begin(); paths_iter < paths.end(); ++paths_iter) {
-            cout << "\n\n\n\nPath " << paths_iter - paths.begin() << " of " << paths.size() << endl;
-            vector<ofPoint> points = paths_iter->getVertices();
-            for (points_iter = points.begin(); points_iter < points.end(); ++points_iter) {
-               
-                if (points_iter == points.begin()) pushInk();
-                    
-                endX = points_iter->x;
-                endY = points_iter->y;
-                
-                stepsX = endX - startX;
-                stepsY = endY - startY;            
-                
-                // scale the speed 
-                if (abs(stepsX) > abs(stepsY)) {
-                    speedX = 1;
-                    speedY = abs(stepsY) / abs(stepsX);
-                } else {
-                    speedY = 1;
-                    speedX = abs(stepsX) / abs(stepsY);
-                }
-                
-                cout << "\nMOVING STEPPERS" << endl;
-                cout << "startX: " << startX << " endX: " << endX << " stepsX: " << stepsX << " speedX: " << speedX << endl;
-                cout << "startY: " << startY << " endY: " << endY << " stepsY: " << stepsY << " speedY: " << speedY << endl;
-                
-                moveStepper(0, stepsX, speedX);
-                moveStepper(1, stepsY, speedY);
-                
-                startX = endX;
-                startY = endY;
-                
-                if (points_iter == points.end()) {
-                    stopInk();
-                }
-            }
-            if (paths_iter == paths.end()-1) {
-                curState = COFFEE_PHOTO;
-                cout << "\n\n\n\n\n"
-                    "\n***************************************************************"
-                    "\n************************ COFFEE_PHOTO *************************"
-                    "\n***************************************************************"
-                     << "\n\n\n\n\n" << endl;
-            }
-        }
-    }
-}
 
 
 //--------------------------------------------------------------
