@@ -53,6 +53,7 @@ public:
     
     enum state {
         IDLE,
+        DRAW,
         FACE_PHOTO,
         UPLOAD_FACE,
         PRINT,

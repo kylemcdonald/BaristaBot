@@ -82,8 +82,11 @@ void ofApp::setup() {
 	ofEnableSmoothing();
     font.loadFont("franklinGothic.otf", 20);
 	
+    cout << "list devices" << endl;
+    cam.setDeviceID(0);
 	camWidth = 640, camHeight = 480;
 	cam.initGrabber(camWidth, camHeight);
+//    cam.listDevices();
 	
 	img.init(camWidth, camHeight);
 	imitate(gray, cam, CV_8UC1);
@@ -185,8 +188,8 @@ void ofApp::update(){
 		paths = getPaths(thinned, minGapLength, minPathLength);
 		
 		needToUpdate = false;
-        curState = PRINT;
-	}
+        curState = DRAW;
+    }
     
     // ARDUINO
     
@@ -237,22 +240,25 @@ void ofApp::updateArduino(){
 void ofApp::draw() {
 	ofBackground(0);
 	
-	ofSetColor(255);
-	gray.draw(0, 0);
-	cld.draw(0, 480);
-	thresholded.draw(640, 0);
-	thinned.draw(640, 480);
-	
-	for(int i = 0; i < paths.size(); i++) {
-		ofSetColor(yellowPrint);
-		paths[i].draw();
-		if(i + 1 < paths.size()) {
-			ofVec2f endPoint = paths[i].getVertices()[paths[i].size() - 1];
-			ofVec2f startPoint = paths[i + 1].getVertices()[0];
-			ofSetColor(magentaPrint, 128);
-			ofLine(endPoint, startPoint);
-		}
-	}
+    if (curState == DRAW) {
+        ofSetColor(255);
+        gray.draw(0, 0);
+        cld.draw(0, 480);
+        thresholded.draw(640, 0);
+        thinned.draw(640, 480);
+        
+        for(int i = 0; i < paths.size(); i++) {
+            ofSetColor(yellowPrint);
+            paths[i].draw();
+            if(i + 1 < paths.size()) {
+                ofVec2f endPoint = paths[i].getVertices()[paths[i].size() - 1];
+                ofVec2f startPoint = paths[i + 1].getVertices()[0];
+                ofSetColor(magentaPrint, 128);
+                ofLine(endPoint, startPoint);
+            }
+        }
+        curState = PRINT;
+    }
     
     // ARDUINO
     
@@ -265,7 +271,7 @@ void ofApp::draw() {
     // Draw the polylines on the coffee
     
     if (curState == PRINT) {
-        for (int i = 0; i <= paths.size(); i++) {
+        for (int i = 0; i < paths.size(); i++) {
             cout << "\n\n\nPath " << i+1 << " / " << paths.size() << endl;
             vector<ofPoint> points = paths.at(i).getVertices();
             cout << "\n points.size() = " << points.size() << endl;
@@ -277,7 +283,7 @@ void ofApp::draw() {
                 }
                 moveTo (points.at(j).x, points.at(j).y);
             }
-            if (i == paths.size()) {
+            if (i-1 == paths.size()) {
                 curState = COFFEE_PHOTO;
                 cout << "\n\n\n\n\n"
                     "\n***************************************************************"
