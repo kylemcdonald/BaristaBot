@@ -101,7 +101,7 @@ void ofApp::setup() {
 	gui.addSlider("smoothPasses", 2, 1, 4, true);
 	gui.addSlider("thresh", 128, 0, 255, false);
 	gui.addSlider("minGapLength", 2, 2, 12, false);
-	gui.addSlider("minPathLength", 10, 0, 50, true);
+	gui.addSlider("minPathLength", 20, 0, 50, true);
 	gui.loadSettings("settings.xml");
     
     // ARDUINO
@@ -265,10 +265,10 @@ void ofApp::draw() {
     // Draw the polylines on the coffee
     
     if (curState == PRINT) {
-        for (paths_iter = paths.begin(); paths_iter < paths.end(); ++paths_iter) {
+        for (paths_iter = paths.begin(); paths_iter < paths.end(); paths_iter++) {
             cout << "\n\n\nPath " << paths_iter-paths.begin() << " / " << paths.size() << endl;
             vector<ofPoint> points = paths_iter->getVertices();
-            for (points_iter = points.begin(); points_iter < points.end(); ++points_iter) { 
+            for (points_iter = points.begin(); points_iter < points.end(); points_iter++) {
                 if (points_iter == points.begin()) {
                     pushInk();
                 } else if (points_iter == points.end()) {
@@ -277,7 +277,7 @@ void ofApp::draw() {
                     moveTo (points_iter->x, points_iter->y);
                 }
             }
-            if (paths_iter == paths.end()-1) {
+            if (paths_iter == paths.end()) {
                 curState = COFFEE_PHOTO;
                 cout << "\n\n\n\n\n"
                     "\n***************************************************************"
@@ -294,8 +294,10 @@ void ofApp::draw() {
 void ofApp::moveTo (float exx, float wyy) {
     endX = exx;
     endY = wyy;
-    stepsX = endX - startX;
-    stepsY = endY - startY;
+    stepsX = (endX - startX) * 10;
+    stepsY = (endY - startY) * 10;
+    
+//    stepsY = stepsY * 3;
     
     // scale the speed
     if (abs(stepsX) > abs(stepsY)) {
@@ -313,8 +315,8 @@ void ofApp::moveTo (float exx, float wyy) {
     // this means that aside from 0, the shortest movement will be 1/64th of an inch
     // becuase min path is 10 and 400 steps per 1/16th of an inch
     // 10*10 = 100 --> 1/64th of an inch
-    moveStepper(0, stepsX*10, speedX);
-    moveStepper(1, stepsY*10, speedY);
+    moveStepper(0, stepsX, speedX);
+    moveStepper(1, stepsY, speedY);
     startX = endX;
     startY = endY;
 }
