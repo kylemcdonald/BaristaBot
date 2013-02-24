@@ -185,6 +185,7 @@ void ofApp::update(){
 		paths = getPaths(thinned, minGapLength, minPathLength);
 		
 		needToUpdate = false;
+        curState = PRINT;
 	}
     
     // ARDUINO
@@ -334,8 +335,12 @@ void ofApp::draw() {
                 }
             }
             if (paths_iter == paths.end()-1) {
-                curState == COFFEE_PHOTO;
-                cout << "\n\n\n\n\n*************************************COFFEE_PHOTO" << endl;
+                curState = COFFEE_PHOTO;
+                cout << "\n\n\n\n\n"
+                    "\n***************************************************************"
+                    "\n************************ COFFEE_PHOTO *************************"
+                    "\n***************************************************************"
+                     << "\n\n\n\n\n" << endl;
             }
         }
     }
@@ -359,17 +364,17 @@ void ofApp::keyPressed(int key) {
     switch (key) {
         case ' ':
             needToUpdate = true;
-            curState = PRINT;
             break;
         case '1':
             moveStepper(0, 100, 1);
+            curState = ONE_KEY;
             break;
         case '2':
             moveStepper(0, -200, 1);
+            curState = TWO_KEY;
             break;
         case '5':
             moveStepper(0, 500, 1);
-            curState = FACE_PHOTO;
             break;
         case 'q':
             moveStepper(1, 100, 1);

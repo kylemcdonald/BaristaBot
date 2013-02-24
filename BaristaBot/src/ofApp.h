@@ -44,10 +44,10 @@ public:
 
     ofArduino	ard;
 	bool		bSetupArduino;			// flag variable for setting up arduino once
-    int X_DIR_PIN = 3;
-    int X_STEP_PIN = 4;
-    int Y_DIR_PIN = 5;
-    int Y_STEP_PIN = 6;
+    int X_DIR_PIN = 8;
+    int X_STEP_PIN = 9;
+    int Y_DIR_PIN = 4;
+    int Y_STEP_PIN = 5;
     // TESTING
     
     ofRectangle rect;
@@ -59,6 +59,8 @@ public:
         PRINT,
         COFFEE_PHOTO,
         UPLOAD_COFFEE,
+        ONE_KEY,
+        TWO_KEY,
     };
     
     state curState;
