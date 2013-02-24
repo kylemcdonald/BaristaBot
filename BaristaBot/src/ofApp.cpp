@@ -265,7 +265,7 @@ void ofApp::draw() {
     // Draw the polylines on the coffee
     
     if (curState == PRINT) {
-        for (int i = 0; i < paths.size(); i++) {
+        for (int i = 0; i <= paths.size(); i++) {
             cout << "\n\n\nPath " << i+1 << " / " << paths.size() << endl;
             vector<ofPoint> points = paths.at(i).getVertices();
             cout << "\n points.size() = " << points.size() << endl;
@@ -277,7 +277,7 @@ void ofApp::draw() {
                 }
                 moveTo (points.at(j).x, points.at(j).y);
             }
-            if (i == paths.size()-1) {
+            if (i == paths.size()) {
                 curState = COFFEE_PHOTO;
                 cout << "\n\n\n\n\n"
                     "\n***************************************************************"
