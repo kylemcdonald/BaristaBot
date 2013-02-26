@@ -16,9 +16,9 @@ public:
 	void draw();
 	
 	void keyPressed(int key);
-
+	
     ofTrueTypeFont font;
-
+	
 	int camWidth, camHeight;
 	
 	vector<ofPolyline> paths;
@@ -40,10 +40,10 @@ public:
     void stopInk ();
     float startX, startY, endX, endY, stepsX, stepsY, speedX, speedY;
     
-
+	
     ofArduino ard;
 	bool bSetupArduino;			// flag variable for setting up arduino once
-
+	
     // TESTING
     
     ofRectangle rect;

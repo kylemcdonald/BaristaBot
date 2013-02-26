@@ -90,7 +90,7 @@ void ofApp::setup() {
     cam.setDeviceID(0);
 	camWidth = 640, camHeight = 480;
 	cam.initGrabber(camWidth, camHeight);
-//    cam.listDevices();
+	//    cam.listDevices();
 	
 	img.init(camWidth, camHeight);
 	imitate(gray, cam, CV_8UC1);
@@ -290,10 +290,10 @@ void ofApp::draw() {
             if (i-1 == paths.size()) {
                 curState = COFFEE_PHOTO;
                 cout << "\n\n\n\n\n"
-                    "\n***************************************************************"
-                    "\n************************ COFFEE_PHOTO *************************"
-                    "\n***************************************************************"
-                     << "\n\n\n\n\n" << endl;
+				"\n***************************************************************"
+				"\n************************ COFFEE_PHOTO *************************"
+				"\n***************************************************************"
+				<< "\n\n\n\n\n" << endl;
             }
         }
     }
@@ -307,7 +307,7 @@ void ofApp::moveTo (float exx, float wyy) {
     stepsX = (endX - startX) * 10;
     stepsY = (endY - startY) * 10;
     
-//    stepsY = stepsY * 3;
+	//    stepsY = stepsY * 3;
     
     // scale the speed
     if (abs(stepsX) > abs(stepsY)) {
@@ -366,7 +366,7 @@ void ofApp::moveStepper(int num, int steps, float speed){
 
 //--------------------------------------------------------------
 void ofApp::pushInk() {
-
+	
 }
 
 //--------------------------------------------------------------
@@ -377,7 +377,7 @@ void ofApp::stopInk() {
 
 //--------------------------------------------------------------
 void ofApp::keyPressed(int key) {
-
+	
     switch (key) {
         case ' ':
             needToUpdate = true;
