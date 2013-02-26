@@ -240,7 +240,7 @@ void ofApp::updateArduino(){
 void ofApp::draw() {
 	ofBackground(0);
 	
-    if (curState == DRAW) {
+//    if (curState == DRAW) {
         ofSetColor(255);
         gray.draw(0, 0);
         cld.draw(0, 480);
@@ -257,42 +257,42 @@ void ofApp::draw() {
                 ofLine(endPoint, startPoint);
             }
         }
-        curState = PRINT;
-    }
+//        curState = PRINT;
+//    }
     
     // ARDUINO
     
-	if (!bSetupArduino){
-		cout << "arduino not ready..." << endl;
-	}
-    
-    cout << "\n\n curState = " << curState << endl;
-    
-    // Draw the polylines on the coffee
-    
-    if (curState == PRINT) {
-        for (int i = 0; i < paths.size(); i++) {
-            cout << "\n\n\nPath " << i+1 << " / " << paths.size() << endl;
-            vector<ofPoint> points = paths.at(i).getVertices();
-            cout << "\n points.size() = " << points.size() << endl;
-            for (int j = 0; j < points.size(); j++) {
-                if (j == 0) {
-                    pushInk();
-                } else if (j == points.size()) {
-                    stopInk();
-                }
-                moveTo (points.at(j).x, points.at(j).y);
-            }
-            if (i-1 == paths.size()) {
-                curState = COFFEE_PHOTO;
-                cout << "\n\n\n\n\n"
-                    "\n***************************************************************"
-                    "\n************************ COFFEE_PHOTO *************************"
-                    "\n***************************************************************"
-                     << "\n\n\n\n\n" << endl;
-            }
-        }
-    }
+//	if (!bSetupArduino){
+//		cout << "arduino not ready..." << endl;
+//	}
+//    
+//    cout << "\n\n curState = " << curState << endl;
+//    
+//    // Draw the polylines on the coffee
+//    
+//    if (curState == PRINT) {
+//        for (int i = 0; i < paths.size(); i++) {
+//            cout << "\n\n\nPath " << i+1 << " / " << paths.size() << endl;
+//            vector<ofPoint> points = paths.at(i).getVertices();
+//            cout << "\n points.size() = " << points.size() << endl;
+//            for (int j = 0; j < points.size(); j++) {
+//                if (j == 0) {
+//                    pushInk();
+//                } else if (j == points.size()) {
+//                    stopInk();
+//                }
+//                moveTo (points.at(j).x, points.at(j).y);
+//            }
+//            if (i-1 == paths.size()) {
+//                curState = COFFEE_PHOTO;
+//                cout << "\n\n\n\n\n"
+//                    "\n***************************************************************"
+//                    "\n************************ COFFEE_PHOTO *************************"
+//                    "\n***************************************************************"
+//                     << "\n\n\n\n\n" << endl;
+//            }
+//        }
+//    }
 }
 
 
