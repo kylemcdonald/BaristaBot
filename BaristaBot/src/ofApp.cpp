@@ -3,6 +3,10 @@
 using namespace ofxCv;
 using namespace cv;
 
+int X_DIR_PIN = 4;
+int X_STEP_PIN = 5;
+int Y_DIR_PIN = 8;
+int Y_STEP_PIN = 9;
 
 //--------------------------------------------------------------
 void removeIslands(ofPixels& img) {

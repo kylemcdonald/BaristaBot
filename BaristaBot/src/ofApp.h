@@ -41,12 +41,9 @@ public:
     float startX, startY, endX, endY, stepsX, stepsY, speedX, speedY;
     
 
-    ofArduino	ard;
-	bool		bSetupArduino;			// flag variable for setting up arduino once
-    int X_DIR_PIN = 4;
-    int X_STEP_PIN = 5;
-    int Y_DIR_PIN = 8;
-    int Y_STEP_PIN = 9;
+    ofArduino ard;
+	bool bSetupArduino;			// flag variable for setting up arduino once
+
     // TESTING
     
     ofRectangle rect;
