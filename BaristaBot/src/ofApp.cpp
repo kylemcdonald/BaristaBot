@@ -122,7 +122,7 @@ void ofApp::setup() {
 	// the arduino is ready to receive commands and it is safe to
 	// call setupArduino()
 	ofAddListener(ard.EInitialized, this, &ofApp::setupArduino);
-	bSetupArduino	= false;	// flag so we setup arduino when its ready, you don't need to touch this :)
+	bSetupArduino = false;	// flag so we setup arduino when its ready, you don't need to touch this :)
     
     curState = IDLE;
 }
@@ -234,9 +234,11 @@ void ofApp::setupArduino(const int & version) {
 
 //--------------------------------------------------------------
 void ofApp::updateArduino(){
-	// update the arduino, get any data or messages.
-    // the call to ard.update() is required
-	ard.update();
+	if(bSetupArduino) {
+		// update the arduino, get any data or messages.
+		// the call to ard.update() is required
+		ard.update();
+	}
 }
 
 
@@ -266,11 +268,10 @@ void ofApp::draw() {
     
     // ARDUINO
     
+	gui.msg = "curState = " + ofToString(curState) + ". ";
 	if (!bSetupArduino){
-		cout << "arduino not ready..." << endl;
+		gui.msg += "arduino not ready...";
 	}
-    
-    cout << "\n\n curState = " << curState << endl;
     
     // Draw the polylines on the coffee
     
