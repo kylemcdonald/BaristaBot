@@ -84,7 +84,6 @@ void ofApp::setup() {
 	ofSetVerticalSync(true);
 	ofSetFrameRate(120);
 	ofEnableSmoothing();
-    font.loadFont("franklinGothic.otf", 20);
 	
     cout << "list devices" << endl;
     cam.setDeviceID(0);
@@ -92,11 +91,17 @@ void ofApp::setup() {
 	cam.initGrabber(camWidth, camHeight);
 	//    cam.listDevices();
 	
-	img.init(camWidth, camHeight);
-	imitate(gray, cam, CV_8UC1);
-	imitate(cld, gray);
-	imitate(thresholded, gray);
-	imitate(thinned, gray);
+	faceTrackingScaleFactor = .5;
+	croppedSize = 256;
+	classifier.load(ofToDataPath("haarcascade_frontalface_alt2.xml"));
+	graySmall.allocate(camWidth * faceTrackingScaleFactor, camHeight * faceTrackingScaleFactor, OF_IMAGE_GRAYSCALE);
+	cropped.allocate(croppedSize, croppedSize, OF_IMAGE_GRAYSCALE);
+	
+	img.init(croppedSize, croppedSize);
+	imitate(gray, cropped);
+	imitate(cld, cropped);
+	imitate(thresholded, cropped);
+	imitate(thinned, cropped);
 	
 	gui.setup();
 	gui.addPanel("Settings");
@@ -109,6 +114,7 @@ void ofApp::setup() {
 	gui.addSlider("thresh", 128, 0, 255, false);
 	gui.addSlider("minGapLength", 2, 2, 12, false);
 	gui.addSlider("minPathLength", 20, 0, 50, true);
+	gui.addSlider("facePadding", 1.5, 0, 2, false);
 	gui.loadSettings("settings.xml");
     
     // ARDUINO
@@ -159,23 +165,62 @@ void ofApp::update(){
 		float minGapLength = gui.getValueF("minGapLength");
 		int minPathLength = gui.getValueI("minPathLength");
 		
+		float facePadding = gui.getValueF("facePadding");
+		
 		convertColor(cam, gray, CV_RGB2GRAY);
 		
+		resize(gray, graySmall);
+		Mat graySmallMat = toCv(graySmall);
+		equalizeHist(graySmallMat, graySmallMat);		
+		classifier.detectMultiScale(graySmallMat, objects, 1.05, 1,
+									CASCADE_DO_CANNY_PRUNING |
+									CASCADE_FIND_BIGGEST_OBJECT |
+									//CASCADE_DO_ROUGH_SEARCH |
+									0);
+		
+		ofRectangle faceRect;
+		if(objects.empty()) {
+			// if there are no faces found, use the whole canvas
+			faceRect.set(0, 0, camWidth, camHeight);
+		} else {
+			faceRect = toOf(objects[0]);
+			faceRect.getPositionRef() /= faceTrackingScaleFactor;
+			faceRect.scale(1 / faceTrackingScaleFactor);
+			faceRect.scaleFromCenter(facePadding);
+		}
+		
+		ofRectangle camBoundingBox(0, 0, camWidth, camHeight);
+		faceRect = faceRect.getIntersection(camBoundingBox);
+		float whDiff = fabsf(faceRect.width - faceRect.height);
+		if(faceRect.width < faceRect.height) {
+			faceRect.height = faceRect.width;
+			faceRect.y += whDiff / 2;
+		} else {
+			faceRect.width = faceRect.height;
+			faceRect.x += whDiff / 2;
+		}
+		
+		cv::Rect roi = toCv(faceRect);
+		Mat grayMat = toCv(gray);
+		Mat croppedGrayMat(grayMat, roi);
+		resize(croppedGrayMat, cropped);
+		cropped.update();
+		
 		int j = 0;
-		unsigned char* grayPixels = gray.getPixels();
-		for(int y = 0; y < camHeight; y++) {
-			for(int x = 0; x < camWidth; x++) {
+		unsigned char* grayPixels = cropped.getPixels();
+		for(int y = 0; y < croppedSize; y++) {
+			for(int x = 0; x < croppedSize; x++) {
 				img[x][y] = grayPixels[j++] - black;
 			}
 		}
-		etf.init(camWidth, camHeight);
+		etf.init(croppedSize, croppedSize);
 		etf.set(img);
 		etf.Smooth(halfw, smoothPasses);
 		GetFDoG(img, etf, sigma1, sigma2, tau);
 		j = 0;
 		unsigned char* cldPixels = cld.getPixels();
-		for(int y = 0; y < camHeight; y++) {
-			for(int x = 0; x < camWidth; x++) {
+		for(int y = 0; y < croppedSize; y++) {
+			for(int x = 0; x < croppedSize; x++) {
 				cldPixels[j++] = img[x][y];
 			}
 		}
@@ -241,63 +286,82 @@ void ofApp::updateArduino(){
 	}
 }
 
+//--------------------------------------------------------------
+void ofApp::drawPaths() {
+	for(int i = 0; i < paths.size(); i++) {
+		ofSetColor(yellowPrint);
+		paths[i].draw();
+		if(i + 1 < paths.size()) {
+			ofVec2f endPoint = paths[i].getVertices()[paths[i].size() - 1];
+			ofVec2f startPoint = paths[i + 1].getVertices()[0];
+			ofSetColor(magentaPrint, 128);
+			ofLine(endPoint, startPoint);
+		}
+	}
+}
 
 //--------------------------------------------------------------
 void ofApp::draw() {
 	ofBackground(0);
 	
-    if (curState == DRAW) {
+//    if (curState == DRAW) {
         ofSetColor(255);
         gray.draw(0, 0);
-        cld.draw(0, 480);
-        thresholded.draw(640, 0);
-        thinned.draw(640, 480);
-        
-        for(int i = 0; i < paths.size(); i++) {
-            ofSetColor(yellowPrint);
-            paths[i].draw();
-            if(i + 1 < paths.size()) {
-                ofVec2f endPoint = paths[i].getVertices()[paths[i].size() - 1];
-                ofVec2f startPoint = paths[i + 1].getVertices()[0];
-                ofSetColor(magentaPrint, 128);
-                ofLine(endPoint, startPoint);
-            }
-        }
-        curState = PRINT;
-    }
+		int y = 0;
+		cropped.draw(gray.getWidth(), 0);
+        cld.draw(gray.getWidth(), (y+=cropped.getHeight()));
+        thresholded.draw(gray.getWidth(), (y+=cld.getHeight()));
+        thinned.draw(gray.getWidth(), (y+=thresholded.getHeight()));
+	
+		ofPushMatrix();
+		ofTranslate(gray.getWidth(), 0);
+		drawPaths();
+		ofPopMatrix();
+	
+		ofPushMatrix();
+		ofTranslate(gray.getWidth() + cropped.getWidth(), 0);
+		ofScale(2, 2);
+		ofPushStyle();
+		ofSetLineWidth(3);
+		drawPaths();
+		ofPopStyle();
+		ofPopMatrix();
+//        curState = PRINT;
+//    }
     
     // ARDUINO
     
-	gui.msg = "curState = " + ofToString(curState) + ". ";
-	if (!bSetupArduino){
-		gui.msg += "arduino not ready...";
-	}
-    
-    // Draw the polylines on the coffee
-    
-    if (curState == PRINT) {
-        for (int i = 0; i < paths.size(); i++) {
-            cout << "\n\n\nPath " << i+1 << " / " << paths.size() << endl;
-            vector<ofPoint> points = paths.at(i).getVertices();
-            cout << "\n points.size() = " << points.size() << endl;
-            for (int j = 0; j < points.size(); j++) {
-                if (j == 0) {
-                    pushInk();
-                } else if (j == points.size()) {
-                    stopInk();
-                }
-                moveTo (points.at(j).x, points.at(j).y);
-            }
-            if (i-1 == paths.size()) {
-                curState = COFFEE_PHOTO;
-                cout << "\n\n\n\n\n"
-				"\n***************************************************************"
-				"\n************************ COFFEE_PHOTO *************************"
-				"\n***************************************************************"
-				<< "\n\n\n\n\n" << endl;
-            }
-        }
-    }
+//	gui.msg = "curState = " + ofToString(curState) + ". ";
+//	if (!bSetupArduino){
+//		gui.msg += "arduino not ready...";
+//	}
+//    cout << "\n\n curState = " << curState << endl;
+//    
+//    // Draw the polylines on the coffee
+//    
+//    if (curState == PRINT) {
+//        for (int i = 0; i < paths.size(); i++) {
+//            cout << "\n\n\nPath " << i+1 << " / " << paths.size() << endl;
+//            vector<ofPoint> points = paths.at(i).getVertices();
+//            cout << "\n points.size() = " << points.size() << endl;
+//            for (int j = 0; j < points.size(); j++) {
+//                if (j == 0) {
+//                    pushInk();
+//                } else if (j == points.size()) {
+//                    stopInk();
+//                }
+//                moveTo (points.at(j).x, points.at(j).y);
+//            }
+//            if (i-1 == paths.size()) {
+//                curState = COFFEE_PHOTO;
+//                cout << "\n\n\n\n\n"
+//                    "\n***************************************************************"
+//                    "\n************************ COFFEE_PHOTO *************************"
+//                    "\n***************************************************************"
+//                     << "\n\n\n\n\n" << endl;
+//            }
+//        }
+//    }
 }
 
 

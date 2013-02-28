@@ -14,10 +14,9 @@ public:
 	void setup();
 	void update();
 	void draw();
+	void drawPaths();
 	
 	void keyPressed(int key);
-	
-    ofTrueTypeFont font;
 	
 	int camWidth, camHeight;
 	
@@ -61,6 +60,13 @@ public:
     };
     
     state curState;
+	
+	int croppedSize;
+	ofImage graySmall, cropped;
+	
+	cv::CascadeClassifier classifier;
+	vector<cv::Rect> objects;
+	float faceTrackingScaleFactor;
     
 private:
     
