@@ -7,6 +7,7 @@
 	objects = {
 
 /* Begin PBXBuildFile section */
+		037EC32C16E00BB00061260C /* stepperThread.cpp in Sources */ = {isa = PBXBuildFile; fileRef = 037EC32B16E00BB00061260C /* stepperThread.cpp */; };
 		27DA10301635CB4400F13FE6 /* ofApp.cpp in Sources */ = {isa = PBXBuildFile; fileRef = 27DA102E1635CB4400F13FE6 /* ofApp.cpp */; };
 		27DA10401635CBB400F13FE6 /* tinyxml.cpp in Sources */ = {isa = PBXBuildFile; fileRef = 27DA10391635CBB400F13FE6 /* tinyxml.cpp */; };
 		27DA10411635CBB400F13FE6 /* tinyxmlerror.cpp in Sources */ = {isa = PBXBuildFile; fileRef = 27DA103B1635CBB400F13FE6 /* tinyxmlerror.cpp */; };
@@ -104,6 +105,7 @@
 /* Begin PBXFileReference section */
 		037EC32516DFB3E90061260C /* haarcascade_frontalface_alt2.xml */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = text.xml; name = haarcascade_frontalface_alt2.xml; path = bin/data/haarcascade_frontalface_alt2.xml; sourceTree = SOURCE_ROOT; };
 		037EC32A16E0085B0061260C /* stepperThread.h */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.c.h; path = stepperThread.h; sourceTree = "<group>"; };
+		037EC32B16E00BB00061260C /* stepperThread.cpp */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.cpp.cpp; path = stepperThread.cpp; sourceTree = "<group>"; };
 		27D9ED9B1619258700419619 /* cv.h */ = {isa = PBXFileReference; explicitFileType = sourcecode.c.h; fileEncoding = 30; name = cv.h; path = ../../../addons/ofxOpenCv/libs/opencv/include/opencv/cv.h; sourceTree = SOURCE_ROOT; };
 		27D9ED9C1619258700419619 /* cv.hpp */ = {isa = PBXFileReference; explicitFileType = sourcecode.c.h; fileEncoding = 30; name = cv.hpp; path = ../../../addons/ofxOpenCv/libs/opencv/include/opencv/cv.hpp; sourceTree = SOURCE_ROOT; };
 		27D9ED9D1619258700419619 /* cvaux.h */ = {isa = PBXFileReference; explicitFileType = sourcecode.c.h; fileEncoding = 30; name = cvaux.h; path = ../../../addons/ofxOpenCv/libs/opencv/include/opencv/cvaux.h; sourceTree = SOURCE_ROOT; };
@@ -828,6 +830,7 @@
 				27DA102E1635CB4400F13FE6 /* ofApp.cpp */,
 				27DA102F1635CB4400F13FE6 /* ofApp.h */,
 				037EC32A16E0085B0061260C /* stepperThread.h */,
+				037EC32B16E00BB00061260C /* stepperThread.cpp */,
 			);
 			path = src;
 			sourceTree = SOURCE_ROOT;
@@ -969,6 +972,7 @@
 				27DA11741635CBBE00F13FE6 /* simpleLogger.cpp in Sources */,
 				27DA11811635CC2800F13FE6 /* ETF.cpp in Sources */,
 				27DA11821635CC2800F13FE6 /* fdog.cpp in Sources */,
+				037EC32C16E00BB00061260C /* stepperThread.cpp in Sources */,
 			);
 			runOnlyForDeploymentPostprocessing = 0;
 		};

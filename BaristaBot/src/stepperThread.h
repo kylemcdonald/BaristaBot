@@ -24,48 +24,11 @@ class stepperThread : public ofThread{
 	                // threads can't create textures, or draw stuff on the screen
 	                // since opengl is single thread safe
 
-		//--------------------------
-		stepperThread(){
-			count = 0;
-		}
 
-		void start(){
-            startThread(true, false);   // blocking, verbose
-        }
-
-        void stop(){
-            stopThread();
-        }
-
-		//--------------------------
-		void threadedFunction(){
-
-			while( isThreadRunning() != 0 ){
-				if( lock() ){
-					count++;
-					if(count > 50000) count = 0;
-					unlock();
-//					ofSleepMillis(1 * 1000);
-				}
-			}
-		}
-
-		//--------------------------
-		void draw(){
-
-			string str = "I am a slowly increasing thread. \nmy current count is: ";
-
-			if( lock() ){
-				str += ofToString(count);
-				unlock();
-			}else{
-				str = "can't lock!\neither an error\nor the thread has stopped";
-			}
-			ofDrawBitmapString(str, 50, 56);
-		}
-
-
-
+        void start();
+        void stop();
+        void threadedFunction();
+        void draw();
 };
 
 #endif
