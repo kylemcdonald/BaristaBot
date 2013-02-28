@@ -128,6 +128,7 @@ void ofApp::setup() {
 	bSetupArduino = false;	// flag so we setup arduino when its ready, you don't need to touch this :)
     
     curState = IDLE;
+    ST.start();
 
 }
 
@@ -244,7 +245,7 @@ void ofApp::update(){
     if (curState == PRINT) {
         //        stepsX = stepsY = 1000;
         //        counter++;
-        updateSteppers();
+//        ST.updateSteppers();
         
         
         //        if (updateTarget) {
@@ -355,6 +356,7 @@ void ofApp::draw() {
     ofPopStyle();
     ofPopMatrix();
 
+    ST.draw();
     
 }
 

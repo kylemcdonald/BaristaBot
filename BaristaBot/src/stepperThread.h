@@ -45,7 +45,7 @@ class stepperThread : public ofThread{
 					count++;
 					if(count > 50000) count = 0;
 					unlock();
-					ofSleepMillis(1 * 1000);
+//					ofSleepMillis(1 * 1000);
 				}
 			}
 		}

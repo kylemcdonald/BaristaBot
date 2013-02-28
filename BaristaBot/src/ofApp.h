@@ -66,6 +66,8 @@ public:
     int curPath, curPoint;
     ofPoint target;
     
+    stepperThread ST;
+    
 	
     ofArduino ard;
 	bool bSetupArduino;			// flag variable for setting up arduino once

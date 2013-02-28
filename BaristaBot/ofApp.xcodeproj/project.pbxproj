@@ -824,9 +824,9 @@
 			isa = PBXGroup;
 			children = (
 				27DA117A1635CC2800F13FE6 /* CLD */,
+				E4B69E1D0A3A1BDC003C02F2 /* main.cpp */,
 				27DA102E1635CB4400F13FE6 /* ofApp.cpp */,
 				27DA102F1635CB4400F13FE6 /* ofApp.h */,
-				E4B69E1D0A3A1BDC003C02F2 /* main.cpp */,
 				037EC32A16E0085B0061260C /* stepperThread.h */,
 			);
 			path = src;
