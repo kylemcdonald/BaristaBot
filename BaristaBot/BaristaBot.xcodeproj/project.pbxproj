@@ -1024,7 +1024,7 @@
 					../../../addons/ofxOpenCv/libs/opencv/lib/osx,
 					../../../addons/ofxOpenCv/src,
 				);
-				MACOSX_DEPLOYMENT_TARGET = 10.6;
+				MACOSX_DEPLOYMENT_TARGET = 10.8;
 				OTHER_CPLUSPLUSFLAGS = (
 					"-D__MACOSX_CORE__",
 					"-lpthread",
@@ -1083,7 +1083,7 @@
 					../../../addons/ofxOpenCv/libs/opencv/lib/osx,
 					../../../addons/ofxOpenCv/src,
 				);
-				MACOSX_DEPLOYMENT_TARGET = 10.6;
+				MACOSX_DEPLOYMENT_TARGET = 10.8;
 				OTHER_CPLUSPLUSFLAGS = (
 					"-D__MACOSX_CORE__",
 					"-lpthread",
@@ -1177,7 +1177,7 @@
 					"$(LIBRARY_SEARCH_PATHS_QUOTED_FOR_TARGET_51)",
 					"$(LIBRARY_SEARCH_PATHS_QUOTED_FOR_TARGET_52)",
 				);
-				MACOSX_DEPLOYMENT_TARGET = 10.6;
+				MACOSX_DEPLOYMENT_TARGET = 10.8;
 				PREBINDING = NO;
 				PRODUCT_NAME = BaristaBotDebug;
 				WRAPPER_EXTENSION = app;
@@ -1264,7 +1264,7 @@
 					"$(LIBRARY_SEARCH_PATHS_QUOTED_FOR_TARGET_50)",
 					"$(LIBRARY_SEARCH_PATHS_QUOTED_FOR_TARGET_51)",
 				);
-				MACOSX_DEPLOYMENT_TARGET = 10.6;
+				MACOSX_DEPLOYMENT_TARGET = 10.8;
 				PREBINDING = NO;
 				PRODUCT_NAME = BaristaBot;
 				WRAPPER_EXTENSION = app;

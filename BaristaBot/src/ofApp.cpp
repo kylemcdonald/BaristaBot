@@ -109,7 +109,7 @@ void ofApp::setup() {
     // replace the string below with the serial port for your Arduino board
     // you can get this from the Arduino application or via command line
     // for OSX, in your terminal type "ls /dev/tty.*" to get a list of serial devices
-	ard.connect("/dev/tty.usbmodem1421", 57600);
+	ard.connect("/dev/tty.usbmodem1411", 57600);
 	
 	// listen for EInitialized notification. this indicates that
 	// the arduino is ready to receive commands and it is safe to
