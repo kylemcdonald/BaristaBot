@@ -240,7 +240,24 @@ void ofApp::update(){
     // ARDUINO
     
     updateArduino();
- 
+    
+    if (curState == PRINT) {
+        //        stepsX = stepsY = 1000;
+        //        counter++;
+        updateSteppers();
+        
+        
+        //        if (updateTarget) {
+        //            setTarget();
+        //            counter = 0;
+        //        }
+        //        if (counter < limit) {
+        //            updateSteppers();
+        //            counter++;
+        //        } else {
+        //            updateTarget = true;
+        //        }
+    }
     
 }
 
@@ -337,25 +354,8 @@ void ofApp::draw() {
     drawPaths();
     ofPopStyle();
     ofPopMatrix();
+
     
-    
-    if (curState == PRINT) {
-//        stepsX = stepsY = 1000;
-//        counter++;
-//        updateSteppers();
-        
-        
-        if (updateTarget) {
-            setTarget();
-            counter = 0;
-        }
-        if (counter < limit) {
-            updateSteppers();
-            counter++;
-        } else {
-            updateTarget = true;
-        }
-    }
 }
 
 
@@ -377,8 +377,6 @@ void ofApp::setTarget() {
             curPath++;
             curPoint = 0;
             points = paths.at(curPath).getVertices();
-            startX = endX;
-            startY = endY;
             target = points.at(curPoint++);
         }
     // all paths are drawn
@@ -388,33 +386,40 @@ void ofApp::setTarget() {
         curPoint = 0;
     }
     
-    endX = target.x;
-    endY = target.y;
-    stepsX = (endX - startX) * 10;
-    stepsY = (endY - startY) * 10;
+    stepsX = abs((target.x - lastX) * 10);
+    stepsY = abs((target.y - lastY) * 10);
+    stepsInk = sqrt(stepsX*stepsX + stepsY*stepsY);
     limit = stepsX*stepsY;
     
-    stepsInk = sqrt(stepsX*stepsX + stepsY*stepsY) / 100;
-    
-    int dir = (endX > startX) ? ARD_HIGH : ARD_LOW;
+    // set the directions for each servo
+    int dir = (target.x > lastX) ? ARD_HIGH : ARD_LOW;
     ard.sendDigital(X_DIR_PIN, dir);
-    dir = (endY > startY) ? ARD_HIGH : ARD_LOW;
+    dir = (target.y > lastY) ? ARD_HIGH : ARD_LOW;
     ard.sendDigital(Y_DIR_PIN, dir);
     
+    lastX = target.x;
+    lastY = target.y;
     updateTarget = false;
 }
 
 
 //--------------------------------------------------------------
 void ofApp::updateSteppers () {
-    X_SIGNAL = Y_SIGNAL = INK_SIGNAL = ARD_LOW;
+    X_SIGNAL = Y_SIGNAL = INK_SIGNAL = ARD_HIGH;
 
-    if (stepsY % counter == 0) {
-        X_SIGNAL = ARD_HIGH;
-    }
-    if (stepsX % counter == 0) {
-        Y_SIGNAL = ARD_HIGH;
-    }
+//    if (stepsX > stepsY) {
+//        X_SIGNAL = ARD_HIGH;
+//    } else {
+//        Y_SIGNAL = ARD_HIGH;
+//    }
+    
+//        
+//    if ((limit-counter) % stepsY == 0) {
+//        X_SIGNAL = ARD_HIGH;
+//    }
+//    if ((limit-counter) % stepsX == 0) {
+//        Y_SIGNAL = ARD_HIGH;
+//    }
 //    if (counter % stepsInk && pushInk) {
 //        INK_SIGNAL = ARD_HIGH;
 //    }

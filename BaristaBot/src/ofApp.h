@@ -9,6 +9,8 @@
 #include "fdog.h"
 #include "myvec.h"
 
+#include "stepperThread.h"
+
 class ofApp : public ofBaseApp{
 public:
 	void setup();
@@ -52,11 +54,14 @@ public:
     void moveStepper (int num, int steps, float speed);
     void moveTo (float exx, float wyy);
     void setTarget ();
+    
+    int lastX, lastY;
+    
     int startX, startY, endX, endY, speedX, speedY;
     int stepsX, stepsY, stepsInk;
     bool X_SIGNAL, Y_SIGNAL, INK_SIGNAL;
     int counter, limit;
-    float MIN_PULSE = 0.005; // in milliseconds
+    float MIN_PULSE = 0.002; // in milliseconds
     bool pushInk, updateTarget;
     int curPath, curPoint;
     ofPoint target;
