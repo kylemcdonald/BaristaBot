@@ -48,10 +48,17 @@ public:
     int INK_LIMIT_PIN = 13;
     
     // STEPPERS
-    void moveStepper (int num, int steps, float speed);
-    void moveTo (float exx, float wyy, bool draw);
-    float startX, startY, endX, endY, stepsX, stepsY, speedX, speedY;
-    
+    void moveStepper (int num, int speed);
+    void moveTo (float exx, float wyy);
+    void setTarget ();
+    float startX, startY, endX, endY, speedX, speedY;
+    int stepsX, stepsY, stepsInk;
+    bool X_SIGNAL, Y_SIGNAL, INK_SIGNAL;
+    int counter, limit;
+    float MIN_PULSE = 0.010; // in milliseconds
+    bool pushInk, updateTarget;
+    int curPath, curPoint;
+    ofPoint target;
     
 	
     ofArduino ard;
@@ -85,6 +92,7 @@ private:
     void digitalPinChanged(const int & pinNum);
     void analogPinChanged(const int & pinNum);
 	void updateArduino();
+    void updateSteppers();
     
     string buttonState;
     string potValue;

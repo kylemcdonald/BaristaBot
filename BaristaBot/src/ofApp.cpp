@@ -128,6 +128,7 @@ void ofApp::setup() {
 	bSetupArduino = false;	// flag so we setup arduino when its ready, you don't need to touch this :)
     
     curState = IDLE;
+
 }
 
 
@@ -240,6 +241,7 @@ void ofApp::update(){
     // ARDUINO
     
     updateArduino();
+ 
     
 }
 
@@ -307,8 +309,15 @@ void ofApp::drawPaths() {
 //--------------------------------------------------------------
 void ofApp::draw() {
 	ofBackground(0);
+    
+	gui.msg = "curState = " + ofToString(stateName[curState]) + ". ";
+	if (!bSetupArduino){
+		gui.msg += "arduino not ready...";
+	} else {
+        gui.msg += "arduino connected, firmware: " + ofToString(ard.getFirmwareName());
+    }
 	
-//    if (curState == DRAW) {
+    if (curState == DRAW) {
         ofSetColor(255);
         gray.draw(0, 0);
 		int y = 0;
@@ -331,72 +340,154 @@ void ofApp::draw() {
 		ofPopStyle();
 		ofPopMatrix();
         curState = PRINT;
-//    }
-    
-    // ARDUINO
-    
-	gui.msg = "curState = " + ofToString(stateName[curState]) + ". ";
-	if (!bSetupArduino){
-		gui.msg += "arduino not ready...";
-	} else {
-        gui.msg += "arduino connected, firmware: " + ofToString(ard.getFirmwareName());
+        updateTarget = true;
     }
     
-    // Draw the polylines on the coffee
+    if (curState == PRINT) {
+        if (updateTarget) {
+            setTarget();
+            counter = 0;
+        }
+        if (counter < limit) {
+            updateSteppers();
+            counter++;
+        } else {
+            updateTarget = true;
+        }
+    }
+
     
     if (curState == PRINT) {
         for (int i = 0; i < paths.size(); i++) {
-//            gui.msg = "Path " + ofToString(i+1) + " / " + ofToString(paths.size());
+            // gui.msg = "Path " + ofToString(i+1) + " / " + ofToString(paths.size());
             vector<ofPoint> points = paths.at(i).getVertices();
-            moveTo (points.begin()->x, points.begin()->y, false);
+            moveTo (points.begin()->x, points.begin()->y);
+            pushInk = false;
             for (int j = 1; j < points.size(); j++) {
-//                gui.msg += " | Point " + ofToString(j) + " / " + ofToString(points.size());
-                moveTo (points.at(j).x, points.at(j).y, true);
+                // gui.msg += " | Point " + ofToString(j) + " / " + ofToString(points.size());
+                moveTo (points.at(j).x, points.at(j).y);
+                limit = stepsX*stepsY;
+                pushInk = true;
+                if (counter < limit) {
+                    counter++;
+                }
+
             }
             if (i-1 == paths.size()) {
                 curState = COFFEE_PHOTO;
             }
         }
+
     }
 }
 
 
+
 //--------------------------------------------------------------
-void ofApp::moveTo (float exx, float wyy, bool draw) {
+void ofApp::setTarget() {
+    if (curPath < paths.size()) {
+        vector<ofPoint> points = paths.at(curPath).getVertices();        
+        if (curPoint < points.size()) {
+            target = points.at(curPoint);
+            curPoint++;
+        } else {
+            curPath++;
+            curPoint = 0;
+            startX = endX;
+            startY = endY;
+        }
+    } else {
+        curState = COFFEE_PHOTO;
+        curPath = 0;
+        curPoint = 0;
+    }
+    
+    endX = target.x;
+    endY = target.y;
+    stepsX = (endX - startX) * 10;
+    stepsY = (endY - startY) * 10;
+    limit = stepsX*stepsY;
+    
+    stepsInk = sqrt(stepsX*stepsX + stepsY*stepsY) / 100;
+    
+    int dir = (endX > startX) ? ARD_HIGH : ARD_LOW;
+    ard.sendDigital(X_DIR_PIN, dir);
+    dir = (endY > startY) ? ARD_HIGH : ARD_LOW;
+    ard.sendDigital(Y_DIR_PIN, dir);
+    
+    updateTarget = false;
+}
+
+
+//--------------------------------------------------------------
+void ofApp::updateSteppers () {
+    X_SIGNAL = Y_SIGNAL = INK_SIGNAL = ARD_LOW;
+
+    if (counter % stepsY) {
+        X_SIGNAL = ARD_HIGH;
+    }
+    if (counter % stepsX) {
+        Y_SIGNAL = ARD_HIGH;
+    }
+    if (counter % stepsInk && pushInk) {
+        INK_SIGNAL = ARD_HIGH;
+    }
+    
+    ard.sendDigital(X_STEP_PIN, X_SIGNAL);
+    ard.sendDigital(Y_STEP_PIN, Y_SIGNAL);
+    ard.sendDigital(INK_STEP_PIN, INK_SIGNAL);
+    ofSleepMillis(MIN_PULSE);
+    ard.sendDigital(X_STEP_PIN, ARD_LOW);
+    ard.sendDigital(Y_STEP_PIN, ARD_LOW);
+    ard.sendDigital(INK_STEP_PIN, ARD_LOW);
+    ofSleepMillis(MIN_PULSE);
+}
+
+
+//--------------------------------------------------------------
+void ofApp::moveTo (float exx, float wyy) {
     endX = exx;
     endY = wyy;
     stepsX = (endX - startX) * 10;
     stepsY = (endY - startY) * 10;
     
-    float stepsInk = sqrt(stepsX*stepsX + stepsY*stepsY);
+    stepsInk = sqrt(stepsX*stepsX + stepsY*stepsY) / 100;
     
-	//    stepsY = stepsY * 3;
-    
-    // scale the speed
-    if (abs(stepsX) > abs(stepsY)) {
-        speedX = 1;
-        speedY = abs(stepsY) / abs(stepsX);
-    } else {
-        speedY = 1;
-        speedX = abs(stepsX) / abs(stepsY);
-    }
-    
-    cout << "\nMOVING STEPPERS" << endl;
-    cout << "startX: " << startX << " endX: " << endX << " stepsX: " << stepsX << " speedX: " << speedX << endl;
-    cout << "startY: " << startY << " endY: " << endY << " stepsY: " << stepsY << " speedY: " << speedY << endl;
-    
-    // this means that aside from 0, the shortest movement will be 1/64th of an inch
-    // becuase min path is 10 and 400 steps per 1/16th of an inch
-    // 10*10 = 100 --> 1/64th of an inch
-    moveStepper(0, stepsX, speedX);
-    moveStepper(1, stepsY, speedY);
-    if (draw) {
-//        moveStepper(3, stepsInk, 0.01);
-    }
-    startX = endX;
-    startY = endY;
+    int dir = (endX > startX) ? ARD_HIGH : ARD_LOW;
+    ard.sendDigital(X_DIR_PIN, dir);
+    dir = (endY > startY) ? ARD_HIGH : ARD_LOW;
+    ard.sendDigital(Y_DIR_PIN, dir);
 }
 
+
+//--------------------------------------------------------------
+void ofApp::moveStepper(int pin, int speed){
+    
+    int DIR_PIN = pin;
+    int STEP_PIN = pin+1;
+    
+    //rotate a specific number of microsteps (8 microsteps per step) - (negitive for reverse movement)
+    //speed is any number from .01 -> 1 with 1 being fastest - Slower is stronger
+    int dir = (speed > 0) ? ARD_HIGH : ARD_LOW;
+    
+    ard.sendDigital(DIR_PIN, dir);
+    
+//    if (speed % 100) {
+//        ard.sendDigital(STEP_PIN, ARD_HIGH);
+//    }
+
+    
+    
+    // delay is inversely related to speed
+    float delay = (1/speed);
+    
+    for(int i=0; i < steps; i++){
+        ard.sendDigital(STEP_PIN, ARD_HIGH);
+        ofSleepMillis(delay);
+        ard.sendDigital(STEP_PIN, ARD_LOW);
+        ofSleepMillis(delay);
+    }
+}
 
 //--------------------------------------------------------------
 void ofApp::moveStepper(int num, int steps, float speed){
