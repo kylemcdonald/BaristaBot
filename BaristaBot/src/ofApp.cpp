@@ -253,7 +253,6 @@ void ofApp::setupArduino(const int & version) {
     
     // it is now safe to send commands to the Arduino
     bSetupArduino = true;
-    gui.msg += "arduino connected, firmware: " + ofToString(ard.getFirmwareName());
     
     // Note: pins A0 - A5 can be used as digital input and output.
     // Refer to them as pins 14 - 19 if using StandardFirmata from Arduino 1.0.
@@ -284,11 +283,11 @@ void ofApp::setupArduino(const int & version) {
 
 //--------------------------------------------------------------
 void ofApp::updateArduino(){
-	if(bSetupArduino) {
+//	if(bSetupArduino) {
 		// update the arduino, get any data or messages.
 		// the call to ard.update() is required
 		ard.update();
-	}
+//	}
 }
 
 //--------------------------------------------------------------
@@ -331,7 +330,7 @@ void ofApp::draw() {
 		drawPaths();
 		ofPopStyle();
 		ofPopMatrix();
-//        curState = PRINT;
+        curState = PRINT;
 //    }
     
     // ARDUINO
@@ -339,23 +338,20 @@ void ofApp::draw() {
 	gui.msg = "curState = " + ofToString(stateName[curState]) + ". ";
 	if (!bSetupArduino){
 		gui.msg += "arduino not ready...";
-	}
+	} else {
+        gui.msg += "arduino connected, firmware: " + ofToString(ard.getFirmwareName());
+    }
     
     // Draw the polylines on the coffee
     
     if (curState == PRINT) {
         for (int i = 0; i < paths.size(); i++) {
-            gui.msg = "Path " + ofToString(i+1) + " / " + ofToString(paths.size());
+//            gui.msg = "Path " + ofToString(i+1) + " / " + ofToString(paths.size());
             vector<ofPoint> points = paths.at(i).getVertices();
-            for (int j = 0; j < points.size(); j++) {
-                gui.msg += " | Point " + ofToString(j) + " / " + ofToString(points.size());
-                if (j == points.size()) {
-                    // dont draw
-                    moveTo (points.at(j).x, points.at(j).y, false);
-                } else {
-                    // draw
-                    moveTo (points.at(j).x, points.at(j).y, true);
-                }
+            moveTo (points.begin()->x, points.begin()->y, false);
+            for (int j = 1; j < points.size(); j++) {
+//                gui.msg += " | Point " + ofToString(j) + " / " + ofToString(points.size());
+                moveTo (points.at(j).x, points.at(j).y, true);
             }
             if (i-1 == paths.size()) {
                 curState = COFFEE_PHOTO;
@@ -395,7 +391,7 @@ void ofApp::moveTo (float exx, float wyy, bool draw) {
     moveStepper(0, stepsX, speedX);
     moveStepper(1, stepsY, speedY);
     if (draw) {
-        moveStepper(3, stepsInk, 0.01);
+//        moveStepper(3, stepsInk, 0.01);
     }
     startX = endX;
     startY = endY;
