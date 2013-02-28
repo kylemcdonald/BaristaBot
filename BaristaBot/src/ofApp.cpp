@@ -3,10 +3,7 @@
 using namespace ofxCv;
 using namespace cv;
 
-int X_DIR_PIN = 4;
-int X_STEP_PIN = 5;
-int Y_DIR_PIN = 8;
-int Y_STEP_PIN = 9;
+
 
 //--------------------------------------------------------------
 void removeIslands(ofPixels& img) {
@@ -85,7 +82,6 @@ void ofApp::setup() {
 	ofSetFrameRate(120);
 	ofEnableSmoothing();
 	
-    cout << "list devices" << endl;
     cam.setDeviceID(0);
 	camWidth = 640, camHeight = 480;
 	cam.initGrabber(camWidth, camHeight);
@@ -122,7 +118,7 @@ void ofApp::setup() {
     // replace the string below with the serial port for your Arduino board
     // you can get this from the Arduino application or via command line
     // for OSX, in your terminal type "ls /dev/tty.*" to get a list of serial devices
-	ard.connect("/dev/tty.usbmodem1421", 57600);
+	ard.connect("/dev/tty.usbmodem1411", 57600);
 	
 	// listen for EInitialized notification. this indicates that
 	// the arduino is ready to receive commands and it is safe to
@@ -255,11 +251,8 @@ void ofApp::setupArduino(const int & version) {
     
     // it is now safe to send commands to the Arduino
     bSetupArduino = true;
-    cout << "arduino connected\n" << endl; 
-    
-    // print firmware name and version to the console
-    cout << ard.getFirmwareName() << endl;
-    cout << "firmata v" << ard.getMajorFirmwareVersion() << "." << ard.getMinorFirmwareVersion() << endl;
+    gui.msg += "arduino connected";
+    gui.msg += ard.getFirmwareName();
     
     // Note: pins A0 - A5 can be used as digital input and output.
     // Refer to them as pins 14 - 19 if using StandardFirmata from Arduino 1.0.
@@ -269,8 +262,19 @@ void ofApp::setupArduino(const int & version) {
     // set digital outputs
     ard.sendDigitalPinMode(X_DIR_PIN, ARD_OUTPUT);
     ard.sendDigitalPinMode(X_STEP_PIN, ARD_OUTPUT);
+    ard.sendDigitalPinMode(Z_DIR_PIN, ARD_OUTPUT);
+    ard.sendDigitalPinMode(Z_STEP_PIN, ARD_OUTPUT);
     ard.sendDigitalPinMode(Y_DIR_PIN, ARD_OUTPUT);
     ard.sendDigitalPinMode(Y_STEP_PIN, ARD_OUTPUT);
+    ard.sendDigitalPinMode(INK_DIR_PIN, ARD_OUTPUT);
+    ard.sendDigitalPinMode(INK_STEP_PIN, ARD_OUTPUT);
+
+    // set digital inputs
+    ard.sendDigitalPinMode(X_LIMIT_PIN, ARD_INPUT);
+    ard.sendDigitalPinMode(Z_LIMIT_PIN, ARD_INPUT);
+    ard.sendDigitalPinMode(Y_LIMIT_PIN, ARD_INPUT);
+    ard.sendDigitalPinMode(INK_LIMIT_PIN, ARD_INPUT);
+    ofAddListener(ard.EDigitalPinChanged, this, &ofApp::digitalPinChanged);
     
     startX = startY = 0;
     speedX = speedY = 1;
@@ -331,46 +335,43 @@ void ofApp::draw() {
     
     // ARDUINO
     
-//	gui.msg = "curState = " + ofToString(curState) + ". ";
-//	if (!bSetupArduino){
-//		gui.msg += "arduino not ready...";
-//	}
-//    cout << "\n\n curState = " << curState << endl;
-//    
-//    // Draw the polylines on the coffee
-//    
-//    if (curState == PRINT) {
-//        for (int i = 0; i < paths.size(); i++) {
-//            cout << "\n\n\nPath " << i+1 << " / " << paths.size() << endl;
-//            vector<ofPoint> points = paths.at(i).getVertices();
-//            cout << "\n points.size() = " << points.size() << endl;
-//            for (int j = 0; j < points.size(); j++) {
-//                if (j == 0) {
-//                    pushInk();
-//                } else if (j == points.size()) {
-//                    stopInk();
-//                }
-//                moveTo (points.at(j).x, points.at(j).y);
-//            }
-//            if (i-1 == paths.size()) {
-//                curState = COFFEE_PHOTO;
-//                cout << "\n\n\n\n\n"
-//                    "\n***************************************************************"
-//                    "\n************************ COFFEE_PHOTO *************************"
-//                    "\n***************************************************************"
-//                     << "\n\n\n\n\n" << endl;
-//            }
-//        }
-//    }
+	gui.msg = "curState = " + ofToString(stateName[curState]) + ". ";
+	if (!bSetupArduino){
+		gui.msg += "arduino not ready...";
+	}
+    
+    // Draw the polylines on the coffee
+    
+    if (curState == PRINT) {
+        for (int i = 0; i < paths.size(); i++) {
+            gui.msg = "Path " + ofToString(i+1) + " / " + ofToString(paths.size());
+            vector<ofPoint> points = paths.at(i).getVertices();
+            for (int j = 0; j < points.size(); j++) {
+                gui.msg += " | Point " + ofToString(j) + " / " + ofToString(points.size());
+                if (j == points.size()) {
+                    // dont draw
+                    moveTo (points.at(j).x, points.at(j).y, false);
+                } else {
+                    // draw
+                    moveTo (points.at(j).x, points.at(j).y, true);
+                }
+            }
+            if (i-1 == paths.size()) {
+                curState = COFFEE_PHOTO;
+            }
+        }
+    }
 }
 
 
 //--------------------------------------------------------------
-void ofApp::moveTo (float exx, float wyy) {
+void ofApp::moveTo (float exx, float wyy, bool draw) {
     endX = exx;
     endY = wyy;
     stepsX = (endX - startX) * 10;
     stepsY = (endY - startY) * 10;
+    
+    float stepsInk = sqrt(stepsX*stepsX + stepsY*stepsY);
     
 	//    stepsY = stepsY * 3;
     
@@ -392,6 +393,9 @@ void ofApp::moveTo (float exx, float wyy) {
     // 10*10 = 100 --> 1/64th of an inch
     moveStepper(0, stepsX, speedX);
     moveStepper(1, stepsY, speedY);
+    if (draw) {
+        moveStepper(3, stepsInk, 0.01);
+    }
     startX = endX;
     startY = endY;
 }
@@ -428,15 +432,11 @@ void ofApp::moveStepper(int num, int steps, float speed){
 }
 
 
-
 //--------------------------------------------------------------
-void ofApp::pushInk() {
-	
-}
-
-//--------------------------------------------------------------
-void ofApp::stopInk() {
-    
+void ofApp::digitalPinChanged(const int & pinNum) {
+    // do something with the digital input. here we're simply going to print the pin number and
+    // value to the screen each time it changes
+    buttonState = "digital pin: " + ofToString(pinNum) + " = " + ofToString(ard.getDigital(pinNum));
 }
 
 
@@ -449,11 +449,11 @@ void ofApp::keyPressed(int key) {
             break;
         case '1':
             moveStepper(0, 100, 1);
-            curState = ONE_KEY;
+            curState = KEY_PRESS;
             break;
         case '2':
             moveStepper(0, -200, 1);
-            curState = TWO_KEY;
+            curState = KEY_PRESS;
             break;
         case '5':
             moveStepper(0, 500, 1);

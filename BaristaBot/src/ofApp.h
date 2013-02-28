@@ -32,12 +32,26 @@ public:
 	
 	ofxAutoControlPanel gui;
     
+    // PINS
+    int X_DIR_PIN = 2;
+    int X_STEP_PIN = 3;
+    int Z_DIR_PIN = 4;
+    int Z_STEP_PIN = 5;
+    int Y_DIR_PIN = 6;
+    int Y_STEP_PIN = 7;
+    int INK_DIR_PIN = 8;
+    int INK_STEP_PIN = 9;
+    
+    int X_LIMIT_PIN = 10;
+    int Z_LIMIT_PIN = 11;
+    int Y_LIMIT_PIN = 12;
+    int INK_LIMIT_PIN = 13;
+    
     // STEPPERS
     void moveStepper (int num, int steps, float speed);
-    void moveTo (float exx, float wyy);
-    void pushInk ();
-    void stopInk ();
+    void moveTo (float exx, float wyy, bool draw);
     float startX, startY, endX, endY, stepsX, stepsY, speedX, speedY;
+    
     
 	
     ofArduino ard;
@@ -51,14 +65,11 @@ public:
         IDLE,
         DRAW,
         FACE_PHOTO,
-        UPLOAD_FACE,
         PRINT,
         COFFEE_PHOTO,
-        UPLOAD_COFFEE,
-        ONE_KEY,
-        TWO_KEY,
+        KEY_PRESS,
     };
-    
+    const char* stateName[20] = {"IDLE", "DRAW", "FACE_PHOTO", "PRINT", "COFFEE_PHOTO", "KEY_PRESS"};
     state curState;
 	
 	int croppedSize;
