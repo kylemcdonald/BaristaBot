@@ -21,7 +21,8 @@ public:
 	int camWidth, camHeight;
 	
 	vector<ofPolyline> paths;
-	
+	vector<ofPoint> points;
+    
 	imatrix img;
 	ETF etf;
 	
@@ -48,7 +49,7 @@ public:
     int INK_LIMIT_PIN = 13;
     
     // STEPPERS
-    void moveStepper (int num, int speed);
+    void moveStepper (int num, int steps, float speed);
     void moveTo (float exx, float wyy);
     void setTarget ();
     float startX, startY, endX, endY, speedX, speedY;
@@ -70,13 +71,12 @@ public:
     
     enum state {
         IDLE,
-        DRAW,
         FACE_PHOTO,
         PRINT,
         COFFEE_PHOTO,
         KEY_PRESS,
     };
-    const char* stateName[20] = {"IDLE", "DRAW", "FACE_PHOTO", "PRINT", "COFFEE_PHOTO", "KEY_PRESS"};
+    const char* stateName[20] = {"IDLE", "FACE_PHOTO", "PRINT", "COFFEE_PHOTO", "KEY_PRESS"};
     state curState;
 	
 	int croppedSize;

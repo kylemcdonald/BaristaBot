@@ -235,7 +235,6 @@ void ofApp::update(){
 		paths = getPaths(thinned, minGapLength, minPathLength);
 		
 		needToUpdate = false;
-        curState = DRAW;
     }
     
     // ARDUINO
@@ -317,31 +316,28 @@ void ofApp::draw() {
         gui.msg += "arduino connected, firmware: " + ofToString(ard.getFirmwareName());
     }
 	
-    if (curState == DRAW) {
-        ofSetColor(255);
-        gray.draw(0, 0);
-		int y = 0;
-		cropped.draw(gray.getWidth(), 0);
-        cld.draw(gray.getWidth(), (y+=cropped.getHeight()));
-        thresholded.draw(gray.getWidth(), (y+=cld.getHeight()));
-        thinned.draw(gray.getWidth(), (y+=thresholded.getHeight()));
-	
-		ofPushMatrix();
-		ofTranslate(gray.getWidth(), 0);
-		drawPaths();
-		ofPopMatrix();
-	
-		ofPushMatrix();
-		ofTranslate(gray.getWidth() + cropped.getWidth(), 0);
-		ofScale(2, 2);
-		ofPushStyle();
-		ofSetLineWidth(3);
-		drawPaths();
-		ofPopStyle();
-		ofPopMatrix();
-        curState = PRINT;
-        updateTarget = true;
-    }
+    ofSetColor(255);
+    gray.draw(0, 0);
+    int y = 0;
+    cropped.draw(gray.getWidth(), 0);
+    cld.draw(gray.getWidth(), (y+=cropped.getHeight()));
+    thresholded.draw(gray.getWidth(), (y+=cld.getHeight()));
+    thinned.draw(gray.getWidth(), (y+=thresholded.getHeight()));
+
+    ofPushMatrix();
+    ofTranslate(gray.getWidth(), 0);
+    drawPaths();
+    ofPopMatrix();
+
+    ofPushMatrix();
+    ofTranslate(gray.getWidth() + cropped.getWidth(), 0);
+    ofScale(2, 2);
+    ofPushStyle();
+    ofSetLineWidth(3);
+    drawPaths();
+    ofPopStyle();
+    ofPopMatrix();
+    
     
     if (curState == PRINT) {
         if (updateTarget) {
@@ -355,47 +351,32 @@ void ofApp::draw() {
             updateTarget = true;
         }
     }
-
-    
-    if (curState == PRINT) {
-        for (int i = 0; i < paths.size(); i++) {
-            // gui.msg = "Path " + ofToString(i+1) + " / " + ofToString(paths.size());
-            vector<ofPoint> points = paths.at(i).getVertices();
-            moveTo (points.begin()->x, points.begin()->y);
-            pushInk = false;
-            for (int j = 1; j < points.size(); j++) {
-                // gui.msg += " | Point " + ofToString(j) + " / " + ofToString(points.size());
-                moveTo (points.at(j).x, points.at(j).y);
-                limit = stepsX*stepsY;
-                pushInk = true;
-                if (counter < limit) {
-                    counter++;
-                }
-
-            }
-            if (i-1 == paths.size()) {
-                curState = COFFEE_PHOTO;
-            }
-        }
-
-    }
 }
-
 
 
 //--------------------------------------------------------------
 void ofApp::setTarget() {
     if (curPath < paths.size()) {
-        vector<ofPoint> points = paths.at(curPath).getVertices();        
-        if (curPoint < points.size()) {
-            target = points.at(curPoint);
-            curPoint++;
+        // first point in drawing
+        if (curPath == 0 && curPoint == 0) {
+            pushInk = false;
+            points = paths.at(curPath).getVertices();
+            target = points.at(curPoint++);
+        // a new point to draw
+        } else if (curPoint < points.size()) {
+            pushInk = true;
+            target = points.at(curPoint++);
+        // switch to a new path
         } else {
+            pushInk = false;
             curPath++;
             curPoint = 0;
+            points = paths.at(curPath).getVertices();
             startX = endX;
             startY = endY;
+            target = points.at(curPoint++);
         }
+    // all paths are drawn
     } else {
         curState = COFFEE_PHOTO;
         curPath = 0;
@@ -445,51 +426,6 @@ void ofApp::updateSteppers () {
 
 
 //--------------------------------------------------------------
-void ofApp::moveTo (float exx, float wyy) {
-    endX = exx;
-    endY = wyy;
-    stepsX = (endX - startX) * 10;
-    stepsY = (endY - startY) * 10;
-    
-    stepsInk = sqrt(stepsX*stepsX + stepsY*stepsY) / 100;
-    
-    int dir = (endX > startX) ? ARD_HIGH : ARD_LOW;
-    ard.sendDigital(X_DIR_PIN, dir);
-    dir = (endY > startY) ? ARD_HIGH : ARD_LOW;
-    ard.sendDigital(Y_DIR_PIN, dir);
-}
-
-
-//--------------------------------------------------------------
-void ofApp::moveStepper(int pin, int speed){
-    
-    int DIR_PIN = pin;
-    int STEP_PIN = pin+1;
-    
-    //rotate a specific number of microsteps (8 microsteps per step) - (negitive for reverse movement)
-    //speed is any number from .01 -> 1 with 1 being fastest - Slower is stronger
-    int dir = (speed > 0) ? ARD_HIGH : ARD_LOW;
-    
-    ard.sendDigital(DIR_PIN, dir);
-    
-//    if (speed % 100) {
-//        ard.sendDigital(STEP_PIN, ARD_HIGH);
-//    }
-
-    
-    
-    // delay is inversely related to speed
-    float delay = (1/speed);
-    
-    for(int i=0; i < steps; i++){
-        ard.sendDigital(STEP_PIN, ARD_HIGH);
-        ofSleepMillis(delay);
-        ard.sendDigital(STEP_PIN, ARD_LOW);
-        ofSleepMillis(delay);
-    }
-}
-
-//--------------------------------------------------------------
 void ofApp::moveStepper(int num, int steps, float speed){
     
     /* NOTE: earliest code that moved the servo at speed '1' had a delay of 7/10 miliseconds
@@ -534,6 +470,11 @@ void ofApp::keyPressed(int key) {
     switch (key) {
         case ' ':
             needToUpdate = true;
+            // ink stuff
+            curState = PRINT;
+            curPath = curPoint = 0;
+            updateTarget = true;
+            pushInk = false;
             break;
         case '1':
             moveStepper(0, 100, 1);
