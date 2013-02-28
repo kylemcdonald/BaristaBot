@@ -340,6 +340,11 @@ void ofApp::draw() {
     
     
     if (curState == PRINT) {
+//        stepsX = stepsY = 1000;
+//        counter++;
+//        updateSteppers();
+        
+        
         if (updateTarget) {
             setTarget();
             counter = 0;
@@ -404,15 +409,15 @@ void ofApp::setTarget() {
 void ofApp::updateSteppers () {
     X_SIGNAL = Y_SIGNAL = INK_SIGNAL = ARD_LOW;
 
-    if (counter % stepsY) {
+    if (stepsY % counter == 0) {
         X_SIGNAL = ARD_HIGH;
     }
-    if (counter % stepsX) {
+    if (stepsX % counter == 0) {
         Y_SIGNAL = ARD_HIGH;
     }
-    if (counter % stepsInk && pushInk) {
-        INK_SIGNAL = ARD_HIGH;
-    }
+//    if (counter % stepsInk && pushInk) {
+//        INK_SIGNAL = ARD_HIGH;
+//    }
     
     ard.sendDigital(X_STEP_PIN, X_SIGNAL);
     ard.sendDigital(Y_STEP_PIN, Y_SIGNAL);
@@ -472,28 +477,32 @@ void ofApp::keyPressed(int key) {
             needToUpdate = true;
             // ink stuff
             curState = PRINT;
-            curPath = curPoint = 0;
+            counter = curPath = curPoint = 0;
             updateTarget = true;
             pushInk = false;
             break;
         case '1':
-            moveStepper(0, 100, 1);
             curState = KEY_PRESS;
+            moveStepper(0, 100, 1);
             break;
         case '2':
-            moveStepper(0, -200, 1);
             curState = KEY_PRESS;
+            moveStepper(0, -200, 1);
             break;
         case '5':
+            curState = KEY_PRESS;
             moveStepper(0, 500, 1);
             break;
         case 'q':
+            curState = KEY_PRESS;
             moveStepper(1, 100, 1);
             break;
         case 'w':
+            curState = KEY_PRESS;
             moveStepper(1, 200, 1);
             break;
         case 't':
+            curState = KEY_PRESS;
             moveStepper(1, 500, 1);
             break;
         default:

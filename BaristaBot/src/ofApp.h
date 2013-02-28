@@ -52,11 +52,11 @@ public:
     void moveStepper (int num, int steps, float speed);
     void moveTo (float exx, float wyy);
     void setTarget ();
-    float startX, startY, endX, endY, speedX, speedY;
+    int startX, startY, endX, endY, speedX, speedY;
     int stepsX, stepsY, stepsInk;
     bool X_SIGNAL, Y_SIGNAL, INK_SIGNAL;
     int counter, limit;
-    float MIN_PULSE = 0.010; // in milliseconds
+    float MIN_PULSE = 0.005; // in milliseconds
     bool pushInk, updateTarget;
     int curPath, curPoint;
     ofPoint target;
