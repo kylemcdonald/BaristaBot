@@ -123,6 +123,7 @@ void ofApp::setup() {
 	// listen for EInitialized notification. this indicates that
 	// the arduino is ready to receive commands and it is safe to
 	// call setupArduino()
+    cout << "ofAddListener" << endl;
 	ofAddListener(ard.EInitialized, this, &ofApp::setupArduino);
 	bSetupArduino = false;	// flag so we setup arduino when its ready, you don't need to touch this :)
     
@@ -246,13 +247,13 @@ void ofApp::update(){
 //--------------------------------------------------------------
 void ofApp::setupArduino(const int & version) {
 	
+    cout << "in setupArduino" << endl;
 	// remove listener because we don't need it anymore
 	ofRemoveListener(ard.EInitialized, this, &ofApp::setupArduino);
     
     // it is now safe to send commands to the Arduino
     bSetupArduino = true;
-    gui.msg += "arduino connected";
-    gui.msg += ard.getFirmwareName();
+    gui.msg += "arduino connected, firmware: " + ofToString(ard.getFirmwareName());
     
     // Note: pins A0 - A5 can be used as digital input and output.
     // Refer to them as pins 14 - 19 if using StandardFirmata from Arduino 1.0.
