@@ -65,8 +65,8 @@ void stepperThread::setupArduino(const int & version) {
     // it is now safe to send commands to the Arduino
     bSetupArduino = true;
     curState = IDLE;
-    
-    ard.sendDigital(Y_DIR_PIN, ARD_HIGH);
+    X_SIGNAL = Z_SIGNAL = Y_SIGNAL = INK_SIGNAL = ARD_HIGH;
+
 }
 
 
@@ -75,6 +75,10 @@ void stepperThread::update(){
     if (ard.isArduinoReady()){
         ard.update();
         updateSteppers();
+    }
+    
+    if (Y_LIMIT) {
+        X_SIGNAL = Z_SIGNAL = Y_SIGNAL = INK_SIGNAL = ARD_LOW;
     }
     //    if (curState == PRINT) {
     ////        stepsX = stepsY = 1000;
@@ -141,17 +145,20 @@ void stepperThread::update(){
 
 //--------------------------------------------------------------
 void stepperThread::updateSteppers () {
-    X_SIGNAL = Z_SIGNAL = INK_SIGNAL = ARD_LOW;
+    ard.sendDigital(X_DIR_PIN, ARD_HIGH);
+    ard.sendDigital(Z_DIR_PIN, ARD_HIGH);
+    ard.sendDigital(Y_DIR_PIN, ARD_HIGH);
+    ard.sendDigital(INK_DIR_PIN, ARD_HIGH);
 //    Y_SIGNAL = ARD_HIGH;
     
 //    if (count % 100 == 0) {
 //        INK_SIGNAL = ARD_HIGH;
 //    }
-//    
+//
 //    if (count % 10 == 0) {
 //        X_SIGNAL = ARD_HIGH;
 //    }
-    
+//    
 //    if (!Y_LIMIT) {
 //        Y_SIGNAL = ARD_HIGH;
 //    } 
@@ -172,6 +179,7 @@ void stepperThread::updateSteppers () {
     //        INK_SIGNAL = ARD_HIGH;
     //    }
     
+    // NOTE: usleep is Mac ONLY! This code is not Windows compatible
     ard.sendDigital(X_STEP_PIN, X_SIGNAL);
     ard.sendDigital(Z_STEP_PIN, Z_SIGNAL);
     ard.sendDigital(Y_STEP_PIN, Y_SIGNAL);
@@ -206,6 +214,6 @@ void stepperThread::threadedFunction(){
 void stepperThread::digitalPinChanged(const int & pinNum) {
     cout << "SWITCH" << endl;
 //    stopThread();
-    Y_SIGNAL = !Y_SIGNAL;
+    Y_LIMIT = true;
 
 }
