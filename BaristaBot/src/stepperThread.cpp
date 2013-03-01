@@ -4,7 +4,7 @@
 
 //--------------------------------------------------------------
 void stepperThread::start(){
-    startThread(true, false);   // blocking, verbose
+    startThread(false, false);   // non-blocking, verbose
 }
 
 
@@ -19,7 +19,10 @@ void stepperThread::stop(){
 void stepperThread::setup(){
     cout << "ST setup" << endl;
     connectToArduino();
+    
+    // init positions
     lastX = lastY = 0;
+    X_LIMIT = Z_LIMIT = Y_LIMIT = INK_LIMIT = false;
 }
 
 
@@ -38,8 +41,6 @@ void stepperThread::connectToArduino () {
     cout << "ofAddListener" << endl;
 	ofAddListener(ard.EInitialized, this, &stepperThread::setupArduino);
 	bSetupArduino = false;	// flag so we setup arduino when its ready, you don't need to touch this :)
-    
-    curState = IDLE;
 }
 
 
@@ -50,10 +51,7 @@ void stepperThread::setupArduino(const int & version) {
     cout << "in setupArduino" << endl;
 	// remove listener because we don't need it anymore
 	ofRemoveListener(ard.EInitialized, this, &stepperThread::setupArduino);
-    
-    // it is now safe to send commands to the Arduino
-    bSetupArduino = true;
-    
+       
     // Note: pins A0 - A5 can be used as digital input and output.
     // Refer to them as pins 14 - 19 if using StandardFirmata from Arduino 1.0.
     // If using Arduino 0022 or older, then use 16 - 21.
@@ -75,77 +73,82 @@ void stepperThread::setupArduino(const int & version) {
     ard.sendDigitalPinMode(Y_LIMIT_PIN, ARD_INPUT);
     ard.sendDigitalPinMode(INK_LIMIT_PIN, ARD_INPUT);
     ofAddListener(ard.EDigitalPinChanged, this, &stepperThread::digitalPinChanged);
+
+    // it is now safe to send commands to the Arduino
+    bSetupArduino = true;
+    curState = IDLE;
+    
+    ard.sendDigital(Y_DIR_PIN, ARD_HIGH);
 }
 
 
 //--------------------------------------------------------------
 void stepperThread::updateArduino(){
-    if (ard.isArduinoReady()) {
+//    if (ard.isArduinoReady()) {
         ard.update();
-    }
+//    }
 }
 
 //--------------------------------------------------------------
-void stepperThread::setTarget() {
-    if (curPath < paths.size()) {
-        // first point in drawing
-        if (curPath == 0 && curPoint == 0) {
-            pushInk = false;
-            points = paths.at(curPath).getVertices();
-            target = points.at(curPoint++);
-            // a new point to draw
-        } else if (curPoint < points.size()) {
-            pushInk = true;
-            target = points.at(curPoint++);
-            // switch to a new path
-        } else {
-            pushInk = false;
-            curPath++;
-            curPoint = 0;
-            points = paths.at(curPath).getVertices();
-            target = points.at(curPoint++);
-        }
-        // all paths are drawn
-    } else {
-        curState = COFFEE_PHOTO;
-        curPath = 0;
-        curPoint = 0;
-    }
-    
-    stepsX = abs((target.x - lastX) * 10);
-    stepsY = abs((target.y - lastY) * 10);
-    stepsInk = sqrt(stepsX*stepsX + stepsY*stepsY);
-    limit = stepsX*stepsY;
-    
-    // set the directions for each servo
-    int dir = (target.x > lastX) ? ARD_HIGH : ARD_LOW;
-    ard.sendDigital(X_DIR_PIN, dir);
-    dir = (target.y > lastY) ? ARD_HIGH : ARD_LOW;
-    ard.sendDigital(Y_DIR_PIN, dir);
-    ard.sendDigital(INK_DIR_PIN, ARD_LOW); // low pushes the syringe
-    
-    lastX = target.x;
-    lastY = target.y;
-    updateTarget = false;
-}
+//void stepperThread::setTarget() {
+//    if (curPath < paths.size()) {
+//        // first point in drawing
+//        if (curPath == 0 && curPoint == 0) {
+//            pushInk = false;
+//            points = paths.at(curPath).getVertices();
+//            target = points.at(curPoint++);
+//            // a new point to draw
+//        } else if (curPoint < points.size()) {
+//            pushInk = true;
+//            target = points.at(curPoint++);
+//            // switch to a new path
+//        } else {
+//            pushInk = false;
+//            curPath++;
+//            curPoint = 0;
+//            points = paths.at(curPath).getVertices();
+//            target = points.at(curPoint++);
+//        }
+//        // all paths are drawn
+//    } else {
+//        curState = COFFEE_PHOTO;
+//        curPath = 0;
+//        curPoint = 0;
+//    }
+//    
+//    stepsX = abs((target.x - lastX) * 10);
+//    stepsY = abs((target.y - lastY) * 10);
+//    stepsInk = sqrt(stepsX*stepsX + stepsY*stepsY);
+//    limit = stepsX*stepsY;
+//    
+//    // set the directions for each servo
+//    int dir = (target.x > lastX) ? ARD_HIGH : ARD_LOW;
+//    ard.sendDigital(X_DIR_PIN, dir);
+//    dir = (target.y > lastY) ? ARD_HIGH : ARD_LOW;
+//    ard.sendDigital(Y_DIR_PIN, dir);
+//    ard.sendDigital(INK_DIR_PIN, ARD_LOW); // low pushes the syringe
+//    
+//    lastX = target.x;
+//    lastY = target.y;
+//    updateTarget = false;
+//}
 
 
 //--------------------------------------------------------------
 void stepperThread::updateSteppers () {
     X_SIGNAL = Y_SIGNAL = INK_SIGNAL = ARD_LOW;
     
-    if (count % 100 == 0) {
-        INK_SIGNAL = ARD_HIGH;
-    }
-    
-    if (count % 10 == 0) {
-        X_SIGNAL = ARD_HIGH;
-    }
-    
-//    if (count % 2 == 0) {
-        Y_SIGNAL = ARD_HIGH;
+//    if (count % 100 == 0) {
+//        INK_SIGNAL = ARD_HIGH;
+//    }
+//    
+//    if (count % 10 == 0) {
+//        X_SIGNAL = ARD_HIGH;
 //    }
     
+    if (!Y_LIMIT) {
+        Y_SIGNAL = ARD_HIGH;
+    } 
     //    if (stepsX > stepsY) {
     //        X_SIGNAL = ARD_HIGH;
     //    } else {
@@ -170,7 +173,7 @@ void stepperThread::updateSteppers () {
     ard.sendDigital(X_STEP_PIN, ARD_LOW);
     ard.sendDigital(Y_STEP_PIN, ARD_LOW);
     ard.sendDigital(INK_STEP_PIN, ARD_LOW);
-//    ofSleepMillis(MIN_PULSE);
+    ofSleepMillis(MIN_PULSE);
 }
 
 
@@ -178,10 +181,10 @@ void stepperThread::updateSteppers () {
 void stepperThread::threadedFunction(){
     while(isThreadRunning() != 0){
         if(lock()){
-            count++; if(count > 50000) count = 0;
+            if(count++ > 50000) count = 0;
             update();
             unlock();
-//            ofSleepMillis(0.001);
+            ofSleepMillis(0.002);
         }
     }
 }
@@ -190,38 +193,39 @@ void stepperThread::threadedFunction(){
 //--------------------------------------------------------------
 void stepperThread::update(){
     updateArduino();
+    if (curState == PRINT) updateSteppers();
     
-    if (curState == PRINT) {
-        stepsX = stepsY = 1000;
-        counter++;
-        updateSteppers();
-        
-        if (updateTarget) {
-            setTarget();
-            counter = 0;
-        }
-        if (counter < limit) {
-            updateSteppers();
-            counter++;
-        } else {
-            updateTarget = true;
-        }
-    }
+//    if (curState == PRINT) {
+////        stepsX = stepsY = 1000;
+//        counter++;
+//        updateSteppers();
+//        
+//        if (updateTarget) {
+//            setTarget();
+//            counter = 0;
+//        }
+//        if (counter < limit) {
+//            updateSteppers();
+//            counter++;
+//        } else {
+//            updateTarget = true;
+//        }
+//    }
 }
 
 
 //--------------------------------------------------------------
 void stepperThread::draw(){
 
-    string str = "I am a slowly increasing thread. \nmy current count is: ";
-
-    if( lock() ){
-        str += ofToString(count);
-        unlock();
-    }else{
-        str = "can't lock!\neither an error\nor the thread has stopped";
-    }
-    ofDrawBitmapString(str, 50, 56);
+//    string str = "I am a slowly increasing thread. \nmy current count is: ";
+//
+//    if( lock() ){
+//        str += ofToString(count);
+//        unlock();
+//    }else{
+//        str = "can't lock!\neither an error\nor the thread has stopped";
+//    }
+//    ofDrawBitmapString(str, 50, 56);
 }
 
 
@@ -262,7 +266,25 @@ void stepperThread::moveStepper(int num, int steps, float speed){
 void stepperThread::digitalPinChanged(const int & pinNum) {
     // do something with the digital input. here we're simply going to print the pin number and
     // value to the screen each time it changes
-    buttonState = "digital pin: " + ofToString(pinNum) + " = " + ofToString(ard.getDigital(pinNum));
+    bool b = false;
+    buttonState = "digital pin: " + ofToString(pinNum) + " = " + ofToString(b = ard.getDigital(pinNum));
+    cout << buttonState << endl;
+//    ofSleepMillis(0.1);
+    
+    
+    
+    
+//    if(b){
+        if (pinNum == X_LIMIT_PIN) X_LIMIT = true;
+        if (pinNum == Z_LIMIT_PIN) Z_LIMIT = true;
+        if (pinNum == Y_LIMIT_PIN) Y_LIMIT = true;
+        if (pinNum == INK_LIMIT_PIN) INK_LIMIT = true;
+//    } else {
+//        if (pinNum == X_LIMIT_PIN) X_LIMIT = false;
+//        if (pinNum == Z_LIMIT_PIN) Z_LIMIT = false;
+//        if (pinNum == Y_LIMIT_PIN) Y_LIMIT = false;
+//        if (pinNum == INK_LIMIT_PIN) INK_LIMIT = false;
+//    }
 }
 
 //--------------------------------------------------------------

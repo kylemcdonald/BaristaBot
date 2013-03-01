@@ -55,15 +55,16 @@ public:
     int INK_DIR_PIN = 8;
     int INK_STEP_PIN = 9;
     
-    int X_LIMIT_PIN = 10;
-    int Z_LIMIT_PIN = 11;
-    int Y_LIMIT_PIN = 12;
-    int INK_LIMIT_PIN = 13;
+    const int X_LIMIT_PIN = 10;
+    const int Z_LIMIT_PIN = 11;
+    const int Y_LIMIT_PIN = 12;
+    const int INK_LIMIT_PIN = 13;
     
-    bool X_SIGNAL, Y_SIGNAL, INK_SIGNAL;
+    bool X_SIGNAL, Z_SIGNAL, Y_SIGNAL, INK_SIGNAL;
+    bool X_LIMIT, Z_LIMIT, Y_LIMIT, INK_LIMIT;
     bool bSetupArduino;			// flag variable for setting up arduino once
     int lastX, lastY;
-    float MIN_PULSE = 0.002; // in milliseconds
+    float MIN_PULSE = 0.2; // in milliseconds
     
     int startX, startY, endX, endY, speedX, speedY;
     int stepsX, stepsY, stepsInk;
