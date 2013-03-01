@@ -25,7 +25,7 @@ void arduinoThread::waitLock(){
 //--------------------------------------------------------------
 void arduinoThread::setup(){   
     waitLock();
-        ard.connect("/dev/tty.usbmodem1411", 57600);
+        ard.connect("/dev/tty.usbmodem1411", 57600); // default 57600 but try 115200
         ofAddListener(ard.EInitialized, this, &arduinoThread::setupArduino);
         bSetupArduino = false;
     unlock();
@@ -62,7 +62,7 @@ void arduinoThread::setupArduino(const int & version) {
         bSetupArduino = true;
     
         initializeMotors ();
-    unlock();n
+    unlock();
 }
 
 void arduinoThread::initializeMotors(){
