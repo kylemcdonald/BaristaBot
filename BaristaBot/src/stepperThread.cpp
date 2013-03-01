@@ -17,20 +17,20 @@ void stepperThread::stop(){
 
 
 //--------------------------------------------------------------
-void stepperThread::setup(){
-    cout << "ST setup" << endl;
+void stepperThread::setup(){   
     while (!ard.isArduinoReady()) {}
-    connectToArduino();
+    initializeArduino();
+    initializeVariables();
     
-    // init positions
-    lastX = lastY = 0;
-    X_LIMIT = Z_LIMIT = Y_LIMIT = INK_LIMIT = false;
-    Y_SIGNAL = ARD_LOW;
+
+    
+    // set default state to IDLE
+    curState = IDLE;
 }
 
 
 //--------------------------------------------------------------
-void stepperThread::connectToArduino () {
+void stepperThread::initializeArduino() {
 	ard.connect("/dev/tty.usbmodem1411", 57600);
 	ofAddListener(ard.EInitialized, this, &stepperThread::setupArduino);
 	bSetupArduino = false;
@@ -40,8 +40,6 @@ void stepperThread::connectToArduino () {
 
 //--------------------------------------------------------------
 void stepperThread::setupArduino(const int & version) {
-	
-    cout << "in setupArduino" << endl;
 	// remove listener because we don't need it anymore
 	ofRemoveListener(ard.EInitialized, this, &stepperThread::setupArduino);
     
@@ -64,9 +62,23 @@ void stepperThread::setupArduino(const int & version) {
 
     // it is now safe to send commands to the Arduino
     bSetupArduino = true;
-    curState = IDLE;
-    X_SIGNAL = Z_SIGNAL = Y_SIGNAL = INK_SIGNAL = ARD_HIGH;
+}
 
+
+//--------------------------------------------------------------
+void stepperThread::initializeVariables(){
+    // set default pin directions to high
+    ard.sendDigital(X_DIR_PIN, ARD_HIGH);
+    ard.sendDigital(Z_DIR_PIN, ARD_HIGH);
+    ard.sendDigital(Y_DIR_PIN, ARD_HIGH);
+    ard.sendDigital(INK_DIR_PIN, ARD_HIGH);
+    
+    // set limit and signal defualts
+    X_LIMIT  = Z_LIMIT  = Y_LIMIT  = INK_LIMIT  = false;
+    X_SIGNAL = Z_SIGNAL = Y_SIGNAL = INK_SIGNAL = ARD_LOW; // do not initialize high
+
+    // initialize positions
+    lastX = lastY = 0;
 }
 
 
@@ -75,11 +87,14 @@ void stepperThread::update(){
     if (ard.isArduinoReady()){
         ard.update();
         updateSteppers();
+        if (Y_LIMIT) {
+            X_SIGNAL = Y_SIGNAL = INK_SIGNAL = ARD_HIGH;
+        } else {
+            X_SIGNAL = Y_SIGNAL = INK_SIGNAL = ARD_LOW;
+        }
     }
     
-    if (Y_LIMIT) {
-        X_SIGNAL = Z_SIGNAL = Y_SIGNAL = INK_SIGNAL = ARD_LOW;
-    }
+
     //    if (curState == PRINT) {
     ////        stepsX = stepsY = 1000;
     //        counter++;
@@ -145,10 +160,7 @@ void stepperThread::update(){
 
 //--------------------------------------------------------------
 void stepperThread::updateSteppers () {
-    ard.sendDigital(X_DIR_PIN, ARD_HIGH);
-    ard.sendDigital(Z_DIR_PIN, ARD_HIGH);
-    ard.sendDigital(Y_DIR_PIN, ARD_HIGH);
-    ard.sendDigital(INK_DIR_PIN, ARD_HIGH);
+
 //    Y_SIGNAL = ARD_HIGH;
     
 //    if (count % 100 == 0) {
@@ -205,6 +217,7 @@ void stepperThread::threadedFunction(){
             if(count++ > 50000) count = 0;
             update();
             unlock();
+//            ofSleepMillis(1);
         }
     }
 }
@@ -214,6 +227,6 @@ void stepperThread::threadedFunction(){
 void stepperThread::digitalPinChanged(const int & pinNum) {
     cout << "SWITCH" << endl;
 //    stopThread();
-    Y_LIMIT = true;
+    Y_LIMIT = !Y_LIMIT;
 
 }
