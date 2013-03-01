@@ -18,14 +18,10 @@ class motorThread : public ofThread{
     motorThread(){
         i = 0;
     }
-    void waitLock(){
-        // wait until ard is locked and ready
-        while (!lock() && !ard->isArduinoReady()) {}
-    }
 
     //--------------------------
     void setArduino(ofArduino &parentArd, int pin){
-        *ard = parentArd;
+        ard = &parentArd;
         STEP_PIN = pin;
     }
     
@@ -36,32 +32,34 @@ class motorThread : public ofThread{
 
     void start(){
         startThread(true, false);   // blocking, verbose
-        i = 0;
     }
 
     void stop(){
         stopThread();
+        i = 0;
+        STEPS = 0;
+        DELAY = 1000;
     }
 
     //--------------------------
     void threadedFunction(){
         while(isThreadRunning() != 0){
-            moveStepper();
+            if (lock()){
+                moveStepper();
+                unlock();
+            }
         }
     }
 
 
     //--------------------------------------------------------------
     void moveStepper(){      
-        waitLock();
-            ard->sendDigital(STEP_PIN, ARD_HIGH);
-            usleep(DELAY);
-            ard->sendDigital(STEP_PIN, ARD_LOW);
-            usleep(DELAY);
-            i++;
-        unlock();
+        ard->sendDigital(STEP_PIN, ARD_HIGH);
+        usleep(DELAY);
+        ard->sendDigital(STEP_PIN, ARD_LOW);
+        usleep(DELAY);
         
-        if (i == STEPS) {
+        if (++i == STEPS) {
             stop();
         }
     }

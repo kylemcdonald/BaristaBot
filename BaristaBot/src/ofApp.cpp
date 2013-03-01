@@ -114,8 +114,8 @@ void ofApp::setup() {
 	gui.loadSettings("settings.xml");
     
 
-    AT.start();
     AT.setup();
+    AT.start();
 
 }
 
@@ -230,13 +230,6 @@ void ofApp::drawPaths() {
 //--------------------------------------------------------------
 void ofApp::draw() {
 	ofBackground(0);
-    
-	gui.msg = "curState = " + ofToString(AT.stateName[AT.curState]) + ". ";
-	if (!AT.bSetupArduino){
-		gui.msg += "arduino not ready...";
-	} else {
-        gui.msg += "arduino connected, firmware: " + ofToString(AT.ard.getFirmwareName());
-    }
 	
     ofSetColor(255);
     gray.draw(0, 0);
@@ -258,7 +251,9 @@ void ofApp::draw() {
     ofSetLineWidth(3);
     drawPaths();
     ofPopStyle();
-    ofPopMatrix();    
+    ofPopMatrix();
+    
+    AT.draw();
 }
 
 
@@ -271,6 +266,9 @@ void ofApp::keyPressed(int key) {
             needToUpdate = true;
 //            counter = curPath = curPoint = 0;
 //            updateTarget = true;
+            break;
+        case 'h':
+            AT.home();
             break;
 //        case '1':
 //            curState = KEY_PRESS;

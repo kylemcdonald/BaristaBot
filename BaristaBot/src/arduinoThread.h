@@ -11,11 +11,12 @@ public:
     void start();
     void stop();
     void setup();
-    void waitLock();
+    void initializeArduino();
     void setupArduino(const int & version);
     void initializeMotors();
     void initializeVariables();
     void updateArduino();
+    void home();
     void setTarget();
     void updateSteppers();
     void sleepMicros (int microseconds);
@@ -39,13 +40,14 @@ public:
 
     
     enum state {
-        IDLE,
+        START,
+        HOMING,
         FACE_PHOTO,
         PRINT,
         COFFEE_PHOTO,
         KEY_PRESS,
     };
-    const char* stateName[20] = {"IDLE", "FACE_PHOTO", "PRINT", "COFFEE_PHOTO", "KEY_PRESS"};
+    const char* stateName[20] = {"START", "HOMING", "FACE_PHOTO", "PRINT", "COFFEE_PHOTO", "KEY_PRESS"};
     state curState;
 
     // PINS
@@ -58,15 +60,20 @@ public:
     int INK_DIR_PIN = 8;
     int INK_STEP_PIN = 9;
     
+    const int X_SLEEP = 28;
+    const int Z_SLEEP = 26;
+    const int Y_SLEEP = 24;
+    const int INK_SLEEP = 22;
+    
     const int X_LIMIT_PIN = 10;
     const int Z_LIMIT_PIN = 11;
     const int Y_LIMIT_PIN = 12;
     const int INK_LIMIT_PIN = 13;
     
-    bool X_SIGNAL, Z_SIGNAL, Y_SIGNAL, INK_SIGNAL;
+//    bool X_SIGNAL, Z_SIGNAL, Y_SIGNAL, INK_SIGNAL;
     bool X_LIMIT, Z_LIMIT, Y_LIMIT, INK_LIMIT;
     bool bSetupArduino;			// flag variable for setting up arduino once
-    int lastX, lastY;
+//    int lastX, lastY;
     int MIN_PULSE = 500; // in microseconds
     
     int startX, startY, endX, endY, speedX, speedY;
@@ -74,6 +81,8 @@ public:
     int counter, limit;
     int curPath, curPoint;
     bool pushInk, updateTarget;
+    
+    int test = 0;
     
     string buttonState;
 };
