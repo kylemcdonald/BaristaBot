@@ -19,6 +19,7 @@ public:
 	void drawPaths();
     void setTarget ();
 	void keyPressed(int key);
+    void exit();
     
     imatrix img;
 	ETF etf;

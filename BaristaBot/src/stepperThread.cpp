@@ -10,6 +10,7 @@ void stepperThread::start(){
 
 //--------------------------------------------------------------
 void stepperThread::stop(){
+    ard.disconnect();
     stopThread();
 }
 
@@ -119,6 +120,7 @@ void stepperThread::setTarget() {
     ard.sendDigital(X_DIR_PIN, dir);
     dir = (target.y > lastY) ? ARD_HIGH : ARD_LOW;
     ard.sendDigital(Y_DIR_PIN, dir);
+    ard.sendDigital(INK_DIR_PIN, ARD_HIGH);
     
     lastX = target.x;
     lastY = target.y;
@@ -128,7 +130,8 @@ void stepperThread::setTarget() {
 
 //--------------------------------------------------------------
 void stepperThread::updateSteppers () {
-    X_SIGNAL = Y_SIGNAL = INK_SIGNAL = ARD_HIGH;
+    X_SIGNAL = Y_SIGNAL = ARD_LOW;
+    INK_SIGNAL = ARD_HIGH;
     
     //    if (stepsX > stepsY) {
     //        X_SIGNAL = ARD_HIGH;
@@ -154,18 +157,18 @@ void stepperThread::updateSteppers () {
     ard.sendDigital(X_STEP_PIN, ARD_LOW);
     ard.sendDigital(Y_STEP_PIN, ARD_LOW);
     ard.sendDigital(INK_STEP_PIN, ARD_LOW);
-    ofSleepMillis(MIN_PULSE);
+//    ofSleepMillis(MIN_PULSE);
 }
 
 
 //--------------------------------------------------------------
 void stepperThread::threadedFunction(){
-    while( isThreadRunning() != 0 ){
-        if( lock() ){
-            count++;
-            if(count > 50000) count = 0;
+    while(isThreadRunning() != 0){
+        if(lock()){
+            count++; if(count > 50000) count = 0;
+            update();
             unlock();
-            //					ofSleepMillis(1 * 1000);
+//            ofSleepMillis(0.001);
         }
     }
 }

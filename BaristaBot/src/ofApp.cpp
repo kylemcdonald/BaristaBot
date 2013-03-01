@@ -276,3 +276,7 @@ void ofApp::keyPressed(int key) {
             break;
     }
 }
+
+void ofApp::exit() {
+    ST.waitForThread(true);
+}
