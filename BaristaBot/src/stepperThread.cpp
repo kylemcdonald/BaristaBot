@@ -141,7 +141,7 @@ void stepperThread::update(){
 
 //--------------------------------------------------------------
 void stepperThread::updateSteppers () {
-//    X_SIGNAL = Z_SIGNAL = Y_SIGNAL = INK_SIGNAL = ARD_LOW;
+    X_SIGNAL = Z_SIGNAL = INK_SIGNAL = ARD_LOW;
 //    Y_SIGNAL = ARD_HIGH;
     
 //    if (count % 100 == 0) {
@@ -172,17 +172,22 @@ void stepperThread::updateSteppers () {
     //        INK_SIGNAL = ARD_HIGH;
     //    }
     
-//    ard.sendDigital(X_STEP_PIN, X_SIGNAL);
-//    ard.sendDigital(Z_STEP_PIN, Z_SIGNAL);
+    ard.sendDigital(X_STEP_PIN, X_SIGNAL);
+    ard.sendDigital(Z_STEP_PIN, Z_SIGNAL);
     ard.sendDigital(Y_STEP_PIN, Y_SIGNAL);
-//    ard.sendDigital(INK_STEP_PIN, INK_SIGNAL);
-    ofSleepMillis(MIN_PULSE);
-//    ard.sendDigital(X_STEP_PIN, ARD_LOW);
-//    ard.sendDigital(Z_STEP_PIN, ARD_LOW);
+    ard.sendDigital(INK_STEP_PIN, INK_SIGNAL);
+    usleep(MIN_PULSE);
+    ard.sendDigital(X_STEP_PIN, ARD_LOW);
+    ard.sendDigital(Z_STEP_PIN, ARD_LOW);
     ard.sendDigital(Y_STEP_PIN, ARD_LOW);
-//    ard.sendDigital(INK_STEP_PIN, ARD_LOW);
-    ofSleepMillis(MIN_PULSE);
+    ard.sendDigital(INK_STEP_PIN, ARD_LOW);
+    usleep(MIN_PULSE);
 }
+
+
+//void stepperThread::sleepMicros (int microseconds) {
+//    while (ofGetElapsedTimeMicros() % microseconds != 0) {}
+//}
 
 
 //--------------------------------------------------------------
@@ -192,7 +197,6 @@ void stepperThread::threadedFunction(){
             if(count++ > 50000) count = 0;
             update();
             unlock();
-            ofSleepMillis(0.002);
         }
     }
 }
