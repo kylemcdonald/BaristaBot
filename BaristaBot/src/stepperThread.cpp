@@ -120,7 +120,7 @@ void stepperThread::setTarget() {
     ard.sendDigital(X_DIR_PIN, dir);
     dir = (target.y > lastY) ? ARD_HIGH : ARD_LOW;
     ard.sendDigital(Y_DIR_PIN, dir);
-    ard.sendDigital(INK_DIR_PIN, ARD_HIGH);
+    ard.sendDigital(INK_DIR_PIN, ARD_LOW); // low pushes the syringe
     
     lastX = target.x;
     lastY = target.y;
@@ -130,9 +130,11 @@ void stepperThread::setTarget() {
 
 //--------------------------------------------------------------
 void stepperThread::updateSteppers () {
-    X_SIGNAL = Y_SIGNAL = ARD_LOW;
-    INK_SIGNAL = ARD_HIGH;
+    X_SIGNAL = Y_SIGNAL = INK_SIGNAL = ARD_LOW;
     
+    if (count % 50 == 0) {
+        INK_SIGNAL = ARD_HIGH;
+    }
     //    if (stepsX > stepsY) {
     //        X_SIGNAL = ARD_HIGH;
     //    } else {
