@@ -21,10 +21,10 @@ void arduinoThread::stop(){
 
 //--------------------------------------------------------------
 void arduinoThread::setup(){
+    // do not change this sequence
     initializeVariables();
+    initializeMotors();
     initializeArduino();
-//    initializeMotors();
-
 }
 
 //--------------------------------------------------------------
@@ -59,25 +59,17 @@ void arduinoThread::setupArduino(const int & version) {
 
     // it is now safe to send commands to the Arduino
     bSetupArduino = true;
+    curState = IDLE;
 }
 
 
 //--------------------------------------------------------------
 void arduinoThread::initializeMotors(){
     // pass arduino reference and pins to motor threads
-//    X.setArduino(ard, X_STEP_PIN);
-//    Z.setArduino(ard, Z_STEP_PIN);
-//    Y.setArduino(ard, Y_STEP_PIN);
-//    INK.setArduino(ard, INK_STEP_PIN);
-    
-    // set default pin directions towards limit switches
-    ard.sendDigital(X_DIR_PIN, ARD_HIGH);
-    ard.sendDigital(Z_DIR_PIN, ARD_HIGH);
-    ard.sendDigital(Y_DIR_PIN, ARD_LOW);
-    ard.sendDigital(INK_DIR_PIN, ARD_HIGH);
-    
-//    home();
-
+    X.setArduino(ard, X_STEP_PIN, "Motor X");
+    Z.setArduino(ard, Z_STEP_PIN, "Motor Z");
+    Y.setArduino(ard, Y_STEP_PIN, "Motor Y");
+    INK.setArduino(ard, INK_STEP_PIN, "Motor I");
 }
 
 //--------------------------------------------------------------
@@ -101,8 +93,8 @@ void arduinoThread::home(){
     ard.sendDigital(Y_DIR_PIN, ARD_LOW);
     ard.sendDigital(INK_DIR_PIN, ARD_HIGH);
     
-//    X.aim(10000, 500);
-//    X.start();
+    X.aim(10000, 500);
+    X.start();
     
 //    Y.aim(10000, 500);
 //    Y.start();
@@ -197,7 +189,7 @@ void arduinoThread::threadedFunction(){
 //--------------------------
 void arduinoThread::draw(){
    
-    string str = "curState = " + ofToString(stateName[curState]) + ". test = " + ofToString(test);
+    string str = "curState = " + ofToString(stateName[curState]) + ". ";
     if (!bSetupArduino){
 		str += "arduino not ready...";
 	} else {
@@ -205,6 +197,11 @@ void arduinoThread::draw(){
     }
 
     ofDrawBitmapString(str, 50, 700);
+    
+    X.draw();
+    Y.draw();
+    Z.draw();
+    INK.draw();
 }
 
 //--------------------------------------------------------------

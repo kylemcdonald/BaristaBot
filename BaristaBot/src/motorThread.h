@@ -8,6 +8,7 @@ class motorThread : public ofThread{
  public:
 
     ofArduino *ard;
+    string name;
     int i;
     int STEP_PIN;
     int STEPS;
@@ -20,9 +21,10 @@ class motorThread : public ofThread{
     }
 
     //--------------------------
-    void setArduino(ofArduino &parentArd, int pin){
+    void setArduino(ofArduino &parentArd, int pin, string nom){
         ard = &parentArd;
         STEP_PIN = pin;
+        name = nom;
     }
     
     void aim(int stps, int dly) {
@@ -62,6 +64,14 @@ class motorThread : public ofThread{
         if (++i == STEPS) {
             stop();
         }
+    }
+    
+    //--------------------------------------------------------------
+    void draw(){
+        
+        string str = name + " on pin " + ofToString(STEP_PIN) + ": i = " + ofToString(i);
+        
+        ofDrawBitmapString(str, 50, 720+STEP_PIN*7);
     }
 };
 

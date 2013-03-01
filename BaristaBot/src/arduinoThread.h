@@ -41,13 +41,14 @@ public:
     
     enum state {
         START,
+        IDLE,
         HOMING,
         FACE_PHOTO,
         PRINT,
         COFFEE_PHOTO,
         KEY_PRESS,
     };
-    const char* stateName[20] = {"START", "HOMING", "FACE_PHOTO", "PRINT", "COFFEE_PHOTO", "KEY_PRESS"};
+    const char* stateName[20] = {"START", "IDLE", "HOMING", "FACE_PHOTO", "PRINT", "COFFEE_PHOTO", "KEY_PRESS"};
     state curState;
 
     // PINS
