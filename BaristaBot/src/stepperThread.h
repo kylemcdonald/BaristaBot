@@ -66,7 +66,7 @@ public:
     bool X_LIMIT, Z_LIMIT, Y_LIMIT, INK_LIMIT;
     bool bSetupArduino;			// flag variable for setting up arduino once
     int lastX, lastY;
-    int MIN_PULSE = 1000; // in microseconds
+    int MIN_PULSE = 500; // in microseconds
     
     int startX, startY, endX, endY, speedX, speedY;
     int stepsX, stepsY, stepsInk;

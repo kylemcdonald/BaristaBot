@@ -192,16 +192,16 @@ void stepperThread::updateSteppers () {
     //    }
     
     // NOTE: usleep is Mac ONLY! This code is not Windows compatible
-    ard.sendDigital(X_STEP_PIN, X_SIGNAL);
-    ard.sendDigital(Z_STEP_PIN, Z_SIGNAL);
+//    ard.sendDigital(X_STEP_PIN, X_SIGNAL);
+//    ard.sendDigital(Z_STEP_PIN, Z_SIGNAL);
     ard.sendDigital(Y_STEP_PIN, Y_SIGNAL);
-    ard.sendDigital(INK_STEP_PIN, INK_SIGNAL);
+//    ard.sendDigital(INK_STEP_PIN, INK_SIGNAL);
     usleep(MIN_PULSE);
-    ard.sendDigital(X_STEP_PIN, ARD_LOW);
-    ard.sendDigital(Z_STEP_PIN, ARD_LOW);
+//    ard.sendDigital(X_STEP_PIN, ARD_LOW);
+//    ard.sendDigital(Z_STEP_PIN, ARD_LOW);
     ard.sendDigital(Y_STEP_PIN, ARD_LOW);
-    ard.sendDigital(INK_STEP_PIN, ARD_LOW);
-    usleep(MIN_PULSE);
+//    ard.sendDigital(INK_STEP_PIN, ARD_LOW);
+//    usleep(MIN_PULSE);
 }
 
 
@@ -217,6 +217,7 @@ void stepperThread::threadedFunction(){
             if(count++ > 50000) count = 0;
             update();
             unlock();
+            usleep(1000); // Mac only!!!
 //            ofSleepMillis(1);
         }
     }
