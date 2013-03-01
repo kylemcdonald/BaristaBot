@@ -208,7 +208,6 @@ void ofApp::update(){
 		
 		needToUpdate = false;
     }
-    ST.update();
 }
 
 
@@ -257,21 +256,44 @@ void ofApp::draw() {
     ofSetLineWidth(3);
     drawPaths();
     ofPopStyle();
-    ofPopMatrix();
-
-//    ST.draw();
-    
+    ofPopMatrix();    
 }
 
 
 //--------------------------------------------------------------
 void ofApp::keyPressed(int key) {
-    ST.keyPressed(key);
+//    ST.keyPressed(key);
 	
     switch (key) {
         case ' ':
             needToUpdate = true;
+//            counter = curPath = curPoint = 0;
+//            updateTarget = true;
             break;
+//        case '1':
+//            curState = KEY_PRESS;
+//            moveStepper(0, 100, 1);
+//            break;
+//        case '2':
+//            curState = KEY_PRESS;
+//            moveStepper(0, -200, 1);
+//            break;
+//        case '5':
+//            curState = KEY_PRESS;
+//            moveStepper(0, 500, 1);
+//            break;
+//        case 'q':
+//            curState = KEY_PRESS;
+//            moveStepper(1, 100, 1);
+//            break;
+//        case 'w':
+//            curState = KEY_PRESS;
+//            moveStepper(1, 200, 1);
+//            break;
+//        case 't':
+//            curState = KEY_PRESS;
+//            moveStepper(1, 500, 1);
+//            break;
         default:
             break;
     }

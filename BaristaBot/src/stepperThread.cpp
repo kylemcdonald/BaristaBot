@@ -11,6 +11,7 @@ void stepperThread::start(){
 //--------------------------------------------------------------
 void stepperThread::stop(){
     stopThread();
+    while (!ard.isArduinoReady()) {}
     ard.disconnect();
 }
 
@@ -18,29 +19,21 @@ void stepperThread::stop(){
 //--------------------------------------------------------------
 void stepperThread::setup(){
     cout << "ST setup" << endl;
+    while (!ard.isArduinoReady()) {}
     connectToArduino();
     
     // init positions
     lastX = lastY = 0;
     X_LIMIT = Z_LIMIT = Y_LIMIT = INK_LIMIT = false;
+    Y_SIGNAL = ARD_LOW;
 }
 
 
 //--------------------------------------------------------------
 void stepperThread::connectToArduino () {
-    // ARDUINO
-    
-    // replace the string below with the serial port for your Arduino board
-    // you can get this from the Arduino application or via command line
-    // for OSX, in your terminal type "ls /dev/tty.*" to get a list of serial devices
 	ard.connect("/dev/tty.usbmodem1411", 57600);
-	
-	// listen for EInitialized notification. this indicates that
-	// the arduino is ready to receive commands and it is safe to
-	// call setupArduino()
-    cout << "ofAddListener" << endl;
 	ofAddListener(ard.EInitialized, this, &stepperThread::setupArduino);
-	bSetupArduino = false;	// flag so we setup arduino when its ready, you don't need to touch this :)
+	bSetupArduino = false;
 }
 
 
@@ -51,11 +44,6 @@ void stepperThread::setupArduino(const int & version) {
     cout << "in setupArduino" << endl;
 	// remove listener because we don't need it anymore
 	ofRemoveListener(ard.EInitialized, this, &stepperThread::setupArduino);
-       
-    // Note: pins A0 - A5 can be used as digital input and output.
-    // Refer to them as pins 14 - 19 if using StandardFirmata from Arduino 1.0.
-    // If using Arduino 0022 or older, then use 16 - 21.
-    // Firmata pin numbering changed in version 2.3 (which is included in Arduino 1.0)
     
     // set digital outputs
     ard.sendDigitalPinMode(X_DIR_PIN, ARD_OUTPUT);
@@ -83,10 +71,27 @@ void stepperThread::setupArduino(const int & version) {
 
 
 //--------------------------------------------------------------
-void stepperThread::updateArduino(){
-//    if (ard.isArduinoReady()) {
+void stepperThread::update(){
+    if (ard.isArduinoReady()){
         ard.update();
-//    }
+        updateSteppers();
+    }
+    //    if (curState == PRINT) {
+    ////        stepsX = stepsY = 1000;
+    //        counter++;
+    //        updateSteppers();
+    //
+    //        if (updateTarget) {
+    //            setTarget();
+    //            counter = 0;
+    //        }
+    //        if (counter < limit) {
+    //            updateSteppers();
+    //            counter++;
+    //        } else {
+    //            updateTarget = true;
+    //        }
+    //    }
 }
 
 //--------------------------------------------------------------
@@ -136,7 +141,8 @@ void stepperThread::updateArduino(){
 
 //--------------------------------------------------------------
 void stepperThread::updateSteppers () {
-    X_SIGNAL = Y_SIGNAL = INK_SIGNAL = ARD_LOW;
+//    X_SIGNAL = Z_SIGNAL = Y_SIGNAL = INK_SIGNAL = ARD_LOW;
+//    Y_SIGNAL = ARD_HIGH;
     
 //    if (count % 100 == 0) {
 //        INK_SIGNAL = ARD_HIGH;
@@ -146,9 +152,9 @@ void stepperThread::updateSteppers () {
 //        X_SIGNAL = ARD_HIGH;
 //    }
     
-    if (!Y_LIMIT) {
-        Y_SIGNAL = ARD_HIGH;
-    } 
+//    if (!Y_LIMIT) {
+//        Y_SIGNAL = ARD_HIGH;
+//    } 
     //    if (stepsX > stepsY) {
     //        X_SIGNAL = ARD_HIGH;
     //    } else {
@@ -166,13 +172,15 @@ void stepperThread::updateSteppers () {
     //        INK_SIGNAL = ARD_HIGH;
     //    }
     
-    ard.sendDigital(X_STEP_PIN, X_SIGNAL);
+//    ard.sendDigital(X_STEP_PIN, X_SIGNAL);
+//    ard.sendDigital(Z_STEP_PIN, Z_SIGNAL);
     ard.sendDigital(Y_STEP_PIN, Y_SIGNAL);
-    ard.sendDigital(INK_STEP_PIN, INK_SIGNAL);
+//    ard.sendDigital(INK_STEP_PIN, INK_SIGNAL);
     ofSleepMillis(MIN_PULSE);
-    ard.sendDigital(X_STEP_PIN, ARD_LOW);
+//    ard.sendDigital(X_STEP_PIN, ARD_LOW);
+//    ard.sendDigital(Z_STEP_PIN, ARD_LOW);
     ard.sendDigital(Y_STEP_PIN, ARD_LOW);
-    ard.sendDigital(INK_STEP_PIN, ARD_LOW);
+//    ard.sendDigital(INK_STEP_PIN, ARD_LOW);
     ofSleepMillis(MIN_PULSE);
 }
 
@@ -191,135 +199,9 @@ void stepperThread::threadedFunction(){
 
 
 //--------------------------------------------------------------
-void stepperThread::update(){
-    updateArduino();
-    if (curState == PRINT) updateSteppers();
-    
-//    if (curState == PRINT) {
-////        stepsX = stepsY = 1000;
-//        counter++;
-//        updateSteppers();
-//        
-//        if (updateTarget) {
-//            setTarget();
-//            counter = 0;
-//        }
-//        if (counter < limit) {
-//            updateSteppers();
-//            counter++;
-//        } else {
-//            updateTarget = true;
-//        }
-//    }
-}
-
-
-//--------------------------------------------------------------
-void stepperThread::draw(){
-
-//    string str = "I am a slowly increasing thread. \nmy current count is: ";
-//
-//    if( lock() ){
-//        str += ofToString(count);
-//        unlock();
-//    }else{
-//        str = "can't lock!\neither an error\nor the thread has stopped";
-//    }
-//    ofDrawBitmapString(str, 50, 56);
-}
-
-
-
-
-//--------------------------------------------------------------
-void stepperThread::moveStepper(int num, int steps, float speed){
-    
-    /* NOTE: earliest code that moved the servo at speed '1' had a delay of 7/10 miliseconds
-     * trying a delay of 1 milisecond now as max speed
-     * speed should be from 0 – 1 with 1 being maximum speed
-     */
-    
-    
-    int DIR_PIN = (num == 0) ? X_DIR_PIN : Y_DIR_PIN;
-    int STEP_PIN = (num == 0) ? X_STEP_PIN : Y_STEP_PIN;
-    
-    //rotate a specific number of microsteps (8 microsteps per step) - (negitive for reverse movement)
-    //speed is any number from .01 -> 1 with 1 being fastest - Slower is stronger
-    int dir = (steps > 0) ? ARD_HIGH : ARD_LOW;
-    steps = abs(steps);
-    
-    ard.sendDigital(DIR_PIN, dir);
-    
-    // delay is inversely related to speed
-    float delay = (1/speed);
-    
-    for(int i=0; i < steps; i++){
-        ard.sendDigital(STEP_PIN, ARD_HIGH);
-        ofSleepMillis(delay);
-        ard.sendDigital(STEP_PIN, ARD_LOW);
-        ofSleepMillis(delay);
-    }
-}
-
-
-//--------------------------------------------------------------
 void stepperThread::digitalPinChanged(const int & pinNum) {
-    // do something with the digital input. here we're simply going to print the pin number and
-    // value to the screen each time it changes
-    bool b = false;
-    buttonState = "digital pin: " + ofToString(pinNum) + " = " + ofToString(b = ard.getDigital(pinNum));
-    cout << buttonState << endl;
-//    ofSleepMillis(0.1);
-    
-    
-    
-    
-//    if(b){
-        if (pinNum == X_LIMIT_PIN) X_LIMIT = true;
-        if (pinNum == Z_LIMIT_PIN) Z_LIMIT = true;
-        if (pinNum == Y_LIMIT_PIN) Y_LIMIT = true;
-        if (pinNum == INK_LIMIT_PIN) INK_LIMIT = true;
-//    } else {
-//        if (pinNum == X_LIMIT_PIN) X_LIMIT = false;
-//        if (pinNum == Z_LIMIT_PIN) Z_LIMIT = false;
-//        if (pinNum == Y_LIMIT_PIN) Y_LIMIT = false;
-//        if (pinNum == INK_LIMIT_PIN) INK_LIMIT = false;
-//    }
-}
+    cout << "SWITCH" << endl;
+//    stopThread();
+    Y_SIGNAL = !Y_SIGNAL;
 
-//--------------------------------------------------------------
-void stepperThread::keyPressed(int key) {
-	
-    switch (key) {
-        case ' ':
-            counter = curPath = curPoint = 0;
-            updateTarget = true;
-            break;
-        case '1':
-            curState = KEY_PRESS;
-            moveStepper(0, 100, 1);
-            break;
-        case '2':
-            curState = KEY_PRESS;
-            moveStepper(0, -200, 1);
-            break;
-        case '5':
-            curState = KEY_PRESS;
-            moveStepper(0, 500, 1);
-            break;
-        case 'q':
-            curState = KEY_PRESS;
-            moveStepper(1, 100, 1);
-            break;
-        case 'w':
-            curState = KEY_PRESS;
-            moveStepper(1, 200, 1);
-            break;
-        case 't':
-            curState = KEY_PRESS;
-            moveStepper(1, 500, 1);
-            break;
-        default:
-            break;
-    }
 }
