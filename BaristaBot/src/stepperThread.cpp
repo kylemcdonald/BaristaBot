@@ -10,8 +10,8 @@ void stepperThread::start(){
 
 //--------------------------------------------------------------
 void stepperThread::stop(){
-    ard.disconnect();
     stopThread();
+    ard.disconnect();
 }
 
 
@@ -80,7 +80,9 @@ void stepperThread::setupArduino(const int & version) {
 
 //--------------------------------------------------------------
 void stepperThread::updateArduino(){
-    ard.update();
+    if (ard.isArduinoReady()) {
+        ard.update();
+    }
 }
 
 //--------------------------------------------------------------
@@ -132,9 +134,18 @@ void stepperThread::setTarget() {
 void stepperThread::updateSteppers () {
     X_SIGNAL = Y_SIGNAL = INK_SIGNAL = ARD_LOW;
     
-    if (count % 50 == 0) {
+    if (count % 100 == 0) {
         INK_SIGNAL = ARD_HIGH;
     }
+    
+    if (count % 10 == 0) {
+        X_SIGNAL = ARD_HIGH;
+    }
+    
+//    if (count % 2 == 0) {
+        Y_SIGNAL = ARD_HIGH;
+//    }
+    
     //    if (stepsX > stepsY) {
     //        X_SIGNAL = ARD_HIGH;
     //    } else {

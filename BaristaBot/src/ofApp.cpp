@@ -259,7 +259,7 @@ void ofApp::draw() {
     ofPopStyle();
     ofPopMatrix();
 
-    ST.draw();
+//    ST.draw();
     
 }
 
@@ -278,5 +278,5 @@ void ofApp::keyPressed(int key) {
 }
 
 void ofApp::exit() {
-    ST.waitForThread(true);
+    ST.stop();
 }
