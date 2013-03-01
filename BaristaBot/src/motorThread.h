@@ -1,17 +1,9 @@
-#ifndef _THREADED_OBJECT
-#define _THREADED_OBJECT
+#ifndef _MOTOR_THREAD
+#define _MOTOR_THREAD
 
 #include "ofMain.h"
 
-// this is not a very exciting example yet
-// but ofThread provides the basis for ofNetwork and other
-// operations that require threading.
-//
-// please be careful - threading problems are notoriously hard
-// to debug and working with threads can be quite difficult
-
-
-class threadedObject : public ofThread{
+class motorThread : public ofThread{
 
  public:
 
@@ -23,7 +15,12 @@ class threadedObject : public ofThread{
 
 
     //--------------------------
-    threadedObject(ofArduino &parentArd){
+    motorThread(){
+        i = 0;
+    }
+
+    //--------------------------
+    void setArduino(ofArduino &parentArd){
         *ard = parentArd;
     }
 

@@ -2,13 +2,7 @@
 #define _ARDUINO_THREAD
 
 #include "ofMain.h"
-
-// this is not a very exciting example yet
-// but ofThread provides the basis for ofNetwork and other
-// operations that require threading.
-//
-// please be careful - threading problems are notoriously hard
-// to debug and working with threads can be quite difficult
+#include "motorThread.h"
 
 
 class arduinoThread : public ofThread{
@@ -17,8 +11,9 @@ public:
     void start();
     void stop();
     void setup();
-    void initializeArduino();
+    void waitLock();
     void setupArduino(const int & version);
+    void initializeMotors();
     void initializeVariables();
     void updateArduino();
     void setTarget();
@@ -30,13 +25,19 @@ public:
     void moveStepper(int num, int steps, float speed);
     void digitalPinChanged(const int & pinNum);
     void keyPressed(int key);
-    
+ 
+    arduinoThread(){
+        ard.sendReset();
+    }
     
     ofArduino ard;
+    motorThread X, Z, Y, INK;
     ofPoint target;
     vector<ofPolyline> paths;
     vector<ofPoint> points;
+    
 
+    
     enum state {
         IDLE,
         FACE_PHOTO,
@@ -75,10 +76,6 @@ public:
     bool pushInk, updateTarget;
     
     string buttonState;
-    string potValue;
-      
-    int count;
-
 };
 
 #endif

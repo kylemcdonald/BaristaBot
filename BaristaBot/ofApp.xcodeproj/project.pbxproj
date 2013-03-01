@@ -826,13 +826,13 @@
 		E4B69E1C0A3A1BDC003C02F2 /* src */ = {
 			isa = PBXGroup;
 			children = (
-				037EC32D16E1414D0061260C /* arduinoThread.cpp */,
-				037EC32E16E1414D0061260C /* arduinoThread.h */,
-				037EC32F16E1414D0061260C /* motorThread.h */,
 				27DA117A1635CC2800F13FE6 /* CLD */,
 				E4B69E1D0A3A1BDC003C02F2 /* main.cpp */,
 				27DA102E1635CB4400F13FE6 /* ofApp.cpp */,
 				27DA102F1635CB4400F13FE6 /* ofApp.h */,
+				037EC32D16E1414D0061260C /* arduinoThread.cpp */,
+				037EC32E16E1414D0061260C /* arduinoThread.h */,
+				037EC32F16E1414D0061260C /* motorThread.h */,
 			);
 			path = src;
 			sourceTree = SOURCE_ROOT;

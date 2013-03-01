@@ -114,8 +114,8 @@ void ofApp::setup() {
 	gui.loadSettings("settings.xml");
     
 
-    ST.start();
-    ST.setup();
+    AT.start();
+    AT.setup();
 
 }
 
@@ -203,8 +203,10 @@ void ofApp::update(){
 		thinned.update();
 		
 		paths = getPaths(thinned, minGapLength, minPathLength);
-        ST.paths = paths;
-        ST.curState = ST.PRINT;
+        
+        // HERE
+        AT.paths = paths;
+        AT.curState = AT.PRINT;
 		
 		needToUpdate = false;
     }
@@ -229,11 +231,11 @@ void ofApp::drawPaths() {
 void ofApp::draw() {
 	ofBackground(0);
     
-	gui.msg = "curState = " + ofToString(ST.stateName[ST.curState]) + ". ";
-	if (!ST.bSetupArduino){
+	gui.msg = "curState = " + ofToString(AT.stateName[AT.curState]) + ". ";
+	if (!AT.bSetupArduino){
 		gui.msg += "arduino not ready...";
 	} else {
-        gui.msg += "arduino connected, firmware: " + ofToString(ST.ard.getFirmwareName());
+        gui.msg += "arduino connected, firmware: " + ofToString(AT.ard.getFirmwareName());
     }
 	
     ofSetColor(255);
@@ -262,7 +264,7 @@ void ofApp::draw() {
 
 //--------------------------------------------------------------
 void ofApp::keyPressed(int key) {
-//    ST.keyPressed(key);
+//    AT.keyPressed(key);
 	
     switch (key) {
         case ' ':
@@ -300,5 +302,5 @@ void ofApp::keyPressed(int key) {
 }
 
 void ofApp::exit() {
-    ST.stop();
+    AT.stop();
 }

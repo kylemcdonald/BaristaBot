@@ -9,7 +9,8 @@
 #include "fdog.h"
 #include "myvec.h"
 
-#include "stepperThread.h"
+#include "arduinoThread.h"
+#include "motorThread.h"
 
 class ofApp : public ofBaseApp{
 public:
@@ -28,7 +29,7 @@ public:
 	ofImage gray, cld, thresholded, thinned;
     ofImage graySmall, cropped;
     cv::CascadeClassifier classifier;
-    stepperThread ST;
+    arduinoThread AT;
     
     vector<cv::Rect> objects;
 	vector<ofPolyline> paths;

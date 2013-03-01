@@ -5,75 +5,83 @@
 
 //--------------------------------------------------------------
 void arduinoThread::start(){
-    startThread(false, false);   // non-blocking, verbose
+    startThread(true, false);   // blocking, verbose
 }
 
 
 //--------------------------------------------------------------
 void arduinoThread::stop(){
+    waitLock();
+        ard.disconnect();
+    unlock();
     stopThread();
-    while (!ard.isArduinoReady()) {}
-    ard.disconnect();
 }
 
+void arduinoThread::waitLock(){
+    // wait until ard is locked and ready
+    while (!lock() && !ard.isArduinoReady()) {}
+}
 
 //--------------------------------------------------------------
 void arduinoThread::setup(){   
-    while (!ard.isArduinoReady()) {}
-    initializeArduino();
+    waitLock();
+        ard.connect("/dev/tty.usbmodem1411", 57600);
+        ofAddListener(ard.EInitialized, this, &arduinoThread::setupArduino);
+        bSetupArduino = false;
+    unlock();
+    
     initializeVariables();
-    
-
-    
-    // set default state to IDLE
     curState = IDLE;
 }
 
 
 //--------------------------------------------------------------
-void arduinoThread::initializeArduino() {
-	ard.connect("/dev/tty.usbmodem1411", 57600);
-	ofAddListener(ard.EInitialized, this, &arduinoThread::setupArduino);
-	bSetupArduino = false;
-}
-
-
-
-//--------------------------------------------------------------
 void arduinoThread::setupArduino(const int & version) {
-	// remove listener because we don't need it anymore
-	ofRemoveListener(ard.EInitialized, this, &arduinoThread::setupArduino);
-    
-    // set digital outputs
-    ard.sendDigitalPinMode(X_DIR_PIN, ARD_OUTPUT);
-    ard.sendDigitalPinMode(X_STEP_PIN, ARD_OUTPUT);
-    ard.sendDigitalPinMode(Z_DIR_PIN, ARD_OUTPUT);
-    ard.sendDigitalPinMode(Z_STEP_PIN, ARD_OUTPUT);
-    ard.sendDigitalPinMode(Y_DIR_PIN, ARD_OUTPUT);
-    ard.sendDigitalPinMode(Y_STEP_PIN, ARD_OUTPUT);
-    ard.sendDigitalPinMode(INK_DIR_PIN, ARD_OUTPUT);
-    ard.sendDigitalPinMode(INK_STEP_PIN, ARD_OUTPUT);
-    
-    // set digital inputs
-    ard.sendDigitalPinMode(X_LIMIT_PIN, ARD_INPUT);
-    ard.sendDigitalPinMode(Z_LIMIT_PIN, ARD_INPUT);
-    ard.sendDigitalPinMode(Y_LIMIT_PIN, ARD_INPUT);
-    ard.sendDigitalPinMode(INK_LIMIT_PIN, ARD_INPUT);
-    ofAddListener(ard.EDigitalPinChanged, this, &arduinoThread::digitalPinChanged);
+    waitLock(); // not sure if I need to...
+        // remove listener because we don't need it anymore
+        ofRemoveListener(ard.EInitialized, this, &arduinoThread::setupArduino);
+        
+        // set digital outputs
+        ard.sendDigitalPinMode(X_DIR_PIN, ARD_OUTPUT);
+        ard.sendDigitalPinMode(X_STEP_PIN, ARD_OUTPUT);
+        ard.sendDigitalPinMode(Z_DIR_PIN, ARD_OUTPUT);
+        ard.sendDigitalPinMode(Z_STEP_PIN, ARD_OUTPUT);
+        ard.sendDigitalPinMode(Y_DIR_PIN, ARD_OUTPUT);
+        ard.sendDigitalPinMode(Y_STEP_PIN, ARD_OUTPUT);
+        ard.sendDigitalPinMode(INK_DIR_PIN, ARD_OUTPUT);
+        ard.sendDigitalPinMode(INK_STEP_PIN, ARD_OUTPUT);
+        
+        // set digital inputs
+        ard.sendDigitalPinMode(X_LIMIT_PIN, ARD_INPUT);
+        ard.sendDigitalPinMode(Z_LIMIT_PIN, ARD_INPUT);
+        ard.sendDigitalPinMode(Y_LIMIT_PIN, ARD_INPUT);
+        ard.sendDigitalPinMode(INK_LIMIT_PIN, ARD_INPUT);
+        ofAddListener(ard.EDigitalPinChanged, this, &arduinoThread::digitalPinChanged);
 
-    // it is now safe to send commands to the Arduino
-    bSetupArduino = true;
+        // it is now safe to send commands to the Arduino
+        bSetupArduino = true;
+    
+        initializeMotors ();
+    unlock();n
 }
 
-
-//--------------------------------------------------------------
-void arduinoThread::initializeVariables(){
+void arduinoThread::initializeMotors(){
     // set default pin directions to high
     ard.sendDigital(X_DIR_PIN, ARD_HIGH);
     ard.sendDigital(Z_DIR_PIN, ARD_HIGH);
     ard.sendDigital(Y_DIR_PIN, ARD_HIGH);
     ard.sendDigital(INK_DIR_PIN, ARD_HIGH);
     
+    // pass arduino reference to motor threads
+    X.setArduino(ard);
+    Z.setArduino(ard);
+    Y.setArduino(ard);
+    INK.setArduino(ard);
+}
+
+//--------------------------------------------------------------
+void arduinoThread::initializeVariables(){
+
     // set limit and signal defualts
     X_LIMIT  = Z_LIMIT  = Y_LIMIT  = INK_LIMIT  = false;
     X_SIGNAL = Z_SIGNAL = Y_SIGNAL = INK_SIGNAL = ARD_LOW; // do not initialize high
@@ -85,15 +93,13 @@ void arduinoThread::initializeVariables(){
 
 //--------------------------------------------------------------
 void arduinoThread::update(){
-    if (ard.isArduinoReady()){
-        ard.update();
-        updateSteppers();
-        if (Y_LIMIT) {
-            X_SIGNAL = Y_SIGNAL = INK_SIGNAL = ARD_HIGH;
-        } else {
-            X_SIGNAL = Y_SIGNAL = INK_SIGNAL = ARD_LOW;
-        }
-    }
+    ard.update();
+    
+    
+    
+    
+    
+
     
 
     //    if (curState == PRINT) {
@@ -159,68 +165,14 @@ void arduinoThread::update(){
 //}
 
 
-//--------------------------------------------------------------
-void arduinoThread::updateSteppers () {
-
-//    Y_SIGNAL = ARD_HIGH;
-    
-//    if (count % 100 == 0) {
-//        INK_SIGNAL = ARD_HIGH;
-//    }
-//
-//    if (count % 10 == 0) {
-//        X_SIGNAL = ARD_HIGH;
-//    }
-//    
-//    if (!Y_LIMIT) {
-//        Y_SIGNAL = ARD_HIGH;
-//    } 
-    //    if (stepsX > stepsY) {
-    //        X_SIGNAL = ARD_HIGH;
-    //    } else {
-    //        Y_SIGNAL = ARD_HIGH;
-    //    }
-    
-    //
-    //    if ((limit-counter) % stepsY == 0) {
-    //        X_SIGNAL = ARD_HIGH;
-    //    }
-    //    if ((limit-counter) % stepsX == 0) {
-    //        Y_SIGNAL = ARD_HIGH;
-    //    }
-    //    if (counter % stepsInk && pushInk) {
-    //        INK_SIGNAL = ARD_HIGH;
-    //    }
-    
-    // NOTE: usleep is Mac ONLY! This code is not Windows compatible
-//    ard.sendDigital(X_STEP_PIN, X_SIGNAL);
-//    ard.sendDigital(Z_STEP_PIN, Z_SIGNAL);
-    ard.sendDigital(Y_STEP_PIN, Y_SIGNAL);
-//    ard.sendDigital(INK_STEP_PIN, INK_SIGNAL);
-    usleep(MIN_PULSE);
-//    ard.sendDigital(X_STEP_PIN, ARD_LOW);
-//    ard.sendDigital(Z_STEP_PIN, ARD_LOW);
-    ard.sendDigital(Y_STEP_PIN, ARD_LOW);
-//    ard.sendDigital(INK_STEP_PIN, ARD_LOW);
-//    usleep(MIN_PULSE);
-}
-
-
-//void arduinoThread::sleepMicros (int microseconds) {
-//    while (ofGetElapsedTimeMicros() % microseconds != 0) {}
-//}
-
 
 //--------------------------------------------------------------
 void arduinoThread::threadedFunction(){
     while(isThreadRunning() != 0){
-        if(lock()){
-            if(count++ > 50000) count = 0;
+        waitLock();
             update();
-            unlock();
-            usleep(1000); // Mac only!!!
-//            ofSleepMillis(1);
-        }
+        unlock();
+        usleep(1000); // Mac only!!!
     }
 }
 
