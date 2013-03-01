@@ -1,15 +1,16 @@
 #include "ofMain.h"
-#include "stepperThread.h"
+#include "arduinoThread.h"
+#include "motorThread.h"
 
 
 //--------------------------------------------------------------
-void stepperThread::start(){
+void arduinoThread::start(){
     startThread(false, false);   // non-blocking, verbose
 }
 
 
 //--------------------------------------------------------------
-void stepperThread::stop(){
+void arduinoThread::stop(){
     stopThread();
     while (!ard.isArduinoReady()) {}
     ard.disconnect();
@@ -17,7 +18,7 @@ void stepperThread::stop(){
 
 
 //--------------------------------------------------------------
-void stepperThread::setup(){   
+void arduinoThread::setup(){   
     while (!ard.isArduinoReady()) {}
     initializeArduino();
     initializeVariables();
@@ -30,18 +31,18 @@ void stepperThread::setup(){
 
 
 //--------------------------------------------------------------
-void stepperThread::initializeArduino() {
+void arduinoThread::initializeArduino() {
 	ard.connect("/dev/tty.usbmodem1411", 57600);
-	ofAddListener(ard.EInitialized, this, &stepperThread::setupArduino);
+	ofAddListener(ard.EInitialized, this, &arduinoThread::setupArduino);
 	bSetupArduino = false;
 }
 
 
 
 //--------------------------------------------------------------
-void stepperThread::setupArduino(const int & version) {
+void arduinoThread::setupArduino(const int & version) {
 	// remove listener because we don't need it anymore
-	ofRemoveListener(ard.EInitialized, this, &stepperThread::setupArduino);
+	ofRemoveListener(ard.EInitialized, this, &arduinoThread::setupArduino);
     
     // set digital outputs
     ard.sendDigitalPinMode(X_DIR_PIN, ARD_OUTPUT);
@@ -58,7 +59,7 @@ void stepperThread::setupArduino(const int & version) {
     ard.sendDigitalPinMode(Z_LIMIT_PIN, ARD_INPUT);
     ard.sendDigitalPinMode(Y_LIMIT_PIN, ARD_INPUT);
     ard.sendDigitalPinMode(INK_LIMIT_PIN, ARD_INPUT);
-    ofAddListener(ard.EDigitalPinChanged, this, &stepperThread::digitalPinChanged);
+    ofAddListener(ard.EDigitalPinChanged, this, &arduinoThread::digitalPinChanged);
 
     // it is now safe to send commands to the Arduino
     bSetupArduino = true;
@@ -66,7 +67,7 @@ void stepperThread::setupArduino(const int & version) {
 
 
 //--------------------------------------------------------------
-void stepperThread::initializeVariables(){
+void arduinoThread::initializeVariables(){
     // set default pin directions to high
     ard.sendDigital(X_DIR_PIN, ARD_HIGH);
     ard.sendDigital(Z_DIR_PIN, ARD_HIGH);
@@ -83,7 +84,7 @@ void stepperThread::initializeVariables(){
 
 
 //--------------------------------------------------------------
-void stepperThread::update(){
+void arduinoThread::update(){
     if (ard.isArduinoReady()){
         ard.update();
         updateSteppers();
@@ -114,7 +115,7 @@ void stepperThread::update(){
 }
 
 //--------------------------------------------------------------
-//void stepperThread::setTarget() {
+//void arduinoThread::setTarget() {
 //    if (curPath < paths.size()) {
 //        // first point in drawing
 //        if (curPath == 0 && curPoint == 0) {
@@ -159,7 +160,7 @@ void stepperThread::update(){
 
 
 //--------------------------------------------------------------
-void stepperThread::updateSteppers () {
+void arduinoThread::updateSteppers () {
 
 //    Y_SIGNAL = ARD_HIGH;
     
@@ -205,13 +206,13 @@ void stepperThread::updateSteppers () {
 }
 
 
-//void stepperThread::sleepMicros (int microseconds) {
+//void arduinoThread::sleepMicros (int microseconds) {
 //    while (ofGetElapsedTimeMicros() % microseconds != 0) {}
 //}
 
 
 //--------------------------------------------------------------
-void stepperThread::threadedFunction(){
+void arduinoThread::threadedFunction(){
     while(isThreadRunning() != 0){
         if(lock()){
             if(count++ > 50000) count = 0;
@@ -225,7 +226,7 @@ void stepperThread::threadedFunction(){
 
 
 //--------------------------------------------------------------
-void stepperThread::digitalPinChanged(const int & pinNum) {
+void arduinoThread::digitalPinChanged(const int & pinNum) {
     cout << "SWITCH" << endl;
 //    stopThread();
     Y_LIMIT = !Y_LIMIT;

@@ -1,5 +1,5 @@
-#ifndef _STEPPER_THREAD
-#define _STEPPER_THREAD
+#ifndef _ARDUINO_THREAD
+#define _ARDUINO_THREAD
 
 #include "ofMain.h"
 
@@ -11,7 +11,7 @@
 // to debug and working with threads can be quite difficult
 
 
-class stepperThread : public ofThread{
+class arduinoThread : public ofThread{
 
 public:
     void start();
