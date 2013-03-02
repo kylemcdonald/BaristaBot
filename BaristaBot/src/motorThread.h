@@ -18,9 +18,7 @@ class motorThread : public ofThread{
 
 
     //--------------------------
-    motorThread(){
-        i = 0;
-    }
+    motorThread() {}
 
     //--------------------------
     void setArduino(ofArduino &parentArd, int step_p, int dir_p, int sleep_p, string nom) {
@@ -44,11 +42,11 @@ class motorThread : public ofThread{
 
     void start(){
         startThread(true, false);   // blocking, verbose
+        i = 0;
     }
 
     void stop(){
         stopThread();
-        i = 0;
         STEPS = 0;
         DELAY = 1000;
         
@@ -71,17 +69,17 @@ class motorThread : public ofThread{
 
     //--------------------------------------------------------------
     void moveStepper(){
-        ard->sendDigitalPinMode(SLEEP_PIN, ARD_HIGH);
-        ard->sendDigitalPinMode(DIR_PIN, ARD_HIGH);
-        usleep(DELAY);
+//        ard->sendDigitalPinMode(SLEEP_PIN, ARD_HIGH);
+//        ard->sendDigitalPinMode(DIR_PIN, ARD_HIGH);
+//        usleep(DELAY);
         ard->sendDigital(STEP_PIN, ARD_HIGH);
         usleep(DELAY);
         ard->sendDigital(STEP_PIN, ARD_LOW);
         usleep(DELAY);
-//        i++;
-        if (++i == STEPS) {
-            stop();
-        }
+        i++;
+//        if (i == STEPS) {
+//            stop();
+//        }
     }
     
     //--------------------------------------------------------------
