@@ -271,6 +271,9 @@ void ofApp::keyPressed(int key) {
         case 'h':
             AT.home();
             break;
+        case 't':
+            AT.test();
+            break;
 //        case '1':
 //            curState = KEY_PRESS;
 //            moveStepper(0, 100, 1);

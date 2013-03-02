@@ -28,6 +28,8 @@ public:
     void threadedFunction();
     void draw();
     void digitalPinChanged(const int & pinNum);
+    
+    void test();
  
     arduinoThread(){
         ard.sendReset();
@@ -85,9 +87,7 @@ public:
     int counter, limit;
     int curPath, curPoint;
     bool pushInk, updateTarget;
-    
-    int test = 0;
-    
+        
     string buttonState;
 };
 
