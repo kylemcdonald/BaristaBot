@@ -19,7 +19,6 @@ class motorThread : public ofThread{
     int STEPS = 0;
     int DELAY = 1000;
     
-    bool takeAim = false;
     bool flame = ARD_HIGH;
 
 
@@ -45,7 +44,6 @@ class motorThread : public ofThread{
     void aim(){
         ard->sendDigital(SLEEP_PIN, ARD_HIGH);
         ard->sendDigital(DIR_PIN, DIR);
-        takeAim = false;
     }
     
     void fire(){
@@ -53,14 +51,13 @@ class motorThread : public ofThread{
         usleep(DELAY);
         ard->sendDigital(STEP_PIN, ARD_LOW);
         usleep(DELAY);
-        i++;
+//        i++;
     }
     
     
     //--------------------------------------------------------------
     void start(){
-        takeAim = true;
-        startThread(false, false);   // non-blocking, verbose
+        startThread(false, false);   // non-blocking, non-verbose
     }
 
     bool stop(){
@@ -83,15 +80,15 @@ class motorThread : public ofThread{
     //--------------------------------------------------------------
     void threadedFunction(){
         while(isThreadRunning() != 0){
-//            if (lock()) {
-                ard->sendDigital(STEP_PIN, flame = !flame);
+            if (lock()) {
+//                ard->sendDigital(STEP_PIN, flame = !flame);
+//                unlock();
+//                usleep(DELAY);
+                fire();
                 unlock();
-                usleep(DELAY);
-//            }
-
-
-//            if (i == STEPS) while (!stop());
             }
+//            if (i == STEPS) while (!stop());
+        }
     }
     
     //--------------------------------------------------------------

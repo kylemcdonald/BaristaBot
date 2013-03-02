@@ -49,7 +49,7 @@ void arduinoThread::initializeMotors(){
 
 //--------------------------------------------------------------
 void arduinoThread::initializeArduino() {
-	ard.connect("/dev/tty.usbmodem1411", 57600);
+	ard.connect("/dev/tty.usbmodem1411", 115200);
 	ofAddListener(ard.EInitialized, this, &arduinoThread::setupArduino);
 	bSetupArduino = false;
 }
@@ -97,14 +97,23 @@ void arduinoThread::test(){
 void arduinoThread::home(){
 
     curState = HOMING;
+        
+    X.ready(-100000, 500);
+    Y.ready(100000, 450);
+
+    while (!lock());
     
-    X.ready(-100000, 2000);
-    X.aim();
+        ard.sendDigital(X.SLEEP_PIN, ARD_HIGH);
+        ard.sendDigital(X.DIR_PIN, X.DIR);
+
+        ard.sendDigital(Y.SLEEP_PIN, ARD_HIGH);
+        ard.sendDigital(Y.DIR_PIN, Y.DIR);
+    
+    unlock();
+    
     X.start();
-    
-    Y.ready(-100000, 2130);
-    Y.aim();
-    Y.start();
+//    Y.start();
+
 
 //    Z.ready(100000, 500);
 //    Z.start();
@@ -303,11 +312,14 @@ void arduinoThread::update(){
 //--------------------------------------------------------------
 void arduinoThread::threadedFunction(){
     while(isThreadRunning() != 0){
-//        if (lock()){
+        
+        
+        
+        if (lock()){
             update();
-//            unlock();
-//        }
-//        usleep(1000); // Mac only!!!
+            unlock();
+        }
+        ofSleepMillis(1000);
     }
 }
 
