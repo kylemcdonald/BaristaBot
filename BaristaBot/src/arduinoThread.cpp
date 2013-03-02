@@ -98,21 +98,15 @@ void arduinoThread::home(){
     curState = HOMING;
         
     X.ready(-100000, 819);
-    Y.ready(-100000, 954);
-    Z.ready(100000, 1298);
-    INK.ready(100000, 61327);
+    Y.ready(100000, 954);
     
     X.aim();
     Y.aim();
-    Z.aim();
-    INK.aim();
     
     usleep(1000);
     
     X.start();
     Y.start();
-    Z.start();
-    INK.start();
 }
 
 
