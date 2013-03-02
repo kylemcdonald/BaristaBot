@@ -60,9 +60,6 @@ void arduinoThread::setupArduino(const int & version) {
     // remove listener because we don't need it anymore
     ofRemoveListener(ard.EInitialized, this, &arduinoThread::setupArduino);
     
-    // test
-    ard.sendDigitalPinMode(17, ARD_OUTPUT);
-    
     // set digital outputs
     ard.sendDigitalPinMode(X_DIR_PIN, ARD_OUTPUT);
     ard.sendDigitalPinMode(Z_DIR_PIN, ARD_OUTPUT);
@@ -92,13 +89,13 @@ void arduinoThread::setupArduino(const int & version) {
 }
 
 void arduinoThread::test(){
-    ard.sendDigital(17, ARD_HIGH);
+//    ard.sendDigital(INK_SLEEP_PIN, ARD_HIGH);
+    INK.aim();
 }
 
 //--------------------------------------------------------------
 void arduinoThread::home(){
-    ard.sendDigital(2, ARD_HIGH);
-//    ard.sendDigital(X_DIR_PIN, ARD_HIGH);
+
     curState = HOMING;
     
 //    X.ready(100000, 500);

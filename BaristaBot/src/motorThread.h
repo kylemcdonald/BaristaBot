@@ -43,7 +43,7 @@ class motorThread : public ofThread{
     //--------------------------------------------------------------
     void aim(){
         ard->sendDigital(SLEEP_PIN, ARD_HIGH);
-        ard->sendDigital(DIR_PIN, DIR);
+//        ard->sendDigital(DIR_PIN, DIR);
         takeAim = false;
     }
     
