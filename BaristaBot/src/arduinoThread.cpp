@@ -87,10 +87,6 @@ void arduinoThread::setupArduino(const int & version) {
     curState = IDLE;
 }
 
-void arduinoThread::test(){
-//    ard.sendDigital(INK_SLEEP_PIN, ARD_HIGH);
-    INK.aim();
-}
 
 //--------------------------------------------------------------
 void arduinoThread::home(){
@@ -99,11 +95,6 @@ void arduinoThread::home(){
         
     X.ready(-100000, 819);
     Y.ready(100000, 954);
-    
-    X.aim();
-    Y.aim();
-    
-    usleep(1000);
     
     X.start();
     Y.start();
@@ -141,10 +132,11 @@ void arduinoThread::update(){
     lock();
         ard.update();
     unlock();
-//    if (curState == PRINT) {
-//        // assume that we are starting from home, robot will home after coffee photo
-//        
-//    }
+
+    if (curState == PRINT) {
+        // assume that we are starting from home, robot will home after coffee photo
+        
+    }
 //
 //    
 //    if (curPath < paths.size()) {

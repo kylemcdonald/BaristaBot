@@ -29,8 +29,7 @@ public:
     void draw();
     void digitalPinChanged(const int & pinNum);
     
-    void test();
- 
+
     arduinoThread(){
         ard.sendReset();
     }

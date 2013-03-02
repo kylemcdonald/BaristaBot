@@ -267,9 +267,6 @@ void ofApp::keyPressed(int key) {
         case 'h':
             AT.home();
             break;
-        case 't':
-            AT.test();
-            break;
         default:
             break;
     }
@@ -277,4 +274,9 @@ void ofApp::keyPressed(int key) {
 
 void ofApp::exit() {
     AT.stop();
+    ofSleepMillis(1000);
 }
+
+
+
+

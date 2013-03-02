@@ -1,3 +1,4 @@
+
 #ifndef _MOTOR_THREAD
 #define _MOTOR_THREAD
 
@@ -26,25 +27,22 @@ class motorThread : public ofThread{
         name = nom;
     }
     
+    void ready(int stps, int dly) {
+        STEPS = abs(stps);
+        DELAY = dly;
+        DIR = (stps > 0) ? ARD_HIGH : ARD_LOW;
+        lock();
+            ard->sendDigital(SLEEP_PIN, ARD_HIGH);
+            ard->sendDigital(DIR_PIN, DIR);
+        unlock();
+        usleep(100);
+    }
+    
     void clear() {
         DIR = GO = ARD_LOW;
         STEPS = INC = 0;
         DELAY = 1000;
     }
-    
-    void ready(int stps, int dly) {
-        STEPS = abs(stps);
-        DELAY = dly;
-        DIR = (stps > 0) ? ARD_HIGH : ARD_LOW;
-    }
-    
-    void aim(){
-        lock();
-            ard->sendDigital(SLEEP_PIN, ARD_HIGH);
-            ard->sendDigital(DIR_PIN, DIR);
-        unlock();
-    }
-    
     
     //--------------------------------------------------------------
     void start(){
@@ -83,4 +81,11 @@ class motorThread : public ofThread{
     }
 };
 
+
+
+
 #endif
+
+
+
+
