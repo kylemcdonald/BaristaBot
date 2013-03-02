@@ -208,7 +208,7 @@ void ofApp::update(){
 		
 		needToUpdate = false;
     }
-    AT.update();
+//    AT.update();
 }
 
 

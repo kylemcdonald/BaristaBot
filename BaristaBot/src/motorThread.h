@@ -83,10 +83,12 @@ class motorThread : public ofThread{
             lock();
             
                 ard->sendDigital(STEP_PIN, flame = !flame);
-                usleep(DELAY);
 
 //                fire();
             unlock();
+            usleep(DELAY);
+
+
 
 //            if (i == STEPS) while (!stop());
         }

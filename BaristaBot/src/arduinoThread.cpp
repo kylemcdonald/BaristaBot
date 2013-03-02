@@ -98,8 +98,9 @@ void arduinoThread::home(){
 
     curState = HOMING;
         
-    X.ready(-100000, 500);
-    Y.ready(100000, 650);
+    X.ready(-100000, 519);
+    Y.ready(-100000, 354);
+    INK.ready(-100000, 61327);
 
     lock();
     
@@ -109,10 +110,14 @@ void arduinoThread::home(){
         ard.sendDigital(Y.SLEEP_PIN, ARD_HIGH);
         ard.sendDigital(Y.DIR_PIN, Y.DIR);
     
+        ard.sendDigital(INK.SLEEP_PIN, ARD_HIGH);
+        ard.sendDigital(INK.DIR_PIN, INK.DIR);
+    
     unlock();
     
     X.start();
     Y.start();
+    INK.start();
 
 
 //    Z.ready(100000, 500);
@@ -316,11 +321,8 @@ void arduinoThread::threadedFunction(){
 
         
         
-//        int i = 0;
-//        while (i < 10000) {
-//            i++;
-//        }
-//        update();
+        usleep(10000);
+        update();
     }
 }
 
