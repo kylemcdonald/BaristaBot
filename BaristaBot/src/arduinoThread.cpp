@@ -17,6 +17,10 @@ void arduinoThread::stop(){
         unlock();
         stopThread();
     }
+    X.stop();
+    Z.stop();
+    Y.stop();
+    INK.stop();
 }
 
 //--------------------------------------------------------------
@@ -26,6 +30,22 @@ void arduinoThread::setup(){
     initializeMotors();
     initializeArduino();
 }
+
+//--------------------------------------------------------------
+void arduinoThread::initializeVariables(){
+    X_LIMIT  = Z_LIMIT  = Y_LIMIT  = INK_LIMIT  = false;
+}
+
+
+//--------------------------------------------------------------
+void arduinoThread::initializeMotors(){
+    // pass arduino reference and pins to motor threads
+    X.setArduino    (ard, X_STEP_PIN,   X_DIR_PIN,   X_SLEEP_PIN,   "Motor X");
+    Z.setArduino    (ard, Z_STEP_PIN,   Z_DIR_PIN,   Z_SLEEP_PIN,   "Motor Z");
+    Y.setArduino    (ard, Y_STEP_PIN,   Y_DIR_PIN,   Y_SLEEP_PIN,   "Motor Y");
+    INK.setArduino  (ard, INK_STEP_PIN, INK_DIR_PIN, INK_SLEEP_PIN, "Motor I");
+}
+
 
 //--------------------------------------------------------------
 void arduinoThread::initializeArduino() {
@@ -51,10 +71,10 @@ void arduinoThread::setupArduino(const int & version) {
     ard.sendDigitalPinMode(Y_STEP_PIN, ARD_OUTPUT);
     ard.sendDigitalPinMode(INK_STEP_PIN, ARD_OUTPUT);
     
-//    ard.sendDigitalPinMode(X_SLEEP_PIN, ARD_OUTPUT);
-//    ard.sendDigitalPinMode(Z_SLEEP_PIN, ARD_OUTPUT);
-//    ard.sendDigitalPinMode(Y_SLEEP_PIN, ARD_OUTPUT);
-//    ard.sendDigitalPinMode(INK_SLEEP_PIN, ARD_OUTPUT);
+    ard.sendDigitalPinMode(X_SLEEP_PIN, ARD_OUTPUT);
+    ard.sendDigitalPinMode(Z_SLEEP_PIN, ARD_OUTPUT);
+    ard.sendDigitalPinMode(Y_SLEEP_PIN, ARD_OUTPUT);
+    ard.sendDigitalPinMode(INK_SLEEP_PIN, ARD_OUTPUT);
     
     // set digital inputs
     ard.sendDigitalPinMode(X_LIMIT_PIN, ARD_INPUT);
@@ -70,74 +90,50 @@ void arduinoThread::setupArduino(const int & version) {
 
 
 //--------------------------------------------------------------
-void arduinoThread::initializeMotors(){
-    // pass arduino reference and pins to motor threads
-    X.setArduino(ard, X_STEP_PIN, X_DIR_PIN, X_SLEEP_PIN, "Motor X");
-    Z.setArduino(ard, Z_STEP_PIN, Z_DIR_PIN, Z_SLEEP_PIN, "Motor Z");
-    Y.setArduino(ard, Y_STEP_PIN, Y_DIR_PIN, Y_SLEEP_PIN, "Motor Y");
-    INK.setArduino(ard, INK_STEP_PIN, INK_DIR_PIN, INK_SLEEP_PIN, "Motor I");
-}
-
-//--------------------------------------------------------------
-void arduinoThread::initializeVariables(){
-    // set limit and signal defualts
-    X_LIMIT  = Z_LIMIT  = Y_LIMIT  = INK_LIMIT  = false;
-//    X_SIGNAL = Z_SIGNAL = Y_SIGNAL = INK_SIGNAL = ARD_LOW; // do not initialize ARD_HIGH
-
-    // initialize positions
-//    lastX = lastY = 0;
-}
-
-
-//--------------------------------------------------------------
 void arduinoThread::home(){
+    ard.sendDigital(2, ARD_HIGH);
+//    ard.sendDigital(X_DIR_PIN, ARD_HIGH);
     curState = HOMING;
     
-//    // enable
-//    ard.sendDigital(X_SLEEP_PIN, ARD_HIGH);
-//    ard.sendDigital(Z_SLEEP_PIN, ARD_HIGH);
-//    ard.sendDigital(Y_SLEEP_PIN, ARD_HIGH);
-//    ard.sendDigital(INK_SLEEP_PIN, ARD_HIGH);
-//
-//    // set default pin directions towards limit switches
-//    ard.sendDigital(X_DIR_PIN, ARD_HIGH);
+//    X.ready(100000, 500);
+//    X.start();
+    
+//    Z.ready(10000, 500);
+//    Z.start();
+//    
+//    Y.ready(10000, 500);
+//    Y.start();
+//    
+//    INK.ready(10000, 500);
+//    INK.start();
+}
+
+
+//void arduinoThread::shootFace(){
 //    ard.sendDigital(Z_DIR_PIN, ARD_HIGH);
-//    ard.sendDigital(Y_DIR_PIN, ARD_LOW);
-//    ard.sendDigital(INK_DIR_PIN, ARD_HIGH);
-    
-    X.aim(10000, 500);
-    X.start();
-    
-    Y.aim(10000, 500);
-    Y.start();
-}
-
-
-void arduinoThread::shootFace(){
-    ard.sendDigital(Z_DIR_PIN, ARD_HIGH);
-    
-    Z.aim(10000, 200);
-    Z.start();
-    while (Z.i < 10000) {}
-    // take photo here
-}
-
-void arduinoThread::shootCoffee(){
-    ard.sendDigital(Z_DIR_PIN, ARD_HIGH);
-    
-    // aim and move X and Y here depending on observations after print
-    
-    Z.aim(2000, 200);
-    Z.start();
-    while (Z.i < 2000) {}
-
-    //--------------------- take photo here -------------------------//
-    
-    // home all to get out of way of cup and be ready for next print
-    Z.aim(-2000, 200);
-    Z.start();
-    home();
-}
+//    
+//    Z.ready(10000, 200);
+//    Z.start();
+//    while (Z.i < 10000) {}
+//    // take photo here
+//}
+//
+//void arduinoThread::shootCoffee(){
+//    ard.sendDigital(Z_DIR_PIN, ARD_HIGH);
+//    
+//    // aim and move X and Y here depending on observations after print
+//    
+//    Z.ready(2000, 200);
+//    Z.start();
+//    while (Z.i < 2000) {}
+//
+//    //--------------------- take photo here -------------------------//
+//    
+//    // home all to get out of way of cup and be ready for next print
+//    Z.ready(-2000, 200);
+//    Z.start();
+//    home();
+//}
 
 //--------------------------------------------------------------
 void arduinoThread::update(){
