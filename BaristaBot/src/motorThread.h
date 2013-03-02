@@ -11,6 +11,8 @@ class motorThread : public ofThread{
     string name;
     int i;
     int STEP_PIN;
+    int DIR_PIN;
+    int SLEEP_PIN;
     int STEPS;
     int DELAY;
 
@@ -21,15 +23,23 @@ class motorThread : public ofThread{
     }
 
     //--------------------------
-    void setArduino(ofArduino &parentArd, int pin, string nom){
+    void setArduino(ofArduino &parentArd, int step_p, int dir_p, int sleep_p, string nom) {
         ard = &parentArd;
-        STEP_PIN = pin;
+        STEP_PIN = step_p;
+        DIR_PIN = dir_p;
+        SLEEP_PIN = sleep_p;
         name = nom;
     }
     
     void aim(int stps, int dly) {
-        STEPS = stps;
+        STEPS = abs(stps);
         DELAY = dly;
+        bool dir = (STEPS > 0) ? ARD_HIGH : ARD_LOW;
+//        while(!lock()){
+//            ard->sendDigitalPinMode(SLEEP_PIN, ARD_HIGH);
+            ard->sendDigitalPinMode(DIR_PIN, dir);
+//            unlock();
+//        }
     }
 
     void start(){
@@ -41,6 +51,11 @@ class motorThread : public ofThread{
         i = 0;
         STEPS = 0;
         DELAY = 1000;
+        
+        while(!lock()){
+            ard->sendDigitalPinMode(SLEEP_PIN, ARD_LOW);
+        }
+
     }
 
     //--------------------------
@@ -60,10 +75,10 @@ class motorThread : public ofThread{
         usleep(DELAY);
         ard->sendDigital(STEP_PIN, ARD_LOW);
         usleep(DELAY);
-        
-        if (++i == STEPS) {
-            stop();
-        }
+        i++;
+//        if (++i == STEPS) {
+//            stop();
+//        }
     }
     
     //--------------------------------------------------------------

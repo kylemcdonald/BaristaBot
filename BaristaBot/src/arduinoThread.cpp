@@ -51,10 +51,10 @@ void arduinoThread::setupArduino(const int & version) {
     ard.sendDigitalPinMode(Y_STEP_PIN, ARD_OUTPUT);
     ard.sendDigitalPinMode(INK_STEP_PIN, ARD_OUTPUT);
     
-    ard.sendDigitalPinMode(X_SLEEP, ARD_OUTPUT);
-    ard.sendDigitalPinMode(Z_SLEEP, ARD_OUTPUT);
-    ard.sendDigitalPinMode(Y_SLEEP, ARD_OUTPUT);
-    ard.sendDigitalPinMode(INK_SLEEP, ARD_OUTPUT);
+//    ard.sendDigitalPinMode(X_SLEEP_PIN, ARD_OUTPUT);
+//    ard.sendDigitalPinMode(Z_SLEEP_PIN, ARD_OUTPUT);
+//    ard.sendDigitalPinMode(Y_SLEEP_PIN, ARD_OUTPUT);
+//    ard.sendDigitalPinMode(INK_SLEEP_PIN, ARD_OUTPUT);
     
     // set digital inputs
     ard.sendDigitalPinMode(X_LIMIT_PIN, ARD_INPUT);
@@ -72,10 +72,10 @@ void arduinoThread::setupArduino(const int & version) {
 //--------------------------------------------------------------
 void arduinoThread::initializeMotors(){
     // pass arduino reference and pins to motor threads
-    X.setArduino(ard, X_STEP_PIN, "Motor X");
-    Z.setArduino(ard, Z_STEP_PIN, "Motor Z");
-    Y.setArduino(ard, Y_STEP_PIN, "Motor Y");
-    INK.setArduino(ard, INK_STEP_PIN, "Motor I");
+    X.setArduino(ard, X_STEP_PIN, X_DIR_PIN, X_SLEEP_PIN, "Motor X");
+    Z.setArduino(ard, Z_STEP_PIN, Z_DIR_PIN, Z_SLEEP_PIN, "Motor Z");
+    Y.setArduino(ard, Y_STEP_PIN, Y_DIR_PIN, Y_SLEEP_PIN, "Motor Y");
+    INK.setArduino(ard, INK_STEP_PIN, INK_DIR_PIN, INK_SLEEP_PIN, "Motor I");
 }
 
 //--------------------------------------------------------------
@@ -94,16 +94,16 @@ void arduinoThread::home(){
     curState = HOMING;
     
     // enable
-    ard.sendDigital(X_SLEEP, ARD_LOW);
-    ard.sendDigital(Z_SLEEP, ARD_LOW);
-    ard.sendDigital(Y_SLEEP, ARD_HIGH);
-    ard.sendDigital(INK_SLEEP, ARD_HIGH);
+//    ard.sendDigital(X_SLEEP_PIN, ARD_HIGH);
+//    ard.sendDigital(Z_SLEEP_PIN, ARD_HIGH);
+//    ard.sendDigital(Y_SLEEP_PIN, ARD_HIGH);
+//    ard.sendDigital(INK_SLEEP_PIN, ARD_HIGH);
 
     // set default pin directions towards limit switches
-    ard.sendDigital(X_DIR_PIN, ARD_HIGH);
-    ard.sendDigital(Z_DIR_PIN, ARD_HIGH);
-    ard.sendDigital(Y_DIR_PIN, ARD_LOW);
-    ard.sendDigital(INK_DIR_PIN, ARD_HIGH);
+//    ard.sendDigital(X_DIR_PIN, ARD_HIGH);
+//    ard.sendDigital(Z_DIR_PIN, ARD_HIGH);
+//    ard.sendDigital(Y_DIR_PIN, ARD_LOW);
+//    ard.sendDigital(INK_DIR_PIN, ARD_HIGH);
     
     X.aim(10000, 500);
     X.start();

@@ -63,10 +63,10 @@ public:
     int INK_DIR_PIN = 8;
     int INK_STEP_PIN = 9;
     
-    int X_SLEEP = 28;
-    int Z_SLEEP = 26;
-    int Y_SLEEP = 24;
-    int INK_SLEEP = 22;
+    int X_SLEEP_PIN = 17;
+    int Z_SLEEP_PIN = 16;
+    int Y_SLEEP_PIN = 15;
+    int INK_SLEEP_PIN = 14;
     
     const int X_LIMIT_PIN = 10;
     const int Z_LIMIT_PIN = 11;
