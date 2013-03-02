@@ -46,13 +46,13 @@ class motorThread : public ofThread{
         ard->sendDigital(DIR_PIN, DIR);
     }
     
-    void fire(){
-        ard->sendDigital(STEP_PIN, ARD_HIGH);
-        usleep(DELAY);
-        ard->sendDigital(STEP_PIN, ARD_LOW);
-        usleep(DELAY);
-//        i++;
-    }
+//    void fire(){
+//        ard->sendDigital(STEP_PIN, ARD_HIGH);
+//        sleep(DELAY);
+//        ard->sendDigital(STEP_PIN, ARD_LOW);
+//        sleep(DELAY);
+////        i++;
+//    }
     
     
     //--------------------------------------------------------------
@@ -81,11 +81,13 @@ class motorThread : public ofThread{
     void threadedFunction(){
         while(isThreadRunning() != 0){
             lock();
-            //                ard->sendDigital(STEP_PIN, flame = !flame);
-//                unlock();
-//                usleep(DELAY);
-                fire();
+            
+                ard->sendDigital(STEP_PIN, flame = !flame);
+                usleep(DELAY);
+
+//                fire();
             unlock();
+
 //            if (i == STEPS) while (!stop());
         }
     }

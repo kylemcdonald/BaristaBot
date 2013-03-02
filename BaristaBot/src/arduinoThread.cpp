@@ -99,7 +99,7 @@ void arduinoThread::home(){
     curState = HOMING;
         
     X.ready(-100000, 500);
-    Y.ready(100000, 500);
+    Y.ready(100000, 650);
 
     lock();
     
@@ -314,9 +314,13 @@ void arduinoThread::update(){
 void arduinoThread::threadedFunction(){
     while(isThreadRunning() != 0){
 
-        lock();
-
-        unlock();
+        
+        
+//        int i = 0;
+//        while (i < 10000) {
+//            i++;
+//        }
+//        update();
     }
 }
 
