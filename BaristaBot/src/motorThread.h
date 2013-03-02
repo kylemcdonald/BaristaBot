@@ -34,10 +34,10 @@ class motorThread : public ofThread{
     void aim(int stps, int dly) {
         STEPS = abs(stps);
         DELAY = dly;
-        bool dir = (STEPS > 0) ? ARD_HIGH : ARD_LOW;
+//        bool dir = (STEPS > 0) ? ARD_HIGH : ARD_LOW;
 //        while(!lock()){
 //            ard->sendDigitalPinMode(SLEEP_PIN, ARD_HIGH);
-            ard->sendDigitalPinMode(DIR_PIN, dir);
+//            ard->sendDigitalPinMode(DIR_PIN, ARD_HIGH);
 //            unlock();
 //        }
     }
@@ -75,10 +75,10 @@ class motorThread : public ofThread{
         usleep(DELAY);
         ard->sendDigital(STEP_PIN, ARD_LOW);
         usleep(DELAY);
-        i++;
-//        if (++i == STEPS) {
-//            stop();
-//        }
+//        i++;
+        if (++i == STEPS) {
+            stop();
+        }
     }
     
     //--------------------------------------------------------------

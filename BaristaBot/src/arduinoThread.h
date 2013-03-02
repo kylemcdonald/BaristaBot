@@ -55,7 +55,6 @@ public:
 
     // PINS
     int X_DIR_PIN = 2;
-    int X_STEP_PIN = 3;
     int Z_DIR_PIN = 4;
     int Z_STEP_PIN = 5;
     int Y_DIR_PIN = 6;
@@ -63,6 +62,8 @@ public:
     int INK_DIR_PIN = 8;
     int INK_STEP_PIN = 9;
     
+    int X_STEP_PIN = 3;
+
     int X_SLEEP_PIN = 17;
     int Z_SLEEP_PIN = 16;
     int Y_SLEEP_PIN = 15;

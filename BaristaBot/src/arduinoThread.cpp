@@ -94,16 +94,16 @@ void arduinoThread::home(){
     curState = HOMING;
     
     // enable
-//    ard.sendDigital(X_SLEEP_PIN, ARD_HIGH);
-//    ard.sendDigital(Z_SLEEP_PIN, ARD_HIGH);
-//    ard.sendDigital(Y_SLEEP_PIN, ARD_HIGH);
-//    ard.sendDigital(INK_SLEEP_PIN, ARD_HIGH);
+    ard.sendDigital(X_SLEEP_PIN, ARD_HIGH);
+    ard.sendDigital(Z_SLEEP_PIN, ARD_HIGH);
+    ard.sendDigital(Y_SLEEP_PIN, ARD_HIGH);
+    ard.sendDigital(INK_SLEEP_PIN, ARD_HIGH);
 
     // set default pin directions towards limit switches
-//    ard.sendDigital(X_DIR_PIN, ARD_HIGH);
-//    ard.sendDigital(Z_DIR_PIN, ARD_HIGH);
-//    ard.sendDigital(Y_DIR_PIN, ARD_LOW);
-//    ard.sendDigital(INK_DIR_PIN, ARD_HIGH);
+    ard.sendDigital(X_DIR_PIN, ARD_HIGH);
+    ard.sendDigital(Z_DIR_PIN, ARD_HIGH);
+    ard.sendDigital(Y_DIR_PIN, ARD_LOW);
+    ard.sendDigital(INK_DIR_PIN, ARD_HIGH);
     
     X.aim(10000, 500);
     X.start();
