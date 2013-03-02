@@ -206,6 +206,7 @@ void ofApp::update(){
         
         // HERE
         AT.paths = paths;
+        AT.points = paths.begin()->getVertices();
         AT.curState = AT.PRINT;
 		
 		needToUpdate = false;

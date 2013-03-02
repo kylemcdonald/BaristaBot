@@ -11,21 +11,23 @@ public:
     void start();
     void stop();
     void setup();
+    
     void initializeArduino();
     void setupArduino(const int & version);
     void initializeMotors();
     void initializeVariables();
-    void updateArduino();
-    void home();
-    void setTarget();
-    void updateSteppers();
-    void sleepMicros (int microseconds);
-    void threadedFunction();
+    
     void update();
+    void updateArduino();
+    
+    void home();
+    void shootFace();
+    void shootCoffee();
+    void setTarget();
+    
+    void threadedFunction();
     void draw();
-    void moveStepper(int num, int steps, float speed);
     void digitalPinChanged(const int & pinNum);
-    void keyPressed(int key);
  
     arduinoThread(){
         ard.sendReset();
@@ -61,10 +63,10 @@ public:
     int INK_DIR_PIN = 8;
     int INK_STEP_PIN = 9;
     
-    const int X_SLEEP = 28;
-    const int Z_SLEEP = 26;
-    const int Y_SLEEP = 24;
-    const int INK_SLEEP = 22;
+    int X_SLEEP = 28;
+    int Z_SLEEP = 26;
+    int Y_SLEEP = 24;
+    int INK_SLEEP = 22;
     
     const int X_LIMIT_PIN = 10;
     const int Z_LIMIT_PIN = 11;

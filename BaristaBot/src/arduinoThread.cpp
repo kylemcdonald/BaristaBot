@@ -42,13 +42,19 @@ void arduinoThread::setupArduino(const int & version) {
     
     // set digital outputs
     ard.sendDigitalPinMode(X_DIR_PIN, ARD_OUTPUT);
-    ard.sendDigitalPinMode(X_STEP_PIN, ARD_OUTPUT);
     ard.sendDigitalPinMode(Z_DIR_PIN, ARD_OUTPUT);
-    ard.sendDigitalPinMode(Z_STEP_PIN, ARD_OUTPUT);
     ard.sendDigitalPinMode(Y_DIR_PIN, ARD_OUTPUT);
-    ard.sendDigitalPinMode(Y_STEP_PIN, ARD_OUTPUT);
     ard.sendDigitalPinMode(INK_DIR_PIN, ARD_OUTPUT);
+    
+    ard.sendDigitalPinMode(X_STEP_PIN, ARD_OUTPUT);
+    ard.sendDigitalPinMode(Z_STEP_PIN, ARD_OUTPUT);
+    ard.sendDigitalPinMode(Y_STEP_PIN, ARD_OUTPUT);
     ard.sendDigitalPinMode(INK_STEP_PIN, ARD_OUTPUT);
+    
+    ard.sendDigitalPinMode(X_SLEEP, ARD_OUTPUT);
+    ard.sendDigitalPinMode(Z_SLEEP, ARD_OUTPUT);
+    ard.sendDigitalPinMode(Y_SLEEP, ARD_OUTPUT);
+    ard.sendDigitalPinMode(INK_SLEEP, ARD_OUTPUT);
     
     // set digital inputs
     ard.sendDigitalPinMode(X_LIMIT_PIN, ARD_INPUT);
@@ -86,6 +92,12 @@ void arduinoThread::initializeVariables(){
 //--------------------------------------------------------------
 void arduinoThread::home(){
     curState = HOMING;
+    
+    // enable
+    ard.sendDigital(X_SLEEP, ARD_LOW);
+    ard.sendDigital(Z_SLEEP, ARD_LOW);
+    ard.sendDigital(Y_SLEEP, ARD_HIGH);
+    ard.sendDigital(INK_SLEEP, ARD_HIGH);
 
     // set default pin directions towards limit switches
     ard.sendDigital(X_DIR_PIN, ARD_HIGH);
@@ -96,18 +108,130 @@ void arduinoThread::home(){
     X.aim(10000, 500);
     X.start();
     
-//    Y.aim(10000, 500);
-//    Y.start();
+    Y.aim(10000, 500);
+    Y.start();
+}
+
+
+void arduinoThread::shootFace(){
+    ard.sendDigital(Z_DIR_PIN, ARD_HIGH);
+    
+    Z.aim(10000, 200);
+    Z.start();
+    while (Z.i < 10000) {}
+    // take photo here
+}
+
+void arduinoThread::shootCoffee(){
+    ard.sendDigital(Z_DIR_PIN, ARD_HIGH);
+    
+    // aim and move X and Y here depending on observations after print
+    
+    Z.aim(2000, 200);
+    Z.start();
+    while (Z.i < 2000) {}
+
+    //--------------------- take photo here -------------------------//
+    
+    // home all to get out of way of cup and be ready for next print
+    Z.aim(-2000, 200);
+    Z.start();
+    home();
 }
 
 //--------------------------------------------------------------
 void arduinoThread::update(){
     ard.update();
     
-    
-    
-    
-    
+//    if (curState == PRINT) {
+//        // assume that we are starting from home, robot will home after coffee photo
+//        
+//    }
+//
+//    
+//    if (curPath < paths.size()) {
+//        // first point in drawing
+//        if (curPath == 0 && curPoint == 0) {
+//            pushInk = false;
+//            points = paths.at(curPath).getVertices();
+//            target = points.at(curPoint++);
+//            // a new point to draw
+//        } else if (curPoint < points.size()) {
+//            pushInk = true;
+//            target = points.at(curPoint++);
+//            // switch to a new path
+//        } else {
+//            pushInk = false;
+//            curPath++;
+//            curPoint = 0;
+//            points = paths.at(curPath).getVertices();
+//            target = points.at(curPoint++);
+//        }
+//        // all paths are drawn
+//    } else {
+//        curState = COFFEE_PHOTO;
+//        curPath = 0;
+//        curPoint = 0;
+//    }
+//
+//    stepsX = abs((target.x - lastX) * 10);
+//    stepsY = abs((target.y - lastY) * 10);
+//    stepsInk = sqrt(stepsX*stepsX + stepsY*stepsY);
+//    limit = stepsX*stepsY;
+//
+//    // set the directions for each servo
+//    int dir = (target.x > lastX) ? ARD_HIGH : ARD_LOW;
+//    ard.sendDigital(X_DIR_PIN, dir);
+//    dir = (target.y > lastY) ? ARD_HIGH : ARD_LOW;
+//    ard.sendDigital(Y_DIR_PIN, dir);
+//    ard.sendDigital(INK_DIR_PIN, ARD_LOW); // low pushes the syringe
+//    
+//    lastX = target.x;
+//    lastY = target.y;
+//    updateTarget = false;
+//    
+//
+//    // Draw the polylines on the coffee
+//
+//    if (curState == PRINT) {
+//        for (int i = 0; i < paths.size(); i++) {
+//            cout << "\n\n\nPath " << i+1 << " / " << paths.size() << endl;
+//            vector<ofPoint> points = paths.at(i).getVertices();
+//            cout << "\n points.size() = " << points.size() << endl;
+//            for (int j = 0; j < points.size(); j++) {
+//                if (j == 0) {
+//                    pushInk();
+//                } else if (j == points.size()) {
+//                    stopInk();
+//                }
+//                moveTo (points.at(j).x, points.at(j).y);
+//            }
+//            if (i-1 == paths.size()) {
+//                curState = COFFEE_PHOTO;
+//                cout << "\n\n\n\n\n"
+//                    "\n***************************************************************"
+//                    "\n************************ COFFEE_PHOTO *************************"
+//                    "\n***************************************************************"
+//                     << "\n\n\n\n\n" << endl;
+//            }
+//        }
+//    }
+//    
+//    endX = exx;
+//    endY = wyy;
+//    stepsX = (endX - startX) * 10;
+//    stepsY = (endY - startY) * 10;
+//    
+//    //    stepsY = stepsY * 3;
+//    
+//    // scale the speed
+//    if (abs(stepsX) > abs(stepsY)) {
+//        speedX = 1;
+//        speedY = abs(stepsY) / abs(stepsX);
+//    } else {
+//        speedY = 1;
+//        speedX = abs(stepsX) / abs(stepsY);
+//    }
 
     
 
@@ -212,6 +336,6 @@ void arduinoThread::digitalPinChanged(const int & pinNum) {
         X.stop();
     } else if (pinNum == Y_LIMIT_PIN) {
         Y.stop();
-    }
+    } 
 
 }
