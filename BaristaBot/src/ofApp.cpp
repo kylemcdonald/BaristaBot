@@ -85,7 +85,6 @@ void ofApp::setup() {
     cam.setDeviceID(0);
 	camWidth = 640, camHeight = 480;
 	cam.initGrabber(camWidth, camHeight);
-	//    cam.listDevices();
 	
 	faceTrackingScaleFactor = .5;
 	croppedSize = 256;
@@ -113,10 +112,8 @@ void ofApp::setup() {
 	gui.addSlider("facePadding", 1.5, 0, 2, false);
 	gui.loadSettings("settings.xml");
     
-
     AT.setup();
     AT.start();
-
 }
 
 
