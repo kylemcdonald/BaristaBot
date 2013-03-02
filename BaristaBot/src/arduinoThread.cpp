@@ -333,11 +333,10 @@ void arduinoThread::draw(){
 
 //--------------------------------------------------------------
 void arduinoThread::digitalPinChanged(const int & pinNum) {
-    while (!lock());
-        if (ard.getDigital(X_LIMIT_PIN)) {
-            X.stop();
-        }
-    unlock();
+    if (ard.getDigital(X_LIMIT_PIN)) {
+        curState = KEY_PRESS;
+        X.stop();
+    }
 }
 
 
