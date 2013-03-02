@@ -20,6 +20,7 @@ class motorThread : public ofThread{
     int DELAY = 1000;
     
     bool takeAim = false;
+    bool flame = ARD_HIGH;
 
 
     //--------------------------------------------------------------
@@ -51,7 +52,7 @@ class motorThread : public ofThread{
         ard->sendDigital(STEP_PIN, ARD_HIGH);
         usleep(DELAY);
         ard->sendDigital(STEP_PIN, ARD_LOW);
-        usleep(DELAY); // +int(ofRandom(100)));
+        usleep(DELAY);
         i++;
     }
     
@@ -82,20 +83,21 @@ class motorThread : public ofThread{
     //--------------------------------------------------------------
     void threadedFunction(){
         while(isThreadRunning() != 0){
-            while (!lock());
-            
-                if (takeAim) aim ();
-                fire();
-            
-            unlock();
-            if (i == STEPS) while (!stop());
+            if (lock()) {
+                ard->sendDigital(STEP_PIN, flame = !flame);
+                unlock();
+                usleep(DELAY);
+            }
+
+
+//            if (i == STEPS) while (!stop());
             }
     }
     
     //--------------------------------------------------------------
     void draw(){
         string str = name + " on pin " + ofToString(STEP_PIN) + ": i = " + ofToString(i);
-        ofDrawBitmapString(str, 50, 720+STEP_PIN*7);
+        ofDrawBitmapString(str, 50, 800-STEP_PIN*7);
     }
 };
 
