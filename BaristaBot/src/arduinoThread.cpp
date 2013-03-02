@@ -11,16 +11,15 @@ void arduinoThread::start(){
 
 
 //--------------------------------------------------------------
-bool arduinoThread::stop(){
+void arduinoThread::stop(){
     stopThread();
     
-    if (X.isThreadRunning()) { while (!X.stop()); }
-    if (Y.isThreadRunning()) { while (!Y.stop()); }
-    if (Z.isThreadRunning()) { while (!Z.stop()); }
-    if (INK.isThreadRunning()) { while (!INK.stop()); }
+    if (X.isThreadRunning()) X.stop();
+    if (Y.isThreadRunning()) Y.stop();
+    if (Z.isThreadRunning()) Z.stop();
+    if (INK.isThreadRunning()) INK.stop();
     
     ard.disconnect();
-    return true;
 }
 
 //--------------------------------------------------------------
@@ -81,7 +80,7 @@ void arduinoThread::setupArduino(const int & version) {
     ard.sendDigitalPinMode(Z_LIMIT_PIN, ARD_INPUT);
     ard.sendDigitalPinMode(Y_LIMIT_PIN, ARD_INPUT);
     ard.sendDigitalPinMode(INK_LIMIT_PIN, ARD_INPUT);
-//    ofAddListener(ard.EDigitalPinChanged, this, &arduinoThread::digitalPinChanged);
+    ofAddListener(ard.EDigitalPinChanged, this, &arduinoThread::digitalPinChanged);
 
     // it is now safe to send commands to the Arduino
     bSetupArduino = true;
@@ -98,33 +97,22 @@ void arduinoThread::home(){
 
     curState = HOMING;
         
-    X.ready(-100000, 519);
-    Y.ready(-100000, 354);
-    INK.ready(-100000, 61327);
-
-    lock();
+    X.ready(-100000, 819);
+    Y.ready(-100000, 954);
+    Z.ready(100000, 1298);
+    INK.ready(100000, 61327);
     
-        ard.sendDigital(X.SLEEP_PIN, ARD_HIGH);
-        ard.sendDigital(X.DIR_PIN, X.DIR);
-
-        ard.sendDigital(Y.SLEEP_PIN, ARD_HIGH);
-        ard.sendDigital(Y.DIR_PIN, Y.DIR);
+    X.aim();
+    Y.aim();
+    Z.aim();
+    INK.aim();
     
-        ard.sendDigital(INK.SLEEP_PIN, ARD_HIGH);
-        ard.sendDigital(INK.DIR_PIN, INK.DIR);
-    
-    unlock();
+    usleep(1000);
     
     X.start();
     Y.start();
+    Z.start();
     INK.start();
-
-
-//    Z.ready(100000, 500);
-//    Z.start();
-    
-//    INK.ready(-100000, 50000);
-//    INK.start();
 }
 
 
@@ -318,11 +306,8 @@ void arduinoThread::update(){
 //--------------------------------------------------------------
 void arduinoThread::threadedFunction(){
     while(isThreadRunning() != 0){
-
-        
-        
-        usleep(10000);
-        update();
+//        usleep(10000);
+//        update();
     }
 }
 
@@ -338,25 +323,25 @@ void arduinoThread::draw(){
 
     ofDrawBitmapString(str, 50, 700);
     
-//    X.draw();
-//    Y.draw();
-//    Z.draw();
-//    INK.draw();
+    X.draw();
+    Y.draw();
+    Z.draw();
+    INK.draw();
 }
 
 //--------------------------------------------------------------
 void arduinoThread::digitalPinChanged(const int & pinNum) {
     // note: this will throw tons of false positives on a bare mega, needs resistors
-//    curState = KEY_PRESS;
-//    if (ard.getDigital(X_LIMIT_PIN)) {
-//        X.stop();
-//    } else if (ard.getDigital(Z_LIMIT_PIN)) {
-//        Z.stop();
-//    } else if (ard.getDigital(Y_LIMIT_PIN)) {
-//        Y.stop();
-//    } else if (ard.getDigital(INK_LIMIT_PIN)) {
-//        INK.stop();
-//    }
+    curState = KEY_PRESS;
+    if (ard.getDigital(X_LIMIT_PIN)) {
+        X.stop();
+    } else if (ard.getDigital(Z_LIMIT_PIN)) {
+        Z.stop();
+    } else if (ard.getDigital(Y_LIMIT_PIN)) {
+        Y.stop();
+    } else if (ard.getDigital(INK_LIMIT_PIN)) {
+        INK.stop();
+    }
 }
 
 

@@ -201,14 +201,14 @@ void ofApp::update(){
 		
 		paths = getPaths(thinned, minGapLength, minPathLength);
         
-        // HERE
+        // get arduino thread loaded with the paths and started
         AT.paths = paths;
         AT.points = paths.begin()->getVertices();
         AT.curState = AT.PRINT;
 		
 		needToUpdate = false;
     }
-//    AT.update();
+    AT.update();
 }
 
 
@@ -257,9 +257,7 @@ void ofApp::draw() {
 
 
 //--------------------------------------------------------------
-void ofApp::keyPressed(int key) {
-//    AT.keyPressed(key);
-	
+void ofApp::keyPressed(int key) {	
     switch (key) {
         case ' ':
             needToUpdate = true;
@@ -272,35 +270,11 @@ void ofApp::keyPressed(int key) {
         case 't':
             AT.test();
             break;
-//        case '1':
-//            curState = KEY_PRESS;
-//            moveStepper(0, 100, 1);
-//            break;
-//        case '2':
-//            curState = KEY_PRESS;
-//            moveStepper(0, -200, 1);
-//            break;
-//        case '5':
-//            curState = KEY_PRESS;
-//            moveStepper(0, 500, 1);
-//            break;
-//        case 'q':
-//            curState = KEY_PRESS;
-//            moveStepper(1, 100, 1);
-//            break;
-//        case 'w':
-//            curState = KEY_PRESS;
-//            moveStepper(1, 200, 1);
-//            break;
-//        case 't':
-//            curState = KEY_PRESS;
-//            moveStepper(1, 500, 1);
-//            break;
         default:
             break;
     }
 }
 
 void ofApp::exit() {
-    while (!AT.stop());
+    AT.stop();
 }

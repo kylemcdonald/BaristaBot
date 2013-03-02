@@ -10,16 +10,9 @@ class motorThread : public ofThread{
     ofArduino *ard;
     string name;
 
-    int STEP_PIN;
-    int DIR_PIN;
-    int SLEEP_PIN;
-    
-    int i = 0;
-    bool DIR = ARD_LOW;
-    int STEPS = 0;
-    int DELAY = 1000;
-    
-    bool flame = ARD_HIGH;
+    int STEP_PIN, DIR_PIN, SLEEP_PIN;
+    int STEPS, DELAY, INC;
+    bool DIR, GO;
 
 
     //--------------------------------------------------------------
@@ -33,26 +26,24 @@ class motorThread : public ofThread{
         name = nom;
     }
     
+    void clear() {
+        DIR = GO = ARD_LOW;
+        STEPS = INC = 0;
+        DELAY = 1000;
+    }
+    
     void ready(int stps, int dly) {
         STEPS = abs(stps);
         DELAY = dly;
         DIR = (stps > 0) ? ARD_HIGH : ARD_LOW;
     }
     
-
-    //--------------------------------------------------------------
     void aim(){
-        ard->sendDigital(SLEEP_PIN, ARD_HIGH);
-        ard->sendDigital(DIR_PIN, DIR);
+        lock();
+            ard->sendDigital(SLEEP_PIN, ARD_HIGH);
+            ard->sendDigital(DIR_PIN, DIR);
+        unlock();
     }
-    
-//    void fire(){
-//        ard->sendDigital(STEP_PIN, ARD_HIGH);
-//        sleep(DELAY);
-//        ard->sendDigital(STEP_PIN, ARD_LOW);
-//        sleep(DELAY);
-////        i++;
-//    }
     
     
     //--------------------------------------------------------------
@@ -60,20 +51,13 @@ class motorThread : public ofThread{
         startThread(true, false);   // blocking, non-verbose
     }
 
-    bool stop(){
+    void stop(){
         stopThread();
-        i = 0;
-        DIR = ARD_LOW;
-        STEPS = 0;
-        DELAY = 1000;
+        clear();
         
-        if (lock()) {
+        lock();
             ard->sendDigital(SLEEP_PIN, ARD_LOW);
-            unlock();
-            return true;
-        } else {
-            return false;
-        }
+        unlock();
     }
 
     
@@ -82,21 +66,19 @@ class motorThread : public ofThread{
         while(isThreadRunning() != 0){
             lock();
             
-                ard->sendDigital(STEP_PIN, flame = !flame);
+                ard->sendDigital(STEP_PIN, GO = !GO);
+                INC++;
 
-//                fire();
             unlock();
             usleep(DELAY);
 
-
-
-//            if (i == STEPS) while (!stop());
+            if (INC == STEPS) stop();
         }
     }
     
     //--------------------------------------------------------------
     void draw(){
-        string str = name + " on pin " + ofToString(STEP_PIN) + ": i = " + ofToString(i);
+        string str = name + " on pin " + ofToString(STEP_PIN) + ": i = " + ofToString(INC);
         ofDrawBitmapString(str, 50, 800-STEP_PIN*7);
     }
 };
