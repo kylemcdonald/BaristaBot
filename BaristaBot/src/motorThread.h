@@ -51,6 +51,7 @@ class motorThread : public ofThread{
         ard->sendDigital(STEP_PIN, ARD_HIGH);
         usleep(DELAY);
         ard->sendDigital(STEP_PIN, ARD_LOW);
+        usleep(DELAY); // +int(ofRandom(100)));
         i++;
     }
     
@@ -82,17 +83,14 @@ class motorThread : public ofThread{
     void threadedFunction(){
         while(isThreadRunning() != 0){
             while (!lock());
-                if (takeAim) {
-                    aim ();
-                } else if (i < STEPS) {
-                    fire();
-                } else {
-                    while (!stop());
-                }
+            
+                if (takeAim) aim ();
+                fire();
+            
             unlock();
-            usleep(DELAY); // +int(ofRandom(100)));
-        }
-    }   
+            if (i == STEPS) while (!stop());
+            }
+    }
     
     //--------------------------------------------------------------
     void draw(){

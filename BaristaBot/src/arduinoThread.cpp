@@ -15,8 +15,8 @@ bool arduinoThread::stop(){
     stopThread();
     
     if (X.isThreadRunning()) { while (!X.stop()); }
-    if (Z.isThreadRunning()) { while (!Z.stop()); }
     if (Y.isThreadRunning()) { while (!Y.stop()); }
+    if (Z.isThreadRunning()) { while (!Z.stop()); }
     if (INK.isThreadRunning()) { while (!INK.stop()); }
     
     ard.disconnect();
@@ -41,8 +41,8 @@ void arduinoThread::initializeVariables(){
 void arduinoThread::initializeMotors(){
     // pass arduino reference and pins to motor threads
     X.setArduino    (ard, X_STEP_PIN,   X_DIR_PIN,   X_SLEEP_PIN,   "Motor X");
-    Z.setArduino    (ard, Z_STEP_PIN,   Z_DIR_PIN,   Z_SLEEP_PIN,   "Motor Z");
     Y.setArduino    (ard, Y_STEP_PIN,   Y_DIR_PIN,   Y_SLEEP_PIN,   "Motor Y");
+    Z.setArduino    (ard, Z_STEP_PIN,   Z_DIR_PIN,   Z_SLEEP_PIN,   "Motor Z");
     INK.setArduino  (ard, INK_STEP_PIN, INK_DIR_PIN, INK_SLEEP_PIN, "Motor I");
 }
 
@@ -98,16 +98,16 @@ void arduinoThread::home(){
 
     curState = HOMING;
     
-    X.ready(100000, 500);
-    X.start();
+//    X.ready(-100000, 500);
+//    X.start();
     
-    Z.ready(10000, 500);
-    Z.start();
-    
-    Y.ready(10000, 500);
-    Y.start();
+//    Y.ready(-100000, 500);
+//    Y.start();
 
-    INK.ready(10000, 500);
+//    Z.ready(100000, 500);
+//    Z.start();
+    
+    INK.ready(-100000, 50000);
     INK.start();
 }
 
