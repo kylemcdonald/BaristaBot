@@ -5,7 +5,7 @@
 
 //--------------------------------------------------------------
 void arduinoThread::start(){
-    startThread(true, false);   // blocking, verbose
+    startThread(false, false);   // non-blocking, verbose
     curState = START;
 }
 
@@ -98,11 +98,11 @@ void arduinoThread::home(){
 
     curState = HOMING;
     
-    X.ready(100000, 500);
+    X.ready(-100000, 2000);
     X.aim();
     X.start();
     
-    Y.ready(100000, 1130);
+    Y.ready(-100000, 2130);
     Y.aim();
     Y.start();
 
@@ -303,10 +303,10 @@ void arduinoThread::update(){
 //--------------------------------------------------------------
 void arduinoThread::threadedFunction(){
     while(isThreadRunning() != 0){
-        if (lock()){
+//        if (lock()){
             update();
-            unlock();
-        }
+//            unlock();
+//        }
 //        usleep(1000); // Mac only!!!
     }
 }
@@ -323,25 +323,25 @@ void arduinoThread::draw(){
 
     ofDrawBitmapString(str, 50, 700);
     
-    X.draw();
-    Y.draw();
-    Z.draw();
-    INK.draw();
+//    X.draw();
+//    Y.draw();
+//    Z.draw();
+//    INK.draw();
 }
 
 //--------------------------------------------------------------
 void arduinoThread::digitalPinChanged(const int & pinNum) {
     // note: this will throw tons of false positives on a bare mega, needs resistors
-    curState = KEY_PRESS;
-    if (ard.getDigital(X_LIMIT_PIN)) {
-        X.stop();
-    } else if (ard.getDigital(Z_LIMIT_PIN)) {
-        Z.stop();
-    } else if (ard.getDigital(Y_LIMIT_PIN)) {
-        Y.stop();
-    } else if (ard.getDigital(INK_LIMIT_PIN)) {
-        INK.stop();
-    }
+//    curState = KEY_PRESS;
+//    if (ard.getDigital(X_LIMIT_PIN)) {
+//        X.stop();
+//    } else if (ard.getDigital(Z_LIMIT_PIN)) {
+//        Z.stop();
+//    } else if (ard.getDigital(Y_LIMIT_PIN)) {
+//        Y.stop();
+//    } else if (ard.getDigital(INK_LIMIT_PIN)) {
+//        INK.stop();
+//    }
 }
 
 

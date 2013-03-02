@@ -60,7 +60,7 @@ class motorThread : public ofThread{
     //--------------------------------------------------------------
     void start(){
         takeAim = true;
-        startThread(true, false);   // blocking, verbose
+        startThread(false, false);   // non-blocking, verbose
     }
 
     bool stop(){
@@ -83,11 +83,11 @@ class motorThread : public ofThread{
     //--------------------------------------------------------------
     void threadedFunction(){
         while(isThreadRunning() != 0){
-            if (lock()) {
+//            if (lock()) {
                 ard->sendDigital(STEP_PIN, flame = !flame);
                 unlock();
                 usleep(DELAY);
-            }
+//            }
 
 
 //            if (i == STEPS) while (!stop());
