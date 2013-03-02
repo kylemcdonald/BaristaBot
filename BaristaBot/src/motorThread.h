@@ -77,9 +77,13 @@ class motorThread : public ofThread{
     void threadedFunction(){
         while(isThreadRunning() != 0){
             if (lock()){
-//                if (takeAim) aim ();
-                fire();
-                if (i == STEPS) stop();
+                if (takeAim) {
+                    aim ();
+                } else if (i < STEPS) {
+                    fire();
+                } else {
+                    stop();
+                }
                 unlock();
             }
         }

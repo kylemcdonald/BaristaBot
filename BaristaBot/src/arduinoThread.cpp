@@ -107,8 +107,8 @@ void arduinoThread::home(){
 //    Y.ready(10000, 500);
 //    Y.start();
 //    
-//    INK.ready(10000, 500);
-//    INK.start();
+    INK.ready(10000, 500);
+    INK.start();
 }
 
 
