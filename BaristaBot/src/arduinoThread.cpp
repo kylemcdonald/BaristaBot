@@ -107,9 +107,11 @@ void arduinoThread::home(){
 //    Y.start();
 //    
     INK.ready(10000, 500);
+    INK.aim();
     INK.start();
     
     X.ready(100000, 500);
+    X.aim();
     X.start();
 }
 
@@ -333,10 +335,10 @@ void arduinoThread::draw(){
 void arduinoThread::digitalPinChanged(const int & pinNum) {
 //    cout << "SWITCH" << endl;
 //    stopThread();
-    if (pinNum == X_LIMIT_PIN) {
-        X.stop();
-    } else if (pinNum == Y_LIMIT_PIN) {
-        Y.stop();
-    } 
+//    if (pinNum == X_LIMIT_PIN) {
+//        X.stop();
+//    } else if (pinNum == Y_LIMIT_PIN) {
+//        Y.stop();
+//    } 
 
 }
