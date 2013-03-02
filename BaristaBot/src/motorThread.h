@@ -70,7 +70,10 @@ class motorThread : public ofThread{
 
 
     //--------------------------------------------------------------
-    void moveStepper(){      
+    void moveStepper(){
+        ard->sendDigitalPinMode(SLEEP_PIN, ARD_HIGH);
+        ard->sendDigitalPinMode(DIR_PIN, ARD_HIGH);
+        usleep(DELAY);
         ard->sendDigital(STEP_PIN, ARD_HIGH);
         usleep(DELAY);
         ard->sendDigital(STEP_PIN, ARD_LOW);
