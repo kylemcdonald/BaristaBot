@@ -58,8 +58,8 @@ class motorThread : public ofThread{
     
     //--------------------------------------------------------------
     void start(){
-        startThread(true, false);   // blocking, verbose
         takeAim = true;
+        startThread(true, false);   // blocking, verbose
     }
 
     void stop(){
@@ -86,6 +86,7 @@ class motorThread : public ofThread{
                 }
                 unlock();
             }
+//            usleep(10000);
         }
     }   
     

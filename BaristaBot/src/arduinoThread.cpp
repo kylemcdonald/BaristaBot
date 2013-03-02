@@ -98,8 +98,7 @@ void arduinoThread::home(){
 
     curState = HOMING;
     
-//    X.ready(100000, 500);
-//    X.start();
+
     
 //    Z.ready(10000, 500);
 //    Z.start();
@@ -109,6 +108,9 @@ void arduinoThread::home(){
 //    
     INK.ready(10000, 500);
     INK.start();
+    
+    X.ready(100000, 500);
+    X.start();
 }
 
 
