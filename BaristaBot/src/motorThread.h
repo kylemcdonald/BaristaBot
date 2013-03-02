@@ -42,13 +42,9 @@ class motorThread : public ofThread{
 
     //--------------------------------------------------------------
     void aim(){
-        while (!lock());
         ard->sendDigital(SLEEP_PIN, ARD_HIGH);
-        unlock();
-        i+=10;
-//        ard->sendDigital(DIR_PIN, DIR);
-//        takeAim = false;
-//        return true;
+        ard->sendDigital(DIR_PIN, DIR);
+        takeAim = false;
     }
     
     void fire(){
@@ -61,7 +57,7 @@ class motorThread : public ofThread{
     
     //--------------------------------------------------------------
     void start(){
-//        takeAim = true;
+        takeAim = true;
         startThread(true, false);   // blocking, verbose
     }
 

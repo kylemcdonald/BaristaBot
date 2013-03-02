@@ -98,21 +98,17 @@ void arduinoThread::home(){
 
     curState = HOMING;
     
-
-    
-//    Z.ready(10000, 500);
-//    Z.start();
-//    
-//    Y.ready(10000, 500);
-//    Y.start();
-//    
-    INK.ready(10000, 500);
-    INK.aim();
-    INK.start();
-    
     X.ready(100000, 500);
-    X.aim();
     X.start();
+    
+    Z.ready(10000, 500);
+    Z.start();
+    
+    Y.ready(10000, 500);
+    Y.start();
+
+    INK.ready(10000, 500);
+    INK.start();
 }
 
 
@@ -333,9 +329,16 @@ void arduinoThread::draw(){
 
 //--------------------------------------------------------------
 void arduinoThread::digitalPinChanged(const int & pinNum) {
+    // note: this will throw tons of false positives on a bare mega, needs resistors
+    curState = KEY_PRESS;
     if (ard.getDigital(X_LIMIT_PIN)) {
-        curState = KEY_PRESS;
         X.stop();
+    } else if (ard.getDigital(Z_LIMIT_PIN)) {
+        Z.stop();
+    } else if (ard.getDigital(Y_LIMIT_PIN)) {
+        Y.stop();
+    } else if (ard.getDigital(INK_LIMIT_PIN)) {
+        INK.stop();
     }
 }
 
