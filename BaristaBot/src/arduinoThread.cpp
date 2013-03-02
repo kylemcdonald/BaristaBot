@@ -5,7 +5,7 @@
 
 //--------------------------------------------------------------
 void arduinoThread::start(){
-    startThread(false, false);   // non-blocking, verbose
+    startThread(true, false);   // blocking, not-verbose
     curState = START;
 }
 
@@ -81,7 +81,7 @@ void arduinoThread::setupArduino(const int & version) {
     ard.sendDigitalPinMode(Z_LIMIT_PIN, ARD_INPUT);
     ard.sendDigitalPinMode(Y_LIMIT_PIN, ARD_INPUT);
     ard.sendDigitalPinMode(INK_LIMIT_PIN, ARD_INPUT);
-    ofAddListener(ard.EDigitalPinChanged, this, &arduinoThread::digitalPinChanged);
+//    ofAddListener(ard.EDigitalPinChanged, this, &arduinoThread::digitalPinChanged);
 
     // it is now safe to send commands to the Arduino
     bSetupArduino = true;
@@ -99,9 +99,9 @@ void arduinoThread::home(){
     curState = HOMING;
         
     X.ready(-100000, 500);
-    Y.ready(100000, 450);
+    Y.ready(100000, 500);
 
-    while (!lock());
+    lock();
     
         ard.sendDigital(X.SLEEP_PIN, ARD_HIGH);
         ard.sendDigital(X.DIR_PIN, X.DIR);
@@ -112,7 +112,7 @@ void arduinoThread::home(){
     unlock();
     
     X.start();
-//    Y.start();
+    Y.start();
 
 
 //    Z.ready(100000, 500);
@@ -151,8 +151,9 @@ void arduinoThread::home(){
 
 //--------------------------------------------------------------
 void arduinoThread::update(){
-    ard.update();
-    
+    lock();
+        ard.update();
+    unlock();
 //    if (curState == PRINT) {
 //        // assume that we are starting from home, robot will home after coffee photo
 //        
@@ -312,14 +313,10 @@ void arduinoThread::update(){
 //--------------------------------------------------------------
 void arduinoThread::threadedFunction(){
     while(isThreadRunning() != 0){
-        
-        
-        
-        if (lock()){
-            update();
-            unlock();
-        }
-        ofSleepMillis(1000);
+
+        lock();
+
+        unlock();
     }
 }
 
