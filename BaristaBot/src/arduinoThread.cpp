@@ -11,16 +11,16 @@ void arduinoThread::start(){
 
 
 //--------------------------------------------------------------
-void arduinoThread::stop(){
-    while(!lock()){
-        ard.disconnect();
-        unlock();
-        stopThread();
-    }
-    X.stop();
-    Z.stop();
-    Y.stop();
-    INK.stop();
+bool arduinoThread::stop(){
+    stopThread();
+    
+    if (X.isThreadRunning()) { while (!X.stop()); }
+    if (Z.isThreadRunning()) { while (!Z.stop()); }
+    if (Y.isThreadRunning()) { while (!Y.stop()); }
+    if (INK.isThreadRunning()) { while (!INK.stop()); }
+    
+    ard.disconnect();
+    return true;
 }
 
 //--------------------------------------------------------------
@@ -333,12 +333,13 @@ void arduinoThread::draw(){
 
 //--------------------------------------------------------------
 void arduinoThread::digitalPinChanged(const int & pinNum) {
-//    cout << "SWITCH" << endl;
-//    stopThread();
-//    if (pinNum == X_LIMIT_PIN) {
-//        X.stop();
-//    } else if (pinNum == Y_LIMIT_PIN) {
-//        Y.stop();
-//    } 
-
+    while (!lock());
+        if (ard.getDigital(X_LIMIT_PIN)) {
+            X.stop();
+        }
+    unlock();
 }
+
+
+
+

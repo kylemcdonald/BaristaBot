@@ -9,7 +9,7 @@ class arduinoThread : public ofThread{
 
 public:
     void start();
-    void stop();
+    bool stop();
     void setup();
     
     void initializeArduino();

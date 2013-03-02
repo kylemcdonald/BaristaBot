@@ -304,5 +304,5 @@ void ofApp::keyPressed(int key) {
 }
 
 void ofApp::exit() {
-    AT.stop();
+    while (!AT.stop());
 }

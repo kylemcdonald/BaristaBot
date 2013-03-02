@@ -42,7 +42,7 @@ class motorThread : public ofThread{
 
     //--------------------------------------------------------------
     void aim(){
-        while (!lock()){}
+        while (!lock());
         ard->sendDigital(SLEEP_PIN, ARD_HIGH);
         unlock();
         i+=10;
@@ -65,27 +65,33 @@ class motorThread : public ofThread{
         startThread(true, false);   // blocking, verbose
     }
 
-    void stop(){
+    bool stop(){
         stopThread();
-        ard->sendDigital(SLEEP_PIN, ARD_LOW);
-        
         i = 0;
         DIR = ARD_LOW;
         STEPS = 0;
         DELAY = 1000;
+        
+        if (lock()) {
+            ard->sendDigital(SLEEP_PIN, ARD_LOW);
+            unlock();
+            return true;
+        } else {
+            return false;
+        }
     }
 
     
     //--------------------------------------------------------------
     void threadedFunction(){
         while(isThreadRunning() != 0){
-            while (!lock()){}
+            while (!lock());
                 if (takeAim) {
                     aim ();
                 } else if (i < STEPS) {
                     fire();
                 } else {
-                    stop();
+                    while (!stop());
                 }
             unlock();
             usleep(DELAY); // +int(ofRandom(100)));
