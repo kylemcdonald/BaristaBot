@@ -275,6 +275,7 @@ void ofApp::keyPressed(int key) {
             // after print machine raises up and takes a coffee photo
             AT.curState = AT.FACE_PHOTO;
             AT.goHome();
+            break;
         case 'c':
             // take a look at the coffee photo, if it's not good press c
             // retake photo of coffee (or make this happen in spacebar for consistency)
@@ -283,7 +284,7 @@ void ofApp::keyPressed(int key) {
         // special controls
         case 'h':
             // for debugging
-            AT.goHome();
+//            AT.goHome();
             break;
         case OF_KEY_RIGHT:
             AT.jogRight();

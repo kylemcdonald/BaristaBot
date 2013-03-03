@@ -35,7 +35,7 @@ class motorThread : public ofThread{
             ard->sendDigital(SLEEP_PIN, ARD_HIGH);
             ard->sendDigital(DIR_PIN, DIR);
         unlock();
-        usleep(100);
+//        usleep(1000);
     }
     
     void clear() {
@@ -70,7 +70,7 @@ class motorThread : public ofThread{
             unlock();
             usleep(DELAY);
 
-            if (INC == STEPS) stop();
+            if (INC >= STEPS) stop();
         }
     }
     

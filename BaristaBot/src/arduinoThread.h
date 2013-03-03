@@ -46,7 +46,7 @@ public:
     
     ofArduino ard;
     motorThread X, Y, Z, INK;
-    ofPoint target, home;
+    ofPoint home, current, target;
     vector<ofPolyline> paths;
     vector<ofPoint> points;
     
@@ -88,11 +88,11 @@ public:
     
     bool X_LIMIT, Y_LIMIT, Z_LIMIT, INK_LIMIT;
     bool bSetupArduino;     // flag variable for setting up arduino once
-    int DELAY_MIN = 500;    // in microseconds
+    int DELAY_MIN = 1000;    // in microseconds
     
     int home_x, home_y, steps_x, steps_y, delay_x, delay_y;
     int paths_i, points_i;
-    bool inkable;
+    bool should_ink;
     
     int startX, startY, endX, endY, speedX, speedY;
     int stepsX, stepsY, stepsInk;

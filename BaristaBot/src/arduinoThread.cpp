@@ -36,7 +36,7 @@ void arduinoThread::setup(){
 void arduinoThread::initializeVariables(){
     X_LIMIT  = Z_LIMIT  = Y_LIMIT  = INK_LIMIT  = false;
     home.set(0,0);
-    inkable = false;
+    should_ink = false;
 }
 
 void arduinoThread::initializeMotors(){
@@ -92,12 +92,12 @@ void arduinoThread::setupArduino(const int & version) {
 
 //----------------------------------------------------------------------------------------------
 void arduinoThread::goHome(){
-    if (curState == FACE_PHOTO) {
-        Z.ready(-10000, 397);
-        Z.start();
-    } else {
-        curState = HOMING;
-    }
+//    if (curState == FACE_PHOTO) {
+//        Z.ready(-10000, 397);
+//        Z.start();
+//    } else {
+//        curState = HOMING;
+//    }
     
     X.ready(10000, 857);
     Y.ready(-10000, 756);
@@ -112,18 +112,20 @@ ofPoint arduinoThread::getNextTarget() {
     // if there is another point in this path, well grab the fucker
     if (++points_i < points.size()) {
         next = points.at(points_i);
-        inkable = true;
+        if (points_i == 1) should_ink = true;
     }
     // if not, get the next path then, and stop drawing, dickbag
     else if (++paths_i < paths.size()) {
         points = paths.at(paths_i).getVertices();
         next = points.at(points_i = 0);
-        inkable = false;
+        should_ink = false;
     }
     // no more goddamned points or paths, I need a coffee
     else {
         points_i = paths_i = 0;
-        next = home;
+        should_ink = false;
+        shootCoffee();
+        return home;
     }
     
     return next;
@@ -151,14 +153,16 @@ void arduinoThread::journey(ofPoint orig, ofPoint dest){
     
     X.ready(steps_x, delay_x);
     Y.ready(steps_y, delay_y);
+    
+    ofSleepMillis(10);
     X.start();
     Y.start();
 }
 
 bool arduinoThread::journeysDone(){
-    if (!X.isThreadRunning() && !Y.isThreadRunning())
-        return true;
-    return false;
+    if (X.isThreadRunning() || Y.isThreadRunning())
+        return false;
+    return true;
 }
 
 
@@ -176,28 +180,26 @@ void arduinoThread::update(){
         case FACE_PHOTO:
             if (journeysDone() && !Z.isThreadRunning()) {
                 // we are starting from home, robot moves home after face photo
-                paths_i = points_i = 0;
+                current = home;
                 target = *points.begin();
-                journey(home, target);
+                paths_i = points_i = 0;
+
                 curState = PRINTING;
             }
             break;
         case PRINTING:
             if (journeysDone()) {
-                ofPoint nextTarget = getNextTarget();
-                
-                // when nextTarget is home that means we're done drawing
-                if (nextTarget != home) {
-                    journey(target, nextTarget);
-                    if (inkable) {
-                        INK.ready(9999999, 10000);
-                        INK.start();
-                    } else {
-                        INK.stop();
-                    }
+                journey(current, target);
+                if (should_ink) {
+                    INK.ready(10000, 10000);
+                    ofSleepMillis(10);
+                    INK.start();
                 } else {
-                    shootCoffee();
+                    INK.stop();
+                    ofSleepMillis(10);
                 }
+                current = target;
+                target = getNextTarget();
             }
             break;
         default:
@@ -212,8 +214,8 @@ void arduinoThread::update(){
 void arduinoThread::shootFace(){
     curState = SHOOT_FACE;
     // change these value depending on observation
-    Z.ready(10000, 500);
-    Z.start();
+//    Z.ready(10000, 500);
+//    Z.start();
     
 }
 
@@ -271,7 +273,8 @@ void arduinoThread::draw(){
     if (!bSetupArduino){
 		str += "arduino not ready...";
 	} else {
-        str += "arduino connected, firmware: " + ofToString(ard.getFirmwareName());
+        str += "Point " + ofToString(points_i) + " / " + ofToString(points.size());
+        str += ". Path " + ofToString(paths_i) + " / " + ofToString(paths.size());
     }
 
     ofDrawBitmapString(str, 50, 700);
