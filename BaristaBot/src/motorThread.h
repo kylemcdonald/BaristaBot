@@ -65,12 +65,11 @@ class motorThread : public ofThread{
             lock();
             
                 ard->sendDigital(STEP_PIN, GO = !GO);
-                INC++;
 
             unlock();
             usleep(DELAY);
 
-            if (INC >= STEPS) stop();
+            if (INC++ >= STEPS) stop();
         }
     }
     

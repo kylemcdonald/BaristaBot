@@ -133,7 +133,7 @@ ofPoint arduinoThread::getNextTarget() {
 
 void arduinoThread::journey(ofPoint orig, ofPoint dest){
     int sx = abs(steps_x = (dest.x - orig.x) * 5);
-    int sy = abs(steps_y = (dest.y - orig.x) * 5);
+    int sy = abs(steps_y = (dest.y - orig.x) * 2);
     
     if (sx > sy) {
         delay_x = DELAY_MIN;
