@@ -12,7 +12,7 @@ class motorThread : public ofThread{
     string name;
 
     int STEP_PIN, DIR_PIN, SLEEP_PIN;
-    int STEPS, DELAY, INC;
+    int s, STEPS, DELAY, INC;
     bool DIR, GO;
 
 
@@ -28,7 +28,7 @@ class motorThread : public ofThread{
     }
     
     void ready(int stps, int dly) {
-        STEPS = abs(stps);
+        STEPS = abs(s = stps);
         DELAY = dly;
         DIR = (stps > 0) ? ARD_LOW : ARD_HIGH;
         lock();
@@ -40,7 +40,7 @@ class motorThread : public ofThread{
     
     void clear() {
         DIR = GO = ARD_LOW;
-        STEPS = INC = 0;
+        s = STEPS = INC = 0;
         DELAY = 1000;
     }
     
@@ -76,7 +76,7 @@ class motorThread : public ofThread{
     
     //--------------------------------------------------------------
     void draw(){
-        string str = name + " on pin " + ofToString(STEP_PIN) + ": i = " + ofToString(INC);
+        string str = name + ":  Step " + ofToString(INC) + " / " + ofToString(s);
         ofDrawBitmapString(str, 50, 800-STEP_PIN*7);
     }
 };
