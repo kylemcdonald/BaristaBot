@@ -92,7 +92,7 @@ public:
     bool bSetupArduino;     // flag variable for setting up arduino once
     int DELAY_MIN = 500;    // in microseconds
     
-    int home_x, home_y, steps_x, steps_y, delay_x, delay_y;
+    int cropped_size;
     int paths_i, points_i;
     bool start_ink, stop_ink;
         

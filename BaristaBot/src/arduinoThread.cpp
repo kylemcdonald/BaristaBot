@@ -99,8 +99,8 @@ void arduinoThread::goHome(){
 //        curState = HOMING;
 //    }
     
-    X.ready(1000, 857);
-    Y.ready(-1000, 756);
+    X.ready(10000, 857);
+    Y.ready(-10000, 756);
     
     X.start();
     Y.start();
@@ -133,30 +133,32 @@ ofPoint arduinoThread::getNextTarget() {
 }
 
 void arduinoThread::journey(ofPoint orig, ofPoint dest){
-    int sx = abs(steps_x = ofMap((dest.x - orig.x), -200, 200, -5000, 5000));
-    int sy = abs(steps_y = ofMap((dest.y - orig.y), -200, 200, -5000, 5000));
-//    cout << "range x: " << ofToString(dest.x - orig.x) << endl;
-//    cout << "range y: " << ofToString(dest.y - orig.y) << endl;
+    // first normalize, 0,0 is the upper left corner
+    // cropped_size gets converted to 1
+    int ndelta_x = (dest.x - orig.x) / cropped_size;
+    int ndelta_y = (dest.y - orig.y) / cropped_size;
     
-    if (sx > sy) {
-        delay_x = DELAY_MIN;
-        if (sy != 0) {
-            delay_y = (sx/sy) * DELAY_MIN;
-        } else {
-            delay_y = DELAY_MIN;
-        }
-    } else {
-        delay_y = DELAY_MIN;
-        if (sx != 0) {
-            delay_x = (sy/sx) * DELAY_MIN;
-        } else {
-            delay_x = DELAY_MIN;
-        }
-    }
+    // then convert to mm, an 80 mm square
+    int mmdelta_x = ndelta_x * 80;
+    int mmdelta_y = ndelta_y * 80;
     
-    X.ready(steps_x, delay_x);
-    Y.ready(steps_y, delay_y);
+    // then convert to steps
+    // estimate 236.2 steps per mm in X
+    // estimate 118.1 steps per mm in Y
+    int sdelta_x = mmdelta_x * 236;
+    int sdelta_y = mmdelta_y * 118;
     
+    // now find the delays based on ratio of steps x and y
+    int sx = abs(sdelta_x);
+    int sy = abs(sdelta_y);
+    int delay_x = DELAY_MIN;
+    int delay_y = DELAY_MIN;
+    if (sy > sx && sx != 0) delay_x = (sy/sx) * DELAY_MIN;
+    if (sx > sy && sy != 0) delay_y = (sx/sy) * DELAY_MIN;
+    
+    // send variables to motors and start them
+    X.ready(sdelta_x, delay_x);
+    Y.ready(sdelta_y, delay_y);
     X.start();
     Y.start();
 }
@@ -191,15 +193,15 @@ void arduinoThread::update(){
             break;
         case PRINTING:
             if (journeysDone()) {
-                if (start_ink) {
-                    INK.ready(1000, 100000);
-                    INK.start();
-                    start_ink = false;
-                }
-                if (stop_ink) {
-                    INK.stop();
-                    stop_ink = false;
-                }
+//                if (start_ink) {
+//                    INK.ready(1000, 100000);
+//                    INK.start();
+//                    start_ink = false;
+//                }
+//                if (stop_ink) {
+//                    INK.stop();
+//                    stop_ink = false;
+//                }
                 
                 journey(current, target);
                 current = target;

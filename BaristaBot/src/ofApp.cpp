@@ -113,6 +113,7 @@ void ofApp::setup() {
 	gui.loadSettings("settings.xml");
     
     AT.setup();
+    AT.cropped_size = croppedSize;
     AT.start();
 }
 
@@ -284,7 +285,10 @@ void ofApp::keyPressed(int key) {
         // special controls
         case 'h':
             // for debugging
-//            AT.goHome();
+            AT.goHome();
+            break;
+        case 'b':
+//            AT.drawBox();
             break;
         case OF_KEY_RIGHT:
             AT.jogRight();
