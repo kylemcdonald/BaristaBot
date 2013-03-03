@@ -48,6 +48,7 @@ void arduinoThread::initializeMotors(){
 }
 
 void arduinoThread::initializeArduino() {
+    // StandardFirmata for OF is at 57600 by default
 	ard.connect("/dev/tty.usbmodem1411", 115200);
 	ofAddListener(ard.EInitialized, this, &arduinoThread::setupArduino);
 	bSetupArduino = false;
@@ -92,14 +93,14 @@ void arduinoThread::setupArduino(const int & version) {
 //----------------------------------------------------------------------------------------------
 void arduinoThread::goHome(){
     if (curState == FACE_PHOTO) {
-        Z.ready(10000, 337);
+        Z.ready(-10000, 397);
         Z.start();
     } else {
         curState = HOMING;
     }
     
-    X.ready(-100000, 819);
-    Y.ready(100000, 954);
+    X.ready(100000, 857);
+    Y.ready(-100000, 756);
     
     X.start();
     Y.start();
@@ -203,7 +204,7 @@ void arduinoThread::update(){
 void arduinoThread::shootFace(){
     curState = SHOOT_FACE;
     // change these value depending on observation
-    Z.ready(-10000, 500);
+    Z.ready(10000, 500);
     Z.start();
     
 }
@@ -211,7 +212,7 @@ void arduinoThread::shootFace(){
 void arduinoThread::shootCoffee(){
     curState = SHOOT_COFFEE;
     // change these value depending on observation
-    Z.ready(-2000, 500);
+    Z.ready(2000, 500);
     Z.start();
     
     
