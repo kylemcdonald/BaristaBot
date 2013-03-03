@@ -21,7 +21,7 @@ public:
     void updateArduino();
     
     void goHome();
-    void journey(ofPoint orig, ofPoint dest);
+    void journeyOn(bool new_coffee);
     bool journeysDone();
     void shootFace();
     void shootCoffee();
@@ -49,7 +49,7 @@ public:
     
     ofArduino ard;
     motorThread X, Y, Z, INK;
-    ofPoint home, current, target;
+    ofPoint home; //, current, target;
     vector<ofPolyline> paths;
     vector<ofPoint> points;
     
@@ -89,16 +89,15 @@ public:
     const int Z_LIMIT_PIN = 11;
     const int INK_LIMIT_PIN = 13;
     
-    bool X_LIMIT, Y_LIMIT, Z_LIMIT, INK_LIMIT;
     bool bSetupArduino;     // flag variable for setting up arduino once
     int DELAY_MIN = 500;    // in microseconds
     int TOL = 1000;
     
     int cropped_size;
     int paths_i, points_i;
-    bool start_ink, stop_ink;
+    bool start_path, start_transition, print_done;
         
-    string buttonState, ex, wy;
+    string ex, wy;
 };
 
 #endif

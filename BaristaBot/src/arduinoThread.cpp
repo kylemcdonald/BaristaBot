@@ -34,9 +34,9 @@ void arduinoThread::setup(){
 }
 
 void arduinoThread::initializeVariables(){
-    X_LIMIT  = Z_LIMIT  = Y_LIMIT  = INK_LIMIT  = false;
     home.set(0,0);
-    stop_ink = start_ink = false;
+    start_path = false;
+    start_transition = true;
 }
 
 void arduinoThread::initializeMotors(){
@@ -109,7 +109,7 @@ void arduinoThread::goHome(){
 ofPoint arduinoThread::getNextTarget() {
     ofPoint next;
     
-    if (points_i == 0) start_ink = true;
+    if (points_i == 0) start_path = true;
     
     // if there is another point in this path, well grab the fucker
     if (++points_i < points.size()) {
@@ -117,13 +117,13 @@ ofPoint arduinoThread::getNextTarget() {
     }
     // if not, get the next path then, and stop drawing, dickbag
     else if (++paths_i < paths.size()) {
-        stop_ink = true;
+        start_transition = true;
         points = paths.at(paths_i).getVertices();
         next = points.at(points_i = 0);
     }
     // no more goddamned points or paths, I need a coffee
     else {
-        stop_ink = true;
+        print_done = true;
         points_i = paths_i = 0;
         shootCoffee();
         next = home;
@@ -152,43 +152,55 @@ int arduinoThread::getSteps(float here, float there, bool is_x) {
     }
 }
 
-void arduinoThread::journey(ofPoint orig, ofPoint dest){
+void arduinoThread::journeyOn(bool new_coffee){
     int sdelta_x = 0;
     int sdelta_y = 0;
     int sx = 0;
     int sy = 0;
     int point_count = 0;
-    
-    // if either movement is smaller than the tolerance of the robot
-    // get more points and add them up until tolerance is passed
-    while (sx < TOL || sy < TOL) {
-        // keep going unless one dimension gets too big
-        if (sx > TOL*2 || sy > TOL*2) {
-            break;
-        }
-        current = target;
-        target = getNextTarget();
-        sdelta_x += getSteps(current.x, target.x, true);
-        sdelta_y += getSteps(current.y, target.y, false);
-        sx = abs(sdelta_x);
-        sy = abs(sdelta_y);
-        point_count++;
-    }
-    
-    // now find the delays based on ratio of steps x and y
     int delay_x = DELAY_MIN;
     int delay_y = DELAY_MIN;
-    if (sy > sx && sx != 0) {
-        delay_x = DELAY_MIN * sy / sx;
-    } else if (sx > sy && sy != 0) {
-        delay_y = DELAY_MIN * sx / sy;
+    ofPoint current;
+    ofPoint target;
+    
+    if (start_transition) {
+        if (new_coffee){
+            paths_i = points_i = 0;
+            current = home;
+            target = *points.begin();
+        }
+        sx = abs(sdelta_x = getSteps(current.x, target.x, true));
+        sy = abs(sdelta_y = getSteps(current.y, target.y, false));
+        delay_x += 77; // so they aren't running at same speed
+    }
+    else {
+        // if either movement is smaller than the tolerance of the robot
+        // get more points and add them up until tolerance is passed
+        while (sx < TOL || sy < TOL) {
+            // keep going unless one dimension gets too big
+            if (sx > TOL*2 || sy > TOL*2) {
+                break;
+            }
+            current = target;
+            target = getNextTarget();
+            
+            sx = abs(sdelta_x += getSteps(current.x, target.x, true));
+            sy = abs(sdelta_y += getSteps(current.y, target.y, false));
+            point_count++;
+        }
+        // now find the delays based on ratio of steps x and y
+        if (sy > sx && sx != 0) {
+            delay_x = DELAY_MIN * sy / sx;
+        } else if (sx > sy && sy != 0) {
+            delay_y = DELAY_MIN * sx / sy;
+        }
     }
     
     // debugging
-    ex = " orig.x: " + ofToString(orig.x) + " dest.x: "   + ofToString(dest.x)
-       + " sx: "     + ofToString(sx)     + " delay_x: "  + ofToString(delay_x);
-    wy = " orig.y: " + ofToString(orig.y) + " dest.y: "   + ofToString(dest.y)
-       + " sy: "     + ofToString(sy)     + " delay_y: "  + ofToString(delay_y)
+    ex = " current.x: "  + ofToString(current.x) + " target.x: " + ofToString(target.x)
+       + " sx: "         + ofToString(sx)        + " delay_x: "  + ofToString(delay_x);
+    wy = " current.y: "  + ofToString(current.y) + " target.y: " + ofToString(target.y)
+       + " sy: "         + ofToString(sy)        + " delay_y: "  + ofToString(delay_y)
        + " point_count " + ofToString(point_count);
     
     // send variables to motors and start them
@@ -219,9 +231,10 @@ void arduinoThread::update(){
         case FACE_PHOTO:
             if (journeysDone() && !Z.isThreadRunning()) {
                 // we are starting from home, robot moves home after face photo
-                current = home;
-                target = *points.begin();
-                paths_i = points_i = 0;
+//                current = home;
+//                target = *points.begin();
+//                paths_i = points_i = 0;
+                journeyOn(true);
 
                 curState = PRINTING;
             }
@@ -238,7 +251,7 @@ void arduinoThread::update(){
 //                    stop_ink = false;
 //                }
                 
-                journey(current, target);
+                journeyOn(false);
 //                current = target;
 //                target = getNextTarget();
             }
