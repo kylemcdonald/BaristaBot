@@ -133,8 +133,10 @@ ofPoint arduinoThread::getNextTarget() {
 }
 
 void arduinoThread::journey(ofPoint orig, ofPoint dest){
-    int sx = abs(steps_x = (dest.x - orig.x) * 5);
-    int sy = abs(steps_y = (dest.y - orig.x) / 3);
+    int sx = abs(steps_x = ofMap((dest.x - orig.x), -200, 200, -5000, 5000));
+    int sy = abs(steps_y = ofMap((dest.y - orig.y), -200, 200, -5000, 5000));
+//    cout << "range x: " << ofToString(dest.x - orig.x) << endl;
+//    cout << "range y: " << ofToString(dest.y - orig.y) << endl;
     
     if (sx > sy) {
         delay_x = DELAY_MIN;
