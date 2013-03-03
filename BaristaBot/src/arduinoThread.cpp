@@ -130,8 +130,8 @@ ofPoint arduinoThread::getNextTarget() {
 }
 
 void arduinoThread::journey(ofPoint orig, ofPoint dest){
-    int sx = abs(steps_x = (dest.x - orig.x));
-    int sy = abs(steps_y = (dest.y - orig.x));
+    int sx = abs(steps_x = (dest.x - orig.x) * 5);
+    int sy = abs(steps_y = (dest.y - orig.x) * 5);
     
     if (sx > sy) {
         delay_x = DELAY_MIN;
@@ -156,7 +156,7 @@ void arduinoThread::journey(ofPoint orig, ofPoint dest){
 }
 
 bool arduinoThread::journeysDone(){
-    if (!X.isThreadRunning() && !Y.isThreadRunning() && !Z.isThreadRunning())
+    if (!X.isThreadRunning() && !Y.isThreadRunning())
         return true;
     return false;
 }
@@ -174,7 +174,7 @@ void arduinoThread::update(){
     
     switch (curState) {
         case FACE_PHOTO:
-            if (journeysDone()) {
+            if (journeysDone() && !Z.isThreadRunning()) {
                 // we are starting from home, robot moves home after face photo
                 paths_i = points_i = 0;
                 target = *points.begin();
