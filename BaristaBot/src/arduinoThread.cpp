@@ -1,16 +1,15 @@
+
 #include "ofMain.h"
 #include "arduinoThread.h"
 #include "motorThread.h"
 
 
-//--------------------------------------------------------------
+//----------------------------------------------------------------------------------------------
 void arduinoThread::start(){
     startThread(true, false);   // blocking, not-verbose
     curState = START;
 }
 
-
-//--------------------------------------------------------------
 void arduinoThread::stop(){
     stopThread();
     
@@ -22,7 +21,11 @@ void arduinoThread::stop(){
     ard.disconnect();
 }
 
-//--------------------------------------------------------------
+
+
+
+
+//----------------------------------------------------------------------------------------------
 void arduinoThread::setup(){
     // do not change this sequence
     initializeVariables();
@@ -30,13 +33,12 @@ void arduinoThread::setup(){
     initializeArduino();
 }
 
-//--------------------------------------------------------------
 void arduinoThread::initializeVariables(){
     X_LIMIT  = Z_LIMIT  = Y_LIMIT  = INK_LIMIT  = false;
+    home.set(0,0);
+    inkable = false;
 }
 
-
-//--------------------------------------------------------------
 void arduinoThread::initializeMotors(){
     // pass arduino reference and pins to motor threads
     X.setArduino    (ard, X_STEP_PIN,   X_DIR_PIN,   X_SLEEP_PIN,   "Motor X");
@@ -45,16 +47,12 @@ void arduinoThread::initializeMotors(){
     INK.setArduino  (ard, INK_STEP_PIN, INK_DIR_PIN, INK_SLEEP_PIN, "Motor I");
 }
 
-
-//--------------------------------------------------------------
 void arduinoThread::initializeArduino() {
 	ard.connect("/dev/tty.usbmodem1411", 115200);
 	ofAddListener(ard.EInitialized, this, &arduinoThread::setupArduino);
 	bSetupArduino = false;
 }
 
-
-//--------------------------------------------------------------
 void arduinoThread::setupArduino(const int & version) {
     // remove listener because we don't need it anymore
     ofRemoveListener(ard.EInitialized, this, &arduinoThread::setupArduino);
@@ -88,11 +86,21 @@ void arduinoThread::setupArduino(const int & version) {
 }
 
 
-//--------------------------------------------------------------
-void arduinoThread::home(){
 
-    curState = HOMING;
-        
+
+
+//----------------------------------------------------------------------------------------------
+void arduinoThread::goHome(){
+    if (curState == FACE_PHOTO) {
+        lock();
+            ard.sendDigital(Z_DIR_PIN, ARD_HIGH);
+        unlock();
+        Z.ready(-100000, 227);
+        Z.start();
+    } else {
+        curState = HOMING;
+    }
+    
     X.ready(-100000, 819);
     Y.ready(100000, 954);
     
@@ -100,196 +108,137 @@ void arduinoThread::home(){
     Y.start();
 }
 
+ofPoint arduinoThread::getNextTarget() {
+    ofPoint next;
+    
+    // if there is another point in this path, well grab the fucker
+    if (++points_i < points.size()) {
+        next = points.at(points_i);
+        inkable = true;
+    }
+    // if not, get the next path then, and stop drawing, dickbag
+    else if (++paths_i < paths.size()) {
+        points = paths.at(paths_i).getVertices();
+        next = points.at(points_i = 0);
+        inkable = false;
+    }
+    // no more goddamned points or paths, I need a coffee
+    else {
+        points_i = paths_i = 0;
+        next = home;
+    }
+    
+    return next;
+}
 
-//void arduinoThread::shootFace(){
-//    ard.sendDigital(Z_DIR_PIN, ARD_HIGH);
-//    
-//    Z.ready(10000, 200);
-//    Z.start();
-//    while (Z.i < 10000) {}
-//    // take photo here
-//}
-//
-//void arduinoThread::shootCoffee(){
-//    ard.sendDigital(Z_DIR_PIN, ARD_HIGH);
-//    
-//    // aim and move X and Y here depending on observations after print
-//    
-//    Z.ready(2000, 200);
-//    Z.start();
-//    while (Z.i < 2000) {}
-//
-//    //--------------------- take photo here -------------------------//
-//    
-//    // home all to get out of way of cup and be ready for next print
-//    Z.ready(-2000, 200);
-//    Z.start();
-//    home();
-//}
+void arduinoThread::journey(ofPoint orig, ofPoint dest){
+    steps_x = (dest.x - orig.x) * 10;
+    steps_y = (dest.y - orig.x) * 10;
+    
+    if (steps_x > steps_y) {
+        delay_x = DELAY_MIN;
+        delay_y = (steps_x/steps_y) * DELAY_MIN;
+    } else {
+        delay_y = DELAY_MIN;
+        delay_x = (steps_y/steps_x) * DELAY_MIN;
+    }
+    
+    X.ready(steps_x, delay_x);
+    Y.ready(steps_y, delay_y);
+    X.start();
+    Y.start();
+}
 
-//--------------------------------------------------------------
+bool arduinoThread::journeysDone(){
+    if (!X.isThreadRunning() && !Y.isThreadRunning() && !Z.isThreadRunning())
+        return true;
+    return false;
+}
+
+
+
+
+
+//----------------------------------------------------------------------------------------------
 void arduinoThread::update(){
     lock();
         ard.update();
     unlock();
 
-    if (curState == PRINT) {
-        // assume that we are starting from home, robot will home after coffee photo
-        
-    }
-//
-//    
-//    if (curPath < paths.size()) {
-//        // first point in drawing
-//        if (curPath == 0 && curPoint == 0) {
-//            pushInk = false;
-//            points = paths.at(curPath).getVertices();
-//            target = points.at(curPoint++);
-//            // a new point to draw
-//        } else if (curPoint < points.size()) {
-//            pushInk = true;
-//            target = points.at(curPoint++);
-//            // switch to a new path
-//        } else {
-//            pushInk = false;
-//            curPath++;
-//            curPoint = 0;
-//            points = paths.at(curPath).getVertices();
-//            target = points.at(curPoint++);
-//        }
-//        // all paths are drawn
-//    } else {
-//        curState = COFFEE_PHOTO;
-//        curPath = 0;
-//        curPoint = 0;
-//    }
-//
-//    stepsX = abs((target.x - lastX) * 10);
-//    stepsY = abs((target.y - lastY) * 10);
-//    stepsInk = sqrt(stepsX*stepsX + stepsY*stepsY);
-//    limit = stepsX*stepsY;
-//
-//    // set the directions for each servo
-//    int dir = (target.x > lastX) ? ARD_HIGH : ARD_LOW;
-//    ard.sendDigital(X_DIR_PIN, dir);
-//    dir = (target.y > lastY) ? ARD_HIGH : ARD_LOW;
-//    ard.sendDigital(Y_DIR_PIN, dir);
-//    ard.sendDigital(INK_DIR_PIN, ARD_LOW); // low pushes the syringe
-//    
-//    lastX = target.x;
-//    lastY = target.y;
-//    updateTarget = false;
-//    
-//
-//    // Draw the polylines on the coffee
-//
-//    if (curState == PRINT) {
-//        for (int i = 0; i < paths.size(); i++) {
-//            cout << "\n\n\nPath " << i+1 << " / " << paths.size() << endl;
-//            vector<ofPoint> points = paths.at(i).getVertices();
-//            cout << "\n points.size() = " << points.size() << endl;
-//            for (int j = 0; j < points.size(); j++) {
-//                if (j == 0) {
-//                    pushInk();
-//                } else if (j == points.size()) {
-//                    stopInk();
-//                }
-//                moveTo (points.at(j).x, points.at(j).y);
-//            }
-//            if (i-1 == paths.size()) {
-//                curState = COFFEE_PHOTO;
-//                cout << "\n\n\n\n\n"
-//                    "\n***************************************************************"
-//                    "\n************************ COFFEE_PHOTO *************************"
-//                    "\n***************************************************************"
-//                     << "\n\n\n\n\n" << endl;
-//            }
-//        }
-//    }
-//    
-//    endX = exx;
-//    endY = wyy;
-//    stepsX = (endX - startX) * 10;
-//    stepsY = (endY - startY) * 10;
-//    
-//    //    stepsY = stepsY * 3;
-//    
-//    // scale the speed
-//    if (abs(stepsX) > abs(stepsY)) {
-//        speedX = 1;
-//        speedY = abs(stepsY) / abs(stepsX);
-//    } else {
-//        speedY = 1;
-//        speedX = abs(stepsX) / abs(stepsY);
-//    }
-
     
-
-//    if (curState == PRINT) {
-////        stepsX = stepsY = 1000;
-//        counter++;
-//        updateSteppers();
-//
-//        if (updateTarget) {
-//            setTarget();
-//            counter = 0;
-//        }
-//        if (counter < limit) {
-//            updateSteppers();
-//            counter++;
-//        } else {
-//            updateTarget = true;
-//        }
-//    }
+    switch (curState) {
+        case FACE_PHOTO:
+            if (journeysDone()) {
+                // we are starting from home, robot moves home after face photo
+                paths_i = points_i = 0;
+                target = *points.begin();
+                journey(home, target);
+                curState = PRINTING;
+            }
+            break;
+        case PRINTING:
+            if (journeysDone()) {
+                ofPoint nextTarget = getNextTarget();
+                
+                // when nextTarget is home that means we're done drawing
+                if (nextTarget != home) {
+                    journey(target, nextTarget);
+                    if (inkable) {
+                        INK.ready(9999999, 10000);
+                        INK.start();
+                    } else {
+                        INK.stop();
+                    }
+                } else {
+                    shootCoffee();
+                }
+            }
+            break;
+        default:
+            break;
+    }
 }
 
-//--------------------------------------------------------------
-//void arduinoThread::setTarget() {
-//    if (curPath < paths.size()) {
-//        // first point in drawing
-//        if (curPath == 0 && curPoint == 0) {
-//            pushInk = false;
-//            points = paths.at(curPath).getVertices();
-//            target = points.at(curPoint++);
-//            // a new point to draw
-//        } else if (curPoint < points.size()) {
-//            pushInk = true;
-//            target = points.at(curPoint++);
-//            // switch to a new path
-//        } else {
-//            pushInk = false;
-//            curPath++;
-//            curPoint = 0;
-//            points = paths.at(curPath).getVertices();
-//            target = points.at(curPoint++);
-//        }
-//        // all paths are drawn
-//    } else {
-//        curState = COFFEE_PHOTO;
-//        curPath = 0;
-//        curPoint = 0;
-//    }
-//    
-//    stepsX = abs((target.x - lastX) * 10);
-//    stepsY = abs((target.y - lastY) * 10);
-//    stepsInk = sqrt(stepsX*stepsX + stepsY*stepsY);
-//    limit = stepsX*stepsY;
-//    
-//    // set the directions for each servo
-//    int dir = (target.x > lastX) ? ARD_HIGH : ARD_LOW;
-//    ard.sendDigital(X_DIR_PIN, dir);
-//    dir = (target.y > lastY) ? ARD_HIGH : ARD_LOW;
-//    ard.sendDigital(Y_DIR_PIN, dir);
-//    ard.sendDigital(INK_DIR_PIN, ARD_LOW); // low pushes the syringe
-//    
-//    lastX = target.x;
-//    lastY = target.y;
-//    updateTarget = false;
-//}
 
 
 
-//--------------------------------------------------------------
+//----------------------------------------------------------------------------------------------
+void arduinoThread::shootFace(){
+    curState = SHOOT_FACE;
+    
+    // may not need this since set in shootCoffee
+    lock();
+    ard.sendDigital(Z_DIR_PIN, ARD_LOW);
+    unlock();
+    
+    // change these value depending on observation
+    Z.ready(10000, 300);
+    Z.start();
+    
+}
+
+void arduinoThread::shootCoffee(){
+    curState = SHOOT_COFFEE;
+    lock();
+    ard.sendDigital(Z_DIR_PIN, ARD_LOW);
+    unlock();
+    
+    // change these value depending on observation
+    Z.ready(2000, 300);
+    Z.start();
+    
+    //------------------------ take photo here ---------------------------//
+    
+    // operator pushes button to accept it, that sends the machine up, ready for
+    // next face photo
+}
+
+
+
+
+
+
+//----------------------------------------------------------------------------------------------
 void arduinoThread::threadedFunction(){
     while(isThreadRunning() != 0){
 //        usleep(10000);
@@ -297,7 +246,6 @@ void arduinoThread::threadedFunction(){
     }
 }
 
-//--------------------------
 void arduinoThread::draw(){
    
     string str = "curState = " + ofToString(stateName[curState]) + ". ";
@@ -315,7 +263,6 @@ void arduinoThread::draw(){
     INK.draw();
 }
 
-//--------------------------------------------------------------
 void arduinoThread::digitalPinChanged(const int & pinNum) {
     // note: this will throw tons of false positives on a bare mega, needs resistors
     curState = KEY_PRESS;
@@ -329,6 +276,8 @@ void arduinoThread::digitalPinChanged(const int & pinNum) {
         INK.stop();
     }
 }
+
+
 
 
 

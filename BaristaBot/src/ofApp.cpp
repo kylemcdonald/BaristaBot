@@ -200,13 +200,13 @@ void ofApp::update(){
 		thinned.update();
 		
 		paths = getPaths(thinned, minGapLength, minPathLength);
+		needToUpdate = false;
         
         // get arduino thread loaded with the paths and started
-        AT.paths = paths;
-        AT.points = paths.begin()->getVertices();
-        AT.curState = AT.PRINT;
-		
-		needToUpdate = false;
+        AT.lock();
+            AT.paths = paths;
+            AT.points = paths.begin()->getVertices();
+		AT.unlock();
     }
     AT.update();
 }
@@ -259,13 +259,34 @@ void ofApp::draw() {
 //--------------------------------------------------------------
 void ofApp::keyPressed(int key) {	
     switch (key) {
-        case ' ':
-            needToUpdate = true;
-//            counter = curPath = curPoint = 0;
-//            updateTarget = true;
+        case 'n':
+            // if coffee photo is good, press n
+            // sends the arm up to start over, ready for a new person
+            AT.shootFace();
             break;
+        case ' ':
+            // when the arm is up press space to take a face photo
+            // press again until you like it
+            needToUpdate = true;
+            break;
+        case 'p':
+            // once you have a good face photo, press p
+            // machine will lower and go home then print starts automatically
+            // after print machine raises up and takes a coffee photo
+            AT.curState = AT.FACE_PHOTO;
+            AT.goHome();
+        case 'c':
+            // take a look at the coffee photo, if it's not good press c
+            // retake photo of coffee (or make this happen in spacebar for consistency)
+            break;
+            
+        // special controls
         case 'h':
-            AT.home();
+            // for debugging
+            AT.goHome();
+            break;
+        case 'i':
+            // put something in here to reset syringe
             break;
         default:
             break;

@@ -20,10 +20,12 @@ public:
     void update();
     void updateArduino();
     
-    void home();
+    void goHome();
+    void journey(ofPoint orig, ofPoint dest);
+    bool journeysDone();
     void shootFace();
     void shootCoffee();
-    void setTarget();
+    ofPoint getNextTarget();
     
     void threadedFunction();
     void draw();
@@ -36,7 +38,7 @@ public:
     
     ofArduino ard;
     motorThread X, Y, Z, INK;
-    ofPoint target;
+    ofPoint target, home;
     vector<ofPolyline> paths;
     vector<ofPoint> points;
     
@@ -46,12 +48,14 @@ public:
         START,
         IDLE,
         HOMING,
+        SHOOT_FACE,
         FACE_PHOTO,
-        PRINT,
+        PRINTING,
+        SHOOT_COFFEE,
         COFFEE_PHOTO,
         KEY_PRESS,
     };
-    const char* stateName[20] = {"START", "IDLE", "HOMING", "FACE_PHOTO", "PRINT", "COFFEE_PHOTO", "KEY_PRESS"};
+    const char* stateName[20] = {"START", "IDLE", "HOMING", "SHOOT_FACE", "FACE_PHOTO", "PRINTING", "SHOOT_COFFEE", "COFFEE_PHOTO", "KEY_PRESS"};
     state curState;
 
     // PINS
@@ -77,7 +81,11 @@ public:
     
     bool X_LIMIT, Y_LIMIT, Z_LIMIT, INK_LIMIT;
     bool bSetupArduino;     // flag variable for setting up arduino once
-    int MIN_PULSE = 500;    // in microseconds
+    int DELAY_MIN = 500;    // in microseconds
+    
+    int home_x, home_y, steps_x, steps_y, delay_x, delay_y;
+    int paths_i, points_i;
+    bool inkable;
     
     int startX, startY, endX, endY, speedX, speedY;
     int stepsX, stepsY, stepsInk;
