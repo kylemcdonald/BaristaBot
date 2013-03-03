@@ -92,10 +92,7 @@ void arduinoThread::setupArduino(const int & version) {
 //----------------------------------------------------------------------------------------------
 void arduinoThread::goHome(){
     if (curState == FACE_PHOTO) {
-        lock();
-            ard.sendDigital(Z_DIR_PIN, ARD_HIGH);
-        unlock();
-        Z.ready(-100000, 227);
+        Z.ready(10000, 337);
         Z.start();
     } else {
         curState = HOMING;
@@ -205,36 +202,49 @@ void arduinoThread::update(){
 //----------------------------------------------------------------------------------------------
 void arduinoThread::shootFace(){
     curState = SHOOT_FACE;
-    
-    // may not need this since set in shootCoffee
-    lock();
-    ard.sendDigital(Z_DIR_PIN, ARD_LOW);
-    unlock();
-    
     // change these value depending on observation
-    Z.ready(10000, 300);
+    Z.ready(-10000, 500);
     Z.start();
     
 }
 
 void arduinoThread::shootCoffee(){
     curState = SHOOT_COFFEE;
-    lock();
-    ard.sendDigital(Z_DIR_PIN, ARD_LOW);
-    unlock();
-    
     // change these value depending on observation
-    Z.ready(2000, 300);
+    Z.ready(-2000, 500);
     Z.start();
     
-    //------------------------ take photo here ---------------------------//
     
-    // operator pushes button to accept it, that sends the machine up, ready for
-    // next face photo
+    // **** TAKE PHOTO ****
+    // operator pushes button to accept it, 
+    // that sends the machine up, ready for next face photo
 }
 
 
-
+void arduinoThread::jogRight() {
+    X.ready(1000, DELAY_MIN);
+    X.start();
+}
+void arduinoThread::jogLeft() {
+    X.ready(-1000, DELAY_MIN);
+    X.start();
+}
+void arduinoThread::jogForward() {
+    Y.ready(1000, DELAY_MIN);
+    Y.start();
+}
+void arduinoThread::jogBack() {
+    Y.ready(-1000, DELAY_MIN);
+    Y.start();
+}
+void arduinoThread::jogUp() {
+    Z.ready(1000, DELAY_MIN);
+    Z.start();
+}
+void arduinoThread::jogDown() {
+    Z.ready(-1000, DELAY_MIN);
+    Z.start();
+}
 
 
 
@@ -265,7 +275,6 @@ void arduinoThread::draw(){
 
 void arduinoThread::digitalPinChanged(const int & pinNum) {
     // note: this will throw tons of false positives on a bare mega, needs resistors
-    curState = KEY_PRESS;
     if (ard.getDigital(X_LIMIT_PIN)) {
         X.stop();
     } else if (ard.getDigital(Z_LIMIT_PIN)) {

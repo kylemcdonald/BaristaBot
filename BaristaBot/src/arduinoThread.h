@@ -27,6 +27,14 @@ public:
     void shootCoffee();
     ofPoint getNextTarget();
     
+    void jogLeft();
+    void jogRight();
+    void jogForward();
+    void jogBack();
+    void jogUp();
+    void jogDown();
+
+    
     void threadedFunction();
     void draw();
     void digitalPinChanged(const int & pinNum);
@@ -53,9 +61,8 @@ public:
         PRINTING,
         SHOOT_COFFEE,
         COFFEE_PHOTO,
-        KEY_PRESS,
     };
-    const char* stateName[20] = {"START", "IDLE", "HOMING", "SHOOT_FACE", "FACE_PHOTO", "PRINTING", "SHOOT_COFFEE", "COFFEE_PHOTO", "KEY_PRESS"};
+    const char* stateName[20] = {"START", "IDLE", "HOMING", "SHOOT_FACE", "FACE_PHOTO", "PRINTING", "SHOOT_COFFEE", "COFFEE_PHOTO"};
     state curState;
 
     // PINS

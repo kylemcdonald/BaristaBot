@@ -285,6 +285,24 @@ void ofApp::keyPressed(int key) {
             // for debugging
             AT.goHome();
             break;
+        case OF_KEY_RIGHT:
+            AT.jogRight();
+            break;
+        case OF_KEY_LEFT:
+            AT.jogLeft();
+            break;
+        case OF_KEY_UP:
+            AT.jogForward();
+            break;
+        case OF_KEY_DOWN:
+            AT.jogBack();
+            break;
+        case OF_KEY_HOME:
+            AT.jogUp();
+            break;
+        case OF_KEY_END:
+            AT.jogDown();
+            break;
         case 'i':
             // put something in here to reset syringe
             break;

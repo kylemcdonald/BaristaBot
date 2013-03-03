@@ -30,7 +30,7 @@ class motorThread : public ofThread{
     void ready(int stps, int dly) {
         STEPS = abs(stps);
         DELAY = dly;
-        DIR = (stps > 0) ? ARD_HIGH : ARD_LOW;
+        DIR = (stps > 0) ? ARD_LOW : ARD_HIGH;
         lock();
             ard->sendDigital(SLEEP_PIN, ARD_HIGH);
             ard->sendDigital(DIR_PIN, DIR);
