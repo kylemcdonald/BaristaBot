@@ -153,20 +153,14 @@ int arduinoThread::getSteps(float here, float there, bool is_x) {
 }
 
 void arduinoThread::journey(ofPoint orig, ofPoint dest){
-    int sdelta_x = getSteps(orig.x, dest.x, true);
-    int sdelta_y = getSteps(orig.y, dest.y, false);
-    
-    // now find the delays based on ratio of steps x and y
-    int sx = abs(sdelta_x);
-    int sy = abs(sdelta_y);
-    int delay_x = DELAY_MIN;
-    int delay_y = DELAY_MIN;
-    if (sy > sx && sx != 0) delay_x = (sy/sx) * DELAY_MIN;
-    if (sx > sy && sy != 0) delay_y = (sx/sy) * DELAY_MIN;
+    int sdelta_x = 0;
+    int sdelta_y = 0;
+    int sx = 0;
+    int sy = 0;
+    int point_count = 0;
     
     // if either movement is smaller than the tolerance of the robot
     // get more points and add them up until tolerance is passed
-    int point_count = 0;
     while (sx < TOL || sy < TOL) {
         // keep going unless one dimension gets too big
         if (sx > TOL*2 || sy > TOL*2) {
@@ -181,11 +175,20 @@ void arduinoThread::journey(ofPoint orig, ofPoint dest){
         point_count++;
     }
     
+    // now find the delays based on ratio of steps x and y
+    int delay_x = DELAY_MIN;
+    int delay_y = DELAY_MIN;
+    if (sy > sx && sx != 0) {
+        delay_x = DELAY_MIN * sy / sx;
+    } else if (sx > sy && sy != 0) {
+        delay_y = DELAY_MIN * sx / sy;
+    }
+    
     // debugging
-    ex = " orig.x: "   + ofToString(orig.x)   + " dest.x: "   + ofToString(dest.x)
-       + " sdelta_x: " + ofToString(sdelta_x) + " delay_x: "  + ofToString(delay_x);
-    wy = " orig.y: "   + ofToString(orig.y)   + " dest.y: "   + ofToString(dest.y)
-       + " sdelta_y: " + ofToString(sdelta_y) + " delay_y: "  + ofToString(delay_y)
+    ex = " orig.x: " + ofToString(orig.x) + " dest.x: "   + ofToString(dest.x)
+       + " sx: "     + ofToString(sx)     + " delay_x: "  + ofToString(delay_x);
+    wy = " orig.y: " + ofToString(orig.y) + " dest.y: "   + ofToString(dest.y)
+       + " sy: "     + ofToString(sy)     + " delay_y: "  + ofToString(delay_y)
        + " point_count " + ofToString(point_count);
     
     // send variables to motors and start them
@@ -236,8 +239,8 @@ void arduinoThread::update(){
 //                }
                 
                 journey(current, target);
-                current = target;
-                target = getNextTarget();
+//                current = target;
+//                target = getNextTarget();
             }
             break;
         default:
