@@ -132,21 +132,29 @@ ofPoint arduinoThread::getNextTarget() {
     return next;
 }
 
-void arduinoThread::journey(ofPoint orig, ofPoint dest){
-    // first normalize, 0,0 is the upper left corner
-    // cropped_size gets converted to 1
-    float ndelta_x = (dest.x - orig.x) / cropped_size;
-    float ndelta_y = (dest.y - orig.y) / cropped_size;
+int arduinoThread::getSteps(float here, float there, bool is_x) {
+    // first normalize
+    // FYI 0,0 is the upper left corner, 1,1 is lower right
+    float ndelta = (there - here) / cropped_size;
     
     // then convert to mm, an 80 mm square
-    float mmdelta_x = ndelta_x * 80;
-    float mmdelta_y = ndelta_y * 80;
+    float mmdelta = ndelta * 80;
     
     // then convert to steps
     // estimate 236.2 steps per mm in X
     // estimate 118.1 steps per mm in Y
-    int sdelta_x = int(mmdelta_x * 236);
-    int sdelta_y = int(mmdelta_y * 118);
+    if (is_x) {
+        int sdelta = int(mmdelta * 236);
+        return sdelta;
+    } else {
+        int sdelta = int(mmdelta * 118);
+        return sdelta;
+    }
+}
+
+void arduinoThread::journey(ofPoint orig, ofPoint dest){
+    int sdelta_x = getSteps(orig.x, dest.x, true);
+    int sdelta_y = getSteps(orig.y, dest.y, false);
     
     // now find the delays based on ratio of steps x and y
     int sx = abs(sdelta_x);
@@ -156,14 +164,29 @@ void arduinoThread::journey(ofPoint orig, ofPoint dest){
     if (sy > sx && sx != 0) delay_x = (sy/sx) * DELAY_MIN;
     if (sx > sy && sy != 0) delay_y = (sx/sy) * DELAY_MIN;
     
+    // if either movement is smaller than the tolerance of the robot
+    // get more points and add them up until tolerance is passed
+    int point_count = 0;
+    while (sx < TOL || sy < TOL) {
+        // keep going unless one dimension gets too big
+        if (sx > TOL*2 || sy > TOL*2) {
+            break;
+        }
+        current = target;
+        target = getNextTarget();
+        sdelta_x += getSteps(current.x, target.x, true);
+        sdelta_y += getSteps(current.y, target.y, false);
+        sx = abs(sdelta_x);
+        sy = abs(sdelta_y);
+        point_count++;
+    }
+    
     // debugging
     ex = " orig.x: "   + ofToString(orig.x)   + " dest.x: "   + ofToString(dest.x)
-       + " ndelta_x: " + ofToString(ndelta_x) + " mmdelta_x " + ofToString(mmdelta_x)
        + " sdelta_x: " + ofToString(sdelta_x) + " delay_x: "  + ofToString(delay_x);
     wy = " orig.y: "   + ofToString(orig.y)   + " dest.y: "   + ofToString(dest.y)
-       + " ndelta_y: " + ofToString(ndelta_y) + " mmdelta_y " + ofToString(mmdelta_y)
        + " sdelta_y: " + ofToString(sdelta_y) + " delay_y: "  + ofToString(delay_y)
-       + " cropped_size " + ofToString(cropped_size);
+       + " point_count " + ofToString(point_count);
     
     // send variables to motors and start them
     X.ready(sdelta_x, delay_x);

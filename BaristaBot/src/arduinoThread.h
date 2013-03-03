@@ -26,6 +26,7 @@ public:
     void shootFace();
     void shootCoffee();
     ofPoint getNextTarget();
+    int getSteps(float here, float there, bool is_x);
     
     void jogLeft();
     void jogRight();
@@ -91,6 +92,7 @@ public:
     bool X_LIMIT, Y_LIMIT, Z_LIMIT, INK_LIMIT;
     bool bSetupArduino;     // flag variable for setting up arduino once
     int DELAY_MIN = 500;    // in microseconds
+    int TOL = 1000;
     
     int cropped_size;
     int paths_i, points_i;
