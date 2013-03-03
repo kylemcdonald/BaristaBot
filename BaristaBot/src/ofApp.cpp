@@ -304,8 +304,11 @@ void ofApp::keyPressed(int key) {
         case OF_KEY_END:
             AT.jogDown();
             break;
-        case 'i':
-            // put something in here to reset syringe
+        case OF_KEY_PAGE_UP:
+            AT.plungerUp();
+            break;
+        case OF_KEY_PAGE_DOWN:
+            AT.plungerDown();
             break;
         default:
             break;

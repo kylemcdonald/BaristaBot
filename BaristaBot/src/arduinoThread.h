@@ -33,6 +33,8 @@ public:
     void jogBack();
     void jogUp();
     void jogDown();
+    void plungerUp();
+    void plungerDown();
 
     
     void threadedFunction();

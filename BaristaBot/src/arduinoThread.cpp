@@ -133,7 +133,7 @@ ofPoint arduinoThread::getNextTarget() {
 
 void arduinoThread::journey(ofPoint orig, ofPoint dest){
     int sx = abs(steps_x = (dest.x - orig.x) * 5);
-    int sy = abs(steps_y = (dest.y - orig.x) * 2);
+    int sy = abs(steps_y = (dest.y - orig.x) / 2);
     
     if (sx > sy) {
         delay_x = DELAY_MIN;
@@ -154,7 +154,7 @@ void arduinoThread::journey(ofPoint orig, ofPoint dest){
     X.ready(steps_x, delay_x);
     Y.ready(steps_y, delay_y);
     
-    ofSleepMillis(10);
+//    ofSleepMillis(10);
     X.start();
     Y.start();
 }
@@ -192,11 +192,11 @@ void arduinoThread::update(){
                 journey(current, target);
                 if (should_ink) {
                     INK.ready(10000, 10000);
-                    ofSleepMillis(10);
+//                    ofSleepMillis(10);
                     INK.start();
                 } else {
                     INK.stop();
-                    ofSleepMillis(10);
+//                    ofSleepMillis(10);
                 }
                 current = target;
                 target = getNextTarget();
@@ -233,30 +233,69 @@ void arduinoThread::shootCoffee(){
 
 
 void arduinoThread::jogRight() {
+    if (X.isThreadRunning()) {
+        X.INC = 0;
+        return;
+    }
     X.ready(1000, DELAY_MIN);
     X.start();
 }
 void arduinoThread::jogLeft() {
+    if (X.isThreadRunning()) {
+        X.INC = 0;
+        return;
+    }
     X.ready(-1000, DELAY_MIN);
     X.start();
 }
 void arduinoThread::jogForward() {
+    if (Y.isThreadRunning()) {
+        Y.INC = 0;
+        return;
+    }
     Y.ready(1000, DELAY_MIN);
     Y.start();
 }
 void arduinoThread::jogBack() {
+    if (Y.isThreadRunning()) {
+        Y.INC = 0;
+        return;
+    }
     Y.ready(-1000, DELAY_MIN);
     Y.start();
 }
 void arduinoThread::jogUp() {
+    if (Z.isThreadRunning()) {
+        Z.INC = 0;
+        return;
+    }
     Z.ready(1000, DELAY_MIN);
     Z.start();
 }
 void arduinoThread::jogDown() {
+    if (Z.isThreadRunning()) {
+        Z.INC = 0;
+        return;
+    }
     Z.ready(-1000, DELAY_MIN);
     Z.start();
 }
-
+void arduinoThread::plungerUp() {
+    if (INK.isThreadRunning()) {
+        INK.INC = 0;
+        return;
+    }
+    INK.ready(200, DELAY_MIN);
+    INK.start();
+}
+void arduinoThread::plungerDown() {
+    if (INK.isThreadRunning()) {
+        INK.INC = 0;
+        return;
+    }
+    INK.ready(-200, DELAY_MIN);
+    INK.start();
+}
 
 
 //----------------------------------------------------------------------------------------------

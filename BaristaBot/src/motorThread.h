@@ -75,7 +75,7 @@ class motorThread : public ofThread{
     
     //--------------------------------------------------------------
     void draw(){
-        string str = name + ":  Step " + ofToString(INC) + " / " + ofToString(s);
+        string str = name + ":  Step " + ofToString(INC) + " / " + ofToString(STEPS);
         ofDrawBitmapString(str, 50, 800-STEP_PIN*7);
     }
 };
