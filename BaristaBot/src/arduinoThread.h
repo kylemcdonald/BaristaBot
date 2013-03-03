@@ -94,13 +94,7 @@ public:
     
     int home_x, home_y, steps_x, steps_y, delay_x, delay_y;
     int paths_i, points_i;
-    bool should_ink;
-    
-    int startX, startY, endX, endY, speedX, speedY;
-    int stepsX, stepsY, stepsInk;
-    int counter, limit;
-    int curPath, curPoint;
-    bool pushInk, updateTarget;
+    bool start_ink, stop_ink;
         
     string buttonState;
 };

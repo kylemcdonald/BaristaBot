@@ -36,7 +36,7 @@ void arduinoThread::setup(){
 void arduinoThread::initializeVariables(){
     X_LIMIT  = Z_LIMIT  = Y_LIMIT  = INK_LIMIT  = false;
     home.set(0,0);
-    should_ink = false;
+    stop_ink = start_ink = false;
 }
 
 void arduinoThread::initializeMotors(){
@@ -99,8 +99,8 @@ void arduinoThread::goHome(){
 //        curState = HOMING;
 //    }
     
-    X.ready(10000, 857);
-    Y.ready(-10000, 756);
+    X.ready(1000, 857);
+    Y.ready(-1000, 756);
     
     X.start();
     Y.start();
@@ -109,23 +109,24 @@ void arduinoThread::goHome(){
 ofPoint arduinoThread::getNextTarget() {
     ofPoint next;
     
+    if (points_i == 0) start_ink = true;
+    
     // if there is another point in this path, well grab the fucker
     if (++points_i < points.size()) {
         next = points.at(points_i);
-        if (points_i == 1) should_ink = true;
     }
     // if not, get the next path then, and stop drawing, dickbag
     else if (++paths_i < paths.size()) {
+        stop_ink = true;
         points = paths.at(paths_i).getVertices();
         next = points.at(points_i = 0);
-        should_ink = false;
     }
     // no more goddamned points or paths, I need a coffee
     else {
+        stop_ink = true;
         points_i = paths_i = 0;
-        should_ink = false;
         shootCoffee();
-        return home;
+        next = home;
     }
     
     return next;
@@ -133,7 +134,7 @@ ofPoint arduinoThread::getNextTarget() {
 
 void arduinoThread::journey(ofPoint orig, ofPoint dest){
     int sx = abs(steps_x = (dest.x - orig.x) * 5);
-    int sy = abs(steps_y = (dest.y - orig.x) / 2);
+    int sy = abs(steps_y = (dest.y - orig.x) / 3);
     
     if (sx > sy) {
         delay_x = DELAY_MIN;
@@ -154,7 +155,6 @@ void arduinoThread::journey(ofPoint orig, ofPoint dest){
     X.ready(steps_x, delay_x);
     Y.ready(steps_y, delay_y);
     
-//    ofSleepMillis(10);
     X.start();
     Y.start();
 }
@@ -189,15 +189,17 @@ void arduinoThread::update(){
             break;
         case PRINTING:
             if (journeysDone()) {
-                journey(current, target);
-                if (should_ink) {
-                    INK.ready(10000, 10000);
-//                    ofSleepMillis(10);
+                if (start_ink) {
+                    INK.ready(1000, 100000);
                     INK.start();
-                } else {
-                    INK.stop();
-//                    ofSleepMillis(10);
+                    start_ink = false;
                 }
+                if (stop_ink) {
+                    INK.stop();
+                    stop_ink = false;
+                }
+                
+                journey(current, target);
                 current = target;
                 target = getNextTarget();
             }
@@ -208,14 +210,12 @@ void arduinoThread::update(){
 }
 
 
-
-
 //----------------------------------------------------------------------------------------------
 void arduinoThread::shootFace(){
     curState = SHOOT_FACE;
     // change these value depending on observation
 //    Z.ready(10000, 500);
-//    Z.start();
+    Z.start();
     
 }
 
