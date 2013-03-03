@@ -96,7 +96,7 @@ public:
     int paths_i, points_i;
     bool start_ink, stop_ink;
         
-    string buttonState;
+    string buttonState, ex, wy;
 };
 
 #endif

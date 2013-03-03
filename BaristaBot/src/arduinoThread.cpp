@@ -99,8 +99,8 @@ void arduinoThread::goHome(){
 //        curState = HOMING;
 //    }
     
-    X.ready(10000, 857);
-    Y.ready(-10000, 756);
+    X.ready(1000, 857);
+    Y.ready(-1000, 756);
     
     X.start();
     Y.start();
@@ -135,18 +135,18 @@ ofPoint arduinoThread::getNextTarget() {
 void arduinoThread::journey(ofPoint orig, ofPoint dest){
     // first normalize, 0,0 is the upper left corner
     // cropped_size gets converted to 1
-    int ndelta_x = (dest.x - orig.x) / cropped_size;
-    int ndelta_y = (dest.y - orig.y) / cropped_size;
+    float ndelta_x = (dest.x - orig.x) / cropped_size;
+    float ndelta_y = (dest.y - orig.y) / cropped_size;
     
     // then convert to mm, an 80 mm square
-    int mmdelta_x = ndelta_x * 80;
-    int mmdelta_y = ndelta_y * 80;
+    float mmdelta_x = ndelta_x * 80;
+    float mmdelta_y = ndelta_y * 80;
     
     // then convert to steps
     // estimate 236.2 steps per mm in X
     // estimate 118.1 steps per mm in Y
-    int sdelta_x = mmdelta_x * 236;
-    int sdelta_y = mmdelta_y * 118;
+    int sdelta_x = int(mmdelta_x * 236);
+    int sdelta_y = int(mmdelta_y * 118);
     
     // now find the delays based on ratio of steps x and y
     int sx = abs(sdelta_x);
@@ -155,6 +155,15 @@ void arduinoThread::journey(ofPoint orig, ofPoint dest){
     int delay_y = DELAY_MIN;
     if (sy > sx && sx != 0) delay_x = (sy/sx) * DELAY_MIN;
     if (sx > sy && sy != 0) delay_y = (sx/sy) * DELAY_MIN;
+    
+    // debugging
+    ex = " orig.x: "   + ofToString(orig.x)   + " dest.x: "   + ofToString(dest.x)
+       + " ndelta_x: " + ofToString(ndelta_x) + " mmdelta_x " + ofToString(mmdelta_x)
+       + " sdelta_x: " + ofToString(sdelta_x) + " delay_x: "  + ofToString(delay_x);
+    wy = " orig.y: "   + ofToString(orig.y)   + " dest.y: "   + ofToString(dest.y)
+       + " ndelta_y: " + ofToString(ndelta_y) + " mmdelta_y " + ofToString(mmdelta_y)
+       + " sdelta_y: " + ofToString(sdelta_y) + " delay_y: "  + ofToString(delay_y)
+       + " cropped_size " + ofToString(cropped_size);
     
     // send variables to motors and start them
     X.ready(sdelta_x, delay_x);
@@ -318,6 +327,8 @@ void arduinoThread::draw(){
 	} else {
         str += "Point " + ofToString(points_i) + " / " + ofToString(points.size());
         str += ". Path " + ofToString(paths_i) + " / " + ofToString(paths.size());
+        str += "\n" + ex;
+        str += "\n" + wy;
     }
 
     ofDrawBitmapString(str, 50, 700);
