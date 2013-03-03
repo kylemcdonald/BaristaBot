@@ -100,16 +100,16 @@ void ofApp::setup() {
 	
 	gui.setup();
 	gui.addPanel("Settings");
-	gui.addSlider("black", 0, -255, 255, true);
-	gui.addSlider("sigma1", 0.4, 0.01, 2.0, false);
-	gui.addSlider("sigma2", 3.0, 0.01, 10.0, false);
-	gui.addSlider("tau", 0.97, 0.8, 1.0, false);
-	gui.addSlider("halfw", 4, 1, 8, true);
-	gui.addSlider("smoothPasses", 2, 1, 4, true);
-	gui.addSlider("thresh", 128, 0, 255, false);
-	gui.addSlider("minGapLength", 2, 2, 12, false);
-	gui.addSlider("minPathLength", 20, 0, 50, true);
-	gui.addSlider("facePadding", 1.5, 0, 2, false);
+	gui.addSlider("black", 65, -255, 255, true);        // kyle's 0
+	gui.addSlider("sigma1", 0.85, 0.01, 2.0, false);    // kyle's 0.4
+	gui.addSlider("sigma2", 4.45, 0.01, 10.0, false);   // kyle's 3.0
+	gui.addSlider("tau", 0.97, 0.8, 1.0, false);        // kyle's 0.97
+	gui.addSlider("halfw", 4, 1, 8, true);              // kyle's 4
+	gui.addSlider("smoothPasses", 3, 1, 4, true);       // kyle's 2
+	gui.addSlider("thresh", 121.8, 0, 255, false);      // kyle's 128
+	gui.addSlider("minGapLength", 6.8, 2, 12, false);   // kyle's 2
+	gui.addSlider("minPathLength", 20, 0, 50, true);    // kyle's 20
+	gui.addSlider("facePadding", 1.77, 0, 2, false);    // kyle's 1.5
 	gui.loadSettings("settings.xml");
     
     AT.setup();
