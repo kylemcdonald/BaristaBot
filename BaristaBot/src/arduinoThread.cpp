@@ -99,8 +99,8 @@ void arduinoThread::goHome(){
         curState = HOMING;
     }
     
-    X.ready(100000, 857);
-    Y.ready(-100000, 756);
+    X.ready(10000, 857);
+    Y.ready(-10000, 756);
     
     X.start();
     Y.start();
@@ -130,15 +130,23 @@ ofPoint arduinoThread::getNextTarget() {
 }
 
 void arduinoThread::journey(ofPoint orig, ofPoint dest){
-    steps_x = (dest.x - orig.x) * 10;
-    steps_y = (dest.y - orig.x) * 10;
+    int sx = abs(steps_x = (dest.x - orig.x));
+    int sy = abs(steps_y = (dest.y - orig.x));
     
-    if (steps_x > steps_y) {
+    if (sx > sy) {
         delay_x = DELAY_MIN;
-        delay_y = (steps_x/steps_y) * DELAY_MIN;
+        if (sy != 0) {
+            delay_y = (sx/sy) * DELAY_MIN;
+        } else {
+            delay_y = DELAY_MIN;
+        }
     } else {
         delay_y = DELAY_MIN;
-        delay_x = (steps_y/steps_x) * DELAY_MIN;
+        if (sx != 0) {
+            delay_x = (sy/sx) * DELAY_MIN;
+        } else {
+            delay_x = DELAY_MIN;
+        }
     }
     
     X.ready(steps_x, delay_x);
