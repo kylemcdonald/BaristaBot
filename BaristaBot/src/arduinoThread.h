@@ -6,6 +6,33 @@
 
 
 class arduinoThread : public ofThread{
+    
+// PINS
+#define X_DIR_PIN 9
+#define Y_DIR_PIN 7
+#define Z_DIR_PIN 5
+#define INK_DIR_PIN 3
+
+#define X_STEP_PIN 8
+#define Y_STEP_PIN 6
+#define Z_STEP_PIN 4
+#define INK_STEP_PIN 2
+
+#define X_SLEEP_PIN 14
+#define Y_SLEEP_PIN 15
+#define Z_SLEEP_PIN 16
+#define INK_SLEEP_PIN 17
+
+#define X_LIMIT_PIN 10
+#define Y_LIMIT_PIN 12
+#define Z_LIMIT_PIN 11
+#define INK_LIMIT_PIN 13
+    
+// CONSTANTS
+#define DELAY_MIN 450       // in microseconds (20000 is good for debugging w/o robot)
+#define TOL 400             // in steps, not for the syringe
+#define INK_TIMEOUT 200000  // in microseconds
+#define INK_DELAY 500       // in microseconds
 
 public:
     void start();
@@ -46,7 +73,6 @@ public:
     arduinoThread(){
         ard.sendReset();
     }
-
     
     enum state {
         START,
@@ -68,38 +94,11 @@ public:
     vector<ofPoint> points;
     string ex, wy, hex, hwy;
     
-
-    // PINS
-    int X_DIR_PIN = 9;
-    int Y_DIR_PIN = 7;
-    int Z_DIR_PIN = 5;
-    int INK_DIR_PIN = 3;
-    
-    int X_STEP_PIN = 8;
-    int Y_STEP_PIN = 6;
-    int Z_STEP_PIN = 4;
-    int INK_STEP_PIN = 2;
-
-    int X_SLEEP_PIN = 14;
-    int Y_SLEEP_PIN = 15;
-    int Z_SLEEP_PIN = 16;
-    int INK_SLEEP_PIN = 17;
-    
-    const int X_LIMIT_PIN = 10;
-    const int Y_LIMIT_PIN = 12;
-    const int Z_LIMIT_PIN = 11;
-    const int INK_LIMIT_PIN = 13;
-    
-    bool bSetupArduino;     // flag variable for setting up arduino once
-    int DELAY_MIN = 450;    // in microseconds (20000 is good for debugging w/o robot)
-    int TOL = 400;          // in steps, not for the syringe
-    int INK_TIMEOUT = 200;  // in milliseconds
-    int INK_DELAY = 500;    // in microseconds
-    
     int cropped_size;
     int paths_i, points_i;
     int point_count;
     bool start_path, end_path, start_transition;
+    bool bSetupArduino;     // flag variable for setting up arduino once
 };
 
 #endif

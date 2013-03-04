@@ -134,7 +134,7 @@ void arduinoThread::journeyOn(bool new_coffee){
         // starting a transition
         if (start_transition){
             INK.stop();
-            ofSleepMillis(INK_TIMEOUT); // wait for ink to stop
+            usleep(INK_TIMEOUT); // wait for ink to stop
             fireEngines();
             return;
         }
@@ -143,7 +143,7 @@ void arduinoThread::journeyOn(bool new_coffee){
             start_path = false;
             INK.ready(100000, INK_DELAY);
             INK.start();
-            ofSleepMillis(INK_TIMEOUT); // wait for ink to start
+            usleep(INK_TIMEOUT); // wait for ink to start
         }
         // drawing last segment in a path
         else if (end_path) {
@@ -209,7 +209,7 @@ void arduinoThread::planJourney(){
     // finishing the print
     else {
         INK.stop();
-        ofSleepMillis(INK_TIMEOUT);
+        usleep(INK_TIMEOUT);
         shootCoffee();
     }
 }
