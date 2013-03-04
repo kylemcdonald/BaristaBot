@@ -145,11 +145,12 @@ void arduinoThread::journeyOn(bool new_coffee){
             start_path = false;
             if (INK.isThreadRunning()) INK.stop();
             plungerDown();
+            usleep(INK_TIMEOUT);    // wait for ink to stop
             INK.ready(100000, INK_DELAY);
             if (!INK.isThreadRunning()) {
                 INK.start();
             }
-//            usleep(INK_TIMEOUT); // wait for ink to start
+            usleep(INK_TIMEOUT); // wait for ink to start
         }
         // drawing last segment in a path
         else if (end_path) {
@@ -217,7 +218,7 @@ void arduinoThread::planJourney(){
     else {
         INK.stop();
 //        plungerUp();
-        usleep(INK_TIMEOUT);
+//        usleep(INK_TIMEOUT);
         shootCoffee();
     }
 }
@@ -312,7 +313,7 @@ void arduinoThread::shootFace(){
     Z.ready(14000, 450);
     Z.start();
     while (Z.isThreadRunning()); // wait before doing Y
-    Y.ready(30000-home.y, 450);
+    Y.ready(10000-home.y, 450);
     Y.start();
     X.ready(home.x, DELAY_MIN);
     X.start();
@@ -336,7 +337,7 @@ void arduinoThread::shootCoffee(){
 
 void arduinoThread::goHome(){
     // CHANGE all this to hit limits
-    Y.ready(-30000+home.y, 450);
+    Y.ready(-10000+home.y, 450);
     Y.start();
     while (Y.isThreadRunning());    // wait before doing Z
     Z.ready(-14000, 450);
@@ -398,7 +399,7 @@ void arduinoThread::plungerUp() {
         INK.INC = 0;
         return;
     }
-    INK.ready(-500, 50);
+    INK.ready(-1000, 800);
     INK.start();
 }
 void arduinoThread::plungerDown() {
@@ -406,7 +407,7 @@ void arduinoThread::plungerDown() {
         INK.INC = 0;
         return;
     }
-    INK.ready(1000, 50);
+    INK.ready(1000, 800);
     INK.start();
 }
 
