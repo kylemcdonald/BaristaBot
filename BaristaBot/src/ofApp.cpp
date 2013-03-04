@@ -285,13 +285,10 @@ void ofApp::keyPressed(int key) {
             // retake photo of coffee (or make this happen in spacebar for consistency)
             break;
             
-        // special controls
+        // programmers controls
         case 'h':
             // for debugging
             AT.goHome();
-            break;
-        case 'b':
-//            AT.drawBox();
             break;
         case OF_KEY_RIGHT:
             AT.jogRight();

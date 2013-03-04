@@ -91,9 +91,10 @@ public:
     const int INK_LIMIT_PIN = 13;
     
     bool bSetupArduino;     // flag variable for setting up arduino once
-    int DELAY_MIN = 600;    // in microseconds (20000 is good for debugging w/o robot)
-    int TOL = 300;          // in steps, not for the syringe
-    int INK_DELAY = 200;    // in milliseconds
+    int DELAY_MIN = 450;    // in microseconds (20000 is good for debugging w/o robot)
+    int TOL = 400;          // in steps, not for the syringe
+    int INK_TIMEOUT = 200;  // in milliseconds
+    int INK_DELAY = 500;    // in microseconds
     
     int cropped_size;
     int paths_i, points_i;

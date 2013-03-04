@@ -134,16 +134,16 @@ void arduinoThread::journeyOn(bool new_coffee){
         // starting a transition
         if (start_transition){
             INK.stop();
-            ofSleepMillis(INK_DELAY); // wait for ink to stop
+            ofSleepMillis(INK_TIMEOUT); // wait for ink to stop
             fireEngines();
             return;
         }
         // starting a new path, ink flows
         else if (start_path){
             start_path = false;
-            INK.ready(100000, 250);
+            INK.ready(100000, INK_DELAY);
             INK.start();
-            ofSleepMillis(INK_DELAY); // wait for ink to start
+            ofSleepMillis(INK_TIMEOUT); // wait for ink to start
         }
         // drawing last segment in a path
         else if (end_path) {
@@ -209,7 +209,7 @@ void arduinoThread::planJourney(){
     // finishing the print
     else {
         INK.stop();
-        ofSleepMillis(INK_DELAY);
+        ofSleepMillis(INK_TIMEOUT);
         shootCoffee();
     }
 }
@@ -301,33 +301,45 @@ bool arduinoThread::journeysDone(){
 void arduinoThread::shootFace(){
     curState = SHOOT_FACE;
     // change these value depending on observation
-//    Z.ready(10000, 500);
+    Z.ready(14000, 450);
     Z.start();
-    
+    while (Z.isThreadRunning()); // wait before doing Y
+    Y.ready(30000, 450);
+    Y.start();
 }
 
 void arduinoThread::shootCoffee(){
     curState = SHOOT_COFFEE;
     // change these value depending on observation
-//    Z.ready(2000, 500);
-//    Z.start();
-    
-    
+    Z.ready(3000, 450);
+    Z.start();
+    while (Z.isThreadRunning()); // wait to complete
+
+    ofSleepMillis(1000);
     // **** TAKE PHOTO ****
     // operator pushes button to accept it, 
     // that sends the machine up, ready for next face photo
+    ofSleepMillis(1000);
+
+    shootFace();
 }
 
 void arduinoThread::goHome(){
-    //    if (curState == FACE_PHOTO) {
-    //        Z.ready(-10000, 397);
-    //        Z.start();
-    //    } else {
-    //        curState = HOMING;
-    //    }
+    // CHANGE all this to hit limits
+    if (curState == FACE_PHOTO) {
+        Z.ready(-14000, 450);
+        Z.start();
+        while (Z.isThreadRunning());    // wait before doing Y
+        ofSleepMillis(500);             // wait more
+        Y.ready(-30000-256, 450);
+    } else {
+        curState = HOMING;
+        Y.ready(-256, DELAY_MIN+110);
+        Z.ready(-256, DELAY_MIN);
+        Z.start();
+    }
     
-    X.ready(-256, 500);
-    Y.ready(-256, 500);
+    X.ready(-256, DELAY_MIN+50);
     
     X.start();
     Y.start();
@@ -394,7 +406,7 @@ void arduinoThread::plungerDown() {
         INK.INC = 0;
         return;
     }
-    INK.ready(2000, 350);
+    INK.ready(2000, INK_DELAY);
     INK.start();
 }
 
