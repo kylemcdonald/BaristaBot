@@ -46,13 +46,6 @@ public:
     arduinoThread(){
         ard.sendReset();
     }
-    
-    ofArduino ard;
-    motorThread X, Y, Z, INK;
-    ofPoint home, current, target;
-    vector<ofPolyline> paths;
-    vector<ofPoint> points;
-    
 
     
     enum state {
@@ -67,6 +60,14 @@ public:
     };
     const char* stateName[20] = {"START", "IDLE", "HOMING", "SHOOT_FACE", "FACE_PHOTO", "PRINTING", "SHOOT_COFFEE", "COFFEE_PHOTO"};
     state curState;
+    
+    ofArduino ard;
+    motorThread X, Y, Z, INK;
+    ofPoint home, current, target;
+    vector<ofPolyline> paths;
+    vector<ofPoint> points;
+    string ex, wy;
+    
 
     // PINS
     int X_DIR_PIN = 9;
@@ -91,14 +92,12 @@ public:
     
     bool bSetupArduino;     // flag variable for setting up arduino once
     int DELAY_MIN = 500;    // in microseconds
-    int TOL = 500;          // in steps, not for the syringe
+    int TOL = 50;          // in steps, not for the syringe
     
     int cropped_size;
     int paths_i, points_i;
     int point_count;
     bool start_path, continuing_path, start_transition;
-        
-    string ex, wy;
 };
 
 #endif
