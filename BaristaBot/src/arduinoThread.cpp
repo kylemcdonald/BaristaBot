@@ -133,20 +133,21 @@ void arduinoThread::journeyOn(bool new_coffee){
         
         // starting a transition
         if (start_transition){
+            INK.stop();
+            ofSleepMillis(INK_DELAY); // wait for ink to stop
             fireEngines();
             return;
         }
-        // starting a new path
+        // starting a new path, ink flows
         else if (start_path){
             start_path = false;
-            continuing_path = true;
+            INK.ready(100000, 250);
+            INK.start();
+            ofSleepMillis(INK_DELAY); // wait for ink to start
         }
-        // so if new path or continuing see if we should change target
-        else if (continuing_path) {
-
-        }
-        // ending a path
-        else {
+        // drawing last segment in a path
+        else if (end_path) {
+            end_path = false;
             fireEngines();
             return;
         }
@@ -192,12 +193,11 @@ void arduinoThread::planJourney(){
     }
     // continuing a path except for the last stage
     else if (points_i++ < points.size()-2) {
-        continuing_path = true;
         target = points.at(points_i);
     }
     // ending a path
     else if (points_i++ < points.size()-1) {
-        continuing_path = false;
+        end_path = true;
         target = points.at(points_i);
     }
     // starting a transition
@@ -208,6 +208,8 @@ void arduinoThread::planJourney(){
     }
     // finishing the print
     else {
+        INK.stop();
+        ofSleepMillis(INK_DELAY);
         shootCoffee();
     }
 }
@@ -268,13 +270,13 @@ int arduinoThread::getSteps(float here, float there, bool is_x) {
     // estimate 118.1 steps per mm in Y
     if (is_x) {
         ex = "\nhere.x:     " + ofToString(int(here/cropped_size*80*150))
-           + "\nthere.x:    " + ofToString(int(there/cropped_size*80*150))+ hex;
+           + "\nthere.x:    " + ofToString(int(there/cropped_size*80*150)) + hex;
         int sdelta = int(mmdelta * 200);
         return sdelta;
     } else {
         wy = "\nhere.y:     " + ofToString(int(here/cropped_size*80*118))
            + "\nthere.y:    " + ofToString(int(there/cropped_size*80*118)) + hwy;
-        int sdelta = int(mmdelta * 118);
+        int sdelta = int(mmdelta * 127);
         return sdelta;
     }
 }

@@ -93,11 +93,12 @@ public:
     bool bSetupArduino;     // flag variable for setting up arduino once
     int DELAY_MIN = 600;    // in microseconds (20000 is good for debugging w/o robot)
     int TOL = 300;          // in steps, not for the syringe
+    int INK_DELAY = 200;    // in milliseconds
     
     int cropped_size;
     int paths_i, points_i;
     int point_count;
-    bool start_path, continuing_path, start_transition;
+    bool start_path, end_path, start_transition;
 };
 
 #endif
