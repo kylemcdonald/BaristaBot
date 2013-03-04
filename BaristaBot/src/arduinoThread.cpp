@@ -106,32 +106,6 @@ void arduinoThread::goHome(){
     Y.start();
 }
 
-ofPoint arduinoThread::getNextTarget() {
-    ofPoint next;
-    
-    if (points_i == 0) start_path = true;
-    
-    // if there is another point in this path, well grab the fucker
-    if (++points_i < points.size()) {
-        next = points.at(points_i);
-    }
-    // if not, get the next path then, and stop drawing, dickbag
-    else if (++paths_i < paths.size()) {
-        start_transition = true;
-        points = paths.at(paths_i).getVertices();
-        next = points.at(points_i = 0);
-    }
-    // no more goddamned points or paths, I need a coffee
-    else {
-        print_done = true;
-        points_i = paths_i = 0;
-        shootCoffee();
-        next = home;
-    }
-    
-    return next;
-}
-
 
 void arduinoThread::planJourney(){
     
@@ -147,36 +121,33 @@ void arduinoThread::planJourney(){
         target = points.at(++points_i);
     }
     // ending a path
-    else if (points_i+1 == points.size()-1){
+    else if (points_i+1 == points.size()-1) {
         continuing_path = false;
         target = points.at(++points_i);
     }
     // starting a transition
-    else if (++paths_i < paths.size()) {
+    else if (paths_i < paths.size()-1) {
         start_transition = true;
         current = *points.end();
-        points = paths.at(paths_i).getVertices();
+        points = paths.at(++paths_i).getVertices();
         target = points.at(points_i = 0);
     }
     // finishing the print
     else {
-        print_done = true;
-        points_i = paths_i = 0;
-        target = home;
+        shootCoffee();
+        return;
     }
 }
 
 void arduinoThread::fireEngines(){
     int sdelta_x = 0;
     int sdelta_y = 0;
-    int sx = 0;
-    int sy = 0;
     int delay_x = DELAY_MIN;
     int delay_y = DELAY_MIN;
     
     // get steps
-    sx = abs(sdelta_x = getSteps(current.x, target.x, true));
-    sy = abs(sdelta_y = getSteps(current.y, target.y, false));
+    int sx = abs(sdelta_x = getSteps(current.x, target.x, true));
+    int sy = abs(sdelta_y = getSteps(current.y, target.y, false));
     
     // get delays
     if (!start_transition) {
@@ -202,13 +173,13 @@ void arduinoThread::fireEngines(){
 }
 
 void arduinoThread::journeyOn(bool new_coffee){
+    point_count = 1;
     
     if (new_coffee) {
         start_transition = true;
         current = home;
         target = *points.begin();
         paths_i = points_i = 0;
-        fireEngines();
     } else {
         planJourney();
         
@@ -230,15 +201,8 @@ void arduinoThread::journeyOn(bool new_coffee){
             fireEngines();
             return;
         }
-        // print is done
-        else if (print_done) {
-            print_done = false;
-            shootCoffee();
-            return;
-        }
         
         // so if new path or continuing see if we should change target
-        point_count = 0;
         while (continuing_path) {
             int sx = abs(getSteps(current.x, target.x, true));
             int sy = abs(getSteps(current.y, target.y, false));
@@ -252,6 +216,7 @@ void arduinoThread::journeyOn(bool new_coffee){
             point_count++;
         }
     }
+    fireEngines();
 }
 
 int arduinoThread::getSteps(float here, float there, bool is_x) {
@@ -294,30 +259,13 @@ void arduinoThread::update(){
     switch (curState) {
         case FACE_PHOTO:
             if (journeysDone() && !Z.isThreadRunning()) {
-                // we are starting from home, robot moves home after face photo
-//                current = home;
-//                target = *points.begin();
-//                paths_i = points_i = 0;
                 journeyOn(true);
-
                 curState = PRINTING;
             }
             break;
         case PRINTING:
             if (journeysDone()) {
-//                if (start_ink) {
-//                    INK.ready(1000, 100000);
-//                    INK.start();
-//                    start_ink = false;
-//                }
-//                if (stop_ink) {
-//                    INK.stop();
-//                    stop_ink = false;
-//                }
-                
                 journeyOn(false);
-//                current = target;
-//                target = getNextTarget();
             }
             break;
         default:
@@ -417,8 +365,7 @@ void arduinoThread::plungerDown() {
 //----------------------------------------------------------------------------------------------
 void arduinoThread::threadedFunction(){
     while(isThreadRunning() != 0){
-//        usleep(10000);
-//        update();
+
     }
 }
 

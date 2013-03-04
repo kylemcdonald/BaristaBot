@@ -25,7 +25,6 @@ public:
     bool journeysDone();
     void shootFace();
     void shootCoffee();
-    ofPoint getNextTarget();
     void planJourney();
     void fireEngines();
     int getSteps(float here, float there, bool is_x);
@@ -93,12 +92,12 @@ public:
     
     bool bSetupArduino;     // flag variable for setting up arduino once
     int DELAY_MIN = 500;    // in microseconds
-    int TOL = 1000;
+    int TOL = 500;          // in steps, not for the syringe
     
     int cropped_size;
     int paths_i, points_i;
     int point_count;
-    bool start_path, continuing_path, end_path, start_transition, print_done;
+    bool start_path, continuing_path, start_transition;
         
     string ex, wy;
 };
