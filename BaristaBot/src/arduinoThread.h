@@ -63,7 +63,7 @@ public:
     
     ofArduino ard;
     motorThread X, Y, Z, INK;
-    ofPoint home, current, target;
+    ofPoint current, target;
     vector<ofPolyline> paths;
     vector<ofPoint> points;
     string ex, wy;
@@ -91,7 +91,7 @@ public:
     const int INK_LIMIT_PIN = 13;
     
     bool bSetupArduino;     // flag variable for setting up arduino once
-    int DELAY_MIN = 500;    // in microseconds
+    int DELAY_MIN = 2000;    // in microseconds
     int TOL = 50;          // in steps, not for the syringe
     
     int cropped_size;

@@ -30,7 +30,6 @@ void arduinoThread::setup(){
 }
 
 void arduinoThread::initializeVariables(){
-    home.set(0,0);
     start_path = false;
     start_transition = true;
 }
@@ -123,7 +122,7 @@ void arduinoThread::journeyOn(bool new_coffee){
     
     if (new_coffee) {
         start_transition = true;
-        current = home;
+        current = ofPoint(cropped_size, cropped_size);
         target = *points.begin();
         paths_i = points_i = 0;
     } else {
@@ -131,10 +130,8 @@ void arduinoThread::journeyOn(bool new_coffee){
         
         // starting a new path
         if (start_path){
-//            INK.ready(100000, 250);
-//            INK.start();
             start_path = false;
-//            continuing_path = true;
+            continuing_path = true;
         }
         // ending a path
         else if (!continuing_path) {
@@ -143,7 +140,6 @@ void arduinoThread::journeyOn(bool new_coffee){
         }
         // starting a transition
         else if (start_transition){
-//            INK.stop();
             fireEngines();
             return;
         }
@@ -167,12 +163,10 @@ void arduinoThread::journeyOn(bool new_coffee){
 
 
 void arduinoThread::planJourney(){
-    
     // starting a new path
     if (points_i++ == 0) {
         start_path = true;
         start_transition = false;
-        //        current = *points.begin();
         target = points.at(points_i);
     }
     // continuing a path except for the last stage
@@ -195,7 +189,6 @@ void arduinoThread::planJourney(){
     // finishing the print
     else {
         shootCoffee();
-        return;
     }
 }
 
@@ -220,27 +213,27 @@ void arduinoThread::fireEngines(){
     }
     
     // send variables to motors and start them
-    X.ready(sdelta_x, delay_x);
+    // NOTE x is flipped here to test 
+    X.ready(-sdelta_x, delay_x);
     Y.ready(sdelta_y, delay_y);
     X.start();
     Y.start();
     
-    current = target;
-    
-    
     // debugging
-    ex = " current.x: "  + ofToString(current.x) + " target.x: " + ofToString(target.x)
-       + " sx:        "  + ofToString(sx)        + " delay_x:  " + ofToString(delay_x);
-    wy = " current.y: "  + ofToString(current.y) + " target.y: " + ofToString(target.y)
-       + " sy:        "  + ofToString(sy)        + " delay_y:  " + ofToString(delay_y)
-       + " point_count " + ofToString(point_count);
+    ex += "\nsx:         "  + ofToString(sx)        + "\ndelay_x:    " + ofToString(delay_x)
+       +  "\ncurrent.x:  "  + ofToString(current.x) + "\ntarget.x:   " + ofToString(target.x)
+       +  "\n\npoint_count " + ofToString(point_count);
+    wy += "\nsy:         "  + ofToString(sy)        + "\ndelay_y:    " + ofToString(delay_y)
+       +  "\ncurrent.y:  "  + ofToString(current.y) + "\ntarget.y:   " + ofToString(target.y);
+
+    // after the move, we are at the target, our new current position
+    current = target;
 }
 
 
 int arduinoThread::getSteps(float here, float there, bool is_x) {
-    // first normalize
-    // FYI 0,0 is the upper left corner, 1,1 is lower right
-    float ndelta = (there - here) / cropped_size;
+    // normalize: 0,0 is the upper left corner and 1,1 is lower right
+    float ndelta = there/cropped_size - here/cropped_size;
     
     // then convert to mm, an 80 mm square
     float mmdelta = ndelta * 80;
@@ -249,9 +242,11 @@ int arduinoThread::getSteps(float here, float there, bool is_x) {
     // estimate 236.2 steps per mm in X
     // estimate 118.1 steps per mm in Y
     if (is_x) {
+        ex = "\nhere.x:     " + ofToString(int(here/cropped_size*80*150)) + "\nthere.x:    " + ofToString(int(there/cropped_size*80*150));
         int sdelta = int(mmdelta * 150);
         return sdelta;
     } else {
+        wy = "\nhere.y:     " + ofToString(int(here/cropped_size*80*118)) + "\nthere.y:    " + ofToString(int(there/cropped_size*80*118));
         int sdelta = int(mmdelta * 118);
         return sdelta;
     }
@@ -302,8 +297,8 @@ void arduinoThread::goHome(){
     //        curState = HOMING;
     //    }
     
-    X.ready(1000, 857);
-    Y.ready(-1000, 756);
+    X.ready(-256, 500);
+    Y.ready(-256, 500);
     
     X.start();
     Y.start();
@@ -389,12 +384,13 @@ void arduinoThread::draw(){
 		str += "arduino not ready...";
 	} else {
         str += "Point " + ofToString(points_i) + " / " + ofToString(points.size());
-        str += ". Path " + ofToString(paths_i) + " / " + ofToString(paths.size());
-        str += "\n\n" + ex;
-        str += "\n"   + wy;
+        str += ". Path " + ofToString(paths_i) + " / " + ofToString(paths.size()) + ".";
     }
-
     ofDrawBitmapString(str, 50, 700);
+    
+    ofDrawBitmapString(ex, 50, 750);
+    ofDrawBitmapString(wy, 200, 750);
+    
     
     X.draw();
     Y.draw();
