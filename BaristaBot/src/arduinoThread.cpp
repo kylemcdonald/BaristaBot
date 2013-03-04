@@ -220,11 +220,10 @@ void arduinoThread::fireEngines(){
     Y.start();
     
     // debugging
-    ex += "\nsx:         "  + ofToString(sx)        + "\ndelay_x:    " + ofToString(delay_x)
-       +  "\ncurrent.x:  "  + ofToString(current.x) + "\ntarget.x:   " + ofToString(target.x)
-       +  "\n\npoint_count " + ofToString(point_count);
-    wy += "\nsy:         "  + ofToString(sy)        + "\ndelay_y:    " + ofToString(delay_y)
-       +  "\ncurrent.y:  "  + ofToString(current.y) + "\ntarget.y:   " + ofToString(target.y);
+    ex += "\nsx:         " + ofToString(sx)        + "\n\ndelay_x:    " + ofToString(delay_x)
+       +  "\ncurrent.x:  " + ofToString(current.x) + "\ntarget.x:   "   + ofToString(target.x);
+    wy += "\nsy:         " + ofToString(sy)        + "\n\ndelay_y:    " + ofToString(delay_y)
+       +  "\ncurrent.y:  " + ofToString(current.y) + "\ntarget.y:   "   + ofToString(target.y);
 
     // after the move, we are at the target, our new current position
     current = target;
@@ -383,14 +382,15 @@ void arduinoThread::draw(){
     if (!bSetupArduino){
 		str += "arduino not ready...";
 	} else {
-        str += "Point " + ofToString(points_i) + " / " + ofToString(points.size());
-        str += ". Path " + ofToString(paths_i) + " / " + ofToString(paths.size()) + ".";
+        str += "Total Paths " + ofToString(paths.size()) + ", Points in Current Path " + ofToString(points.size()) + ".";
     }
-    ofDrawBitmapString(str, 50, 700);
+    ofDrawBitmapString(str, 50, 660);
     
-    ofDrawBitmapString(ex, 50, 750);
-    ofDrawBitmapString(wy, 200, 750);
-    
+    str = "Path:       " + ofToString(paths_i) + "\n\nPoint:      " + ofToString(points_i) + "\npoint_count " + ofToString(point_count);
+    ofDrawBitmapString(str, 50, 720);
+
+    ofDrawBitmapString(ex, 50, 780);
+    ofDrawBitmapString(wy, 200, 780);
     
     X.draw();
     Y.draw();
