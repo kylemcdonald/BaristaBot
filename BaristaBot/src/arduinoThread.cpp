@@ -310,13 +310,11 @@ bool arduinoThread::journeysDone(){
 void arduinoThread::shootFace(){
     curState = SHOOT_FACE;
     // change these value depending on observation
-    Z.ready(14000, 450);
+    Z.ready(14000, DELAY_MIN);
     Z.start();
     while (Z.isThreadRunning()); // wait before doing Y
-    Y.ready(10000-home.y, 450);
+    Y.ready(10000, DELAY_MIN);
     Y.start();
-    X.ready(home.x, DELAY_MIN);
-    X.start();
 }
 
 void arduinoThread::shootCoffee(){
@@ -336,14 +334,16 @@ void arduinoThread::shootCoffee(){
 }
 
 void arduinoThread::goHome(){
-    // CHANGE all this to hit limits
-    Y.ready(-10000+home.y, 450);
+    Y.ready(-100000, DELAY_MIN);
+    Y.HOMING = true;
     Y.start();
-    while (Y.isThreadRunning());    // wait before doing Z
-    Z.ready(-14000, 450);
-    Z.start();
-    X.ready(home.x, DELAY_MIN+50);
+    X.ready(-100000, DELAY_MIN+100);
+    X.HOMING = true;
     X.start();
+    while (Y.isThreadRunning());    // wait before doing Z
+    Z.ready(-100000, DELAY_MIN);
+    Z.HOMING = true;
+    Z.start();
 }
 
 void arduinoThread::jogRight() {
@@ -429,8 +429,10 @@ void arduinoThread::draw(){
     }
     ofDrawBitmapString(str, 50, 660);
     
-    str = "Path:       " + ofToString(paths_i) + "\n\nPoint:      " + ofToString(points_i) + "\npoint_count " + ofToString(point_count);
+    str = "Path:       " + ofToString(paths_i) + "\n\nPoint:      "
+        + ofToString(points_i) + "\npoint_count " + ofToString(point_count);
     ofDrawBitmapString(str, 50, 720);
+    
     str = "/ " + ofToString(paths.size()) + "\n\n/ " + ofToString(points.size());
     ofDrawBitmapString(str, 220, 720);
 
@@ -446,13 +448,33 @@ void arduinoThread::draw(){
 void arduinoThread::digitalPinChanged(const int & pinNum) {
     // note: this will throw tons of false positives on a bare mega, needs resistors
     if (ard.getDigital(X_LIMIT_PIN)) {
-        X.stop();
+        if (X.HOMING) {
+            X.stop();
+            X.HOMING = false;
+        } else {
+            X.LIMIT = true;
+        }
     } else if (ard.getDigital(Z_LIMIT_PIN)) {
-        Z.stop();
+        if (Z.HOMING) {
+            Z.stop();
+            Z.HOMING = false;
+        } else {
+            Z.LIMIT = true;
+        }
     } else if (ard.getDigital(Y_LIMIT_PIN)) {
-        Y.stop();
+        if (Y.HOMING) {
+            Y.stop();
+            Y.HOMING = false;
+        } else {
+            Y.LIMIT = true;
+        }
     } else if (ard.getDigital(INK_LIMIT_PIN)) {
-        INK.stop();
+        if (INK.HOMING) {
+            INK.stop();
+            INK.HOMING = false;
+        } else {
+            INK.LIMIT = true;
+        }
     }
 }
 

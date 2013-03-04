@@ -13,7 +13,7 @@ class motorThread : public ofThread{
 
     int STEP_PIN, DIR_PIN, SLEEP_PIN;
     int s, STEPS, DELAY, INC;
-    bool DIR, GO;
+    bool DIR, GO, LIMIT, HOMING;
 
 
     //--------------------------------------------------------------
@@ -28,6 +28,7 @@ class motorThread : public ofThread{
     }
     
     void ready(int stps, int dly) {
+        LIMIT = HOMING = false;
         STEPS = abs(s = stps);
         INC = 0;
         DELAY = dly;
@@ -59,10 +60,19 @@ class motorThread : public ofThread{
         unlock();
     }
 
+    //--------------------------------------------------------------
+    void freeze(){
+        lock();
+            ard->sendDigital(SLEEP_PIN, ARD_LOW);
+            ard->sendDigital(DIR_PIN, !DIR);
+            stop();
+        unlock();
+    }
     
     //--------------------------------------------------------------
     void threadedFunction(){
         while(isThreadRunning() != 0){
+            if (LIMIT && !HOMING) freeze();
             if (++INC > STEPS) stop();
 
             lock();
