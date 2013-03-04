@@ -21,10 +21,6 @@ void arduinoThread::stop(){
     ard.disconnect();
 }
 
-
-
-
-
 //----------------------------------------------------------------------------------------------
 void arduinoThread::setup(){
     // do not change this sequence
@@ -90,90 +86,38 @@ void arduinoThread::setupArduino(const int & version) {
 
 
 
+
+
+
+
 //----------------------------------------------------------------------------------------------
-void arduinoThread::goHome(){
-//    if (curState == FACE_PHOTO) {
-//        Z.ready(-10000, 397);
-//        Z.start();
-//    } else {
-//        curState = HOMING;
-//    }
+//----------------------------------------------------------------------------------------------
+//----------------------------------------------------------------------------------------------
+//----------------------------------------------------------------------------------------------
+//----------------------------------------------------------------------------------------------
+void arduinoThread::update(){
+    lock();
+    ard.update();
+    unlock();
     
-    X.ready(1000, 857);
-    Y.ready(-1000, 756);
     
-    X.start();
-    Y.start();
-}
-
-
-void arduinoThread::planJourney(){
-    
-    // starting a new path
-    if (points_i++ == 0) {
-        start_path = true;
-        start_transition = false;
-//        current = *points.begin();
-        target = points.at(points_i);
-    }
-    // continuing a path except for the last stage
-    else if (points_i++ < points.size()-2) {
-        continuing_path = true;
-        target = points.at(points_i);
-    }
-    // ending a path
-    else if (points_i++ < points.size()-1) {
-        continuing_path = false;
-        target = points.at(points_i);
-    }
-    // starting a transition
-    else if (paths_i++ < paths.size()-1) {
-        start_transition = true;
-//        current = *points.end();
-        points = paths.at(paths_i).getVertices();
-        target = points.at(points_i = 0);
-    }
-    // finishing the print
-    else {
-        shootCoffee();
-        return;
+    switch (curState) {
+        case FACE_PHOTO:
+            if (journeysDone() && !Z.isThreadRunning()) {
+                journeyOn(true);
+                curState = PRINTING;
+            }
+            break;
+        case PRINTING:
+            if (journeysDone()) {
+                journeyOn(false);
+            }
+            break;
+        default:
+            break;
     }
 }
 
-void arduinoThread::fireEngines(){
-    int sdelta_x = 0;
-    int sdelta_y = 0;
-    int delay_x = DELAY_MIN;
-    int delay_y = DELAY_MIN;
-    
-    // get steps
-    int sx = abs(sdelta_x = getSteps(current.x, target.x, true));
-    int sy = abs(sdelta_y = getSteps(current.y, target.y, false));
-    
-    // get delays
-    if (!start_transition) {
-        if (sy > sx && sx != 0) {
-            delay_x = DELAY_MIN * sy / sx;
-        } else if (sx > sy && sy != 0) {
-            delay_y = DELAY_MIN * sx / sy;
-        }
-    }
-    
-    // debugging
-    ex = " current.x: "  + ofToString(current.x) + " target.x: " + ofToString(target.x)
-       + " sx: "         + ofToString(sx)        + " delay_x: "  + ofToString(delay_x);
-    wy = " current.y: "  + ofToString(current.y) + " target.y: " + ofToString(target.y)
-       + " sy: "         + ofToString(sy)        + " delay_y: "  + ofToString(delay_y)
-       + " point_count " + ofToString(point_count);
-    
-    // send variables to motors and start them
-    X.ready(sdelta_x, delay_x);
-    Y.ready(sdelta_y, delay_y);
-    X.start();
-    Y.start();
-    
-    current = target;
-}
 
 void arduinoThread::journeyOn(bool new_coffee){
     point_count = 1;
@@ -222,6 +166,77 @@ void arduinoThread::journeyOn(bool new_coffee){
     fireEngines();
 }
 
+
+void arduinoThread::planJourney(){
+    
+    // starting a new path
+    if (points_i++ == 0) {
+        start_path = true;
+        start_transition = false;
+        //        current = *points.begin();
+        target = points.at(points_i);
+    }
+    // continuing a path except for the last stage
+    else if (points_i++ < points.size()-2) {
+        continuing_path = true;
+        target = points.at(points_i);
+    }
+    // ending a path
+    else if (points_i++ < points.size()-1) {
+        continuing_path = false;
+        target = points.at(points_i);
+    }
+    // starting a transition
+    else if (paths_i++ < paths.size()-1) {
+        start_transition = true;
+        //        current = *points.end();
+        points = paths.at(paths_i).getVertices();
+        target = points.at(points_i = 0);
+    }
+    // finishing the print
+    else {
+        shootCoffee();
+        return;
+    }
+}
+
+
+void arduinoThread::fireEngines(){
+    int sdelta_x = 0;
+    int sdelta_y = 0;
+    int delay_x = DELAY_MIN;
+    int delay_y = DELAY_MIN;
+    
+    // get steps
+    int sx = abs(sdelta_x = getSteps(current.x, target.x, true));
+    int sy = abs(sdelta_y = getSteps(current.y, target.y, false));
+    
+    // get delays
+    if (!start_transition) {
+        if (sy > sx && sx != 0) {
+            delay_x = DELAY_MIN * sy / sx;
+        } else if (sx > sy && sy != 0) {
+            delay_y = DELAY_MIN * sx / sy;
+        }
+    }
+    
+    // debugging
+    ex = " current.x: "  + ofToString(current.x) + " target.x: " + ofToString(target.x)
+    + " sx: "         + ofToString(sx)        + " delay_x: "  + ofToString(delay_x);
+    wy = " current.y: "  + ofToString(current.y) + " target.y: " + ofToString(target.y)
+    + " sy: "         + ofToString(sy)        + " delay_y: "  + ofToString(delay_y)
+    + " point_count " + ofToString(point_count);
+    
+    // send variables to motors and start them
+    X.ready(sdelta_x, delay_x);
+    Y.ready(sdelta_y, delay_y);
+    X.start();
+    Y.start();
+    
+    current = target;
+}
+
+
 int arduinoThread::getSteps(float here, float there, bool is_x) {
     // first normalize
     // FYI 0,0 is the upper left corner, 1,1 is lower right
@@ -242,6 +257,7 @@ int arduinoThread::getSteps(float here, float there, bool is_x) {
     }
 }
 
+
 bool arduinoThread::journeysDone(){
     if (X.isThreadRunning() || Y.isThreadRunning())
         return false;
@@ -252,29 +268,6 @@ bool arduinoThread::journeysDone(){
 
 
 
-//----------------------------------------------------------------------------------------------
-void arduinoThread::update(){
-    lock();
-        ard.update();
-    unlock();
-
-    
-    switch (curState) {
-        case FACE_PHOTO:
-            if (journeysDone() && !Z.isThreadRunning()) {
-                journeyOn(true);
-                curState = PRINTING;
-            }
-            break;
-        case PRINTING:
-            if (journeysDone()) {
-                journeyOn(false);
-            }
-            break;
-        default:
-            break;
-    }
-}
 
 
 //----------------------------------------------------------------------------------------------
@@ -298,6 +291,20 @@ void arduinoThread::shootCoffee(){
     // that sends the machine up, ready for next face photo
 }
 
+void arduinoThread::goHome(){
+    //    if (curState == FACE_PHOTO) {
+    //        Z.ready(-10000, 397);
+    //        Z.start();
+    //    } else {
+    //        curState = HOMING;
+    //    }
+    
+    X.ready(1000, 857);
+    Y.ready(-1000, 756);
+    
+    X.start();
+    Y.start();
+}
 
 void arduinoThread::jogRight() {
     if (X.isThreadRunning()) {

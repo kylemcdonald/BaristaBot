@@ -10,24 +10,24 @@ class arduinoThread : public ofThread{
 public:
     void start();
     void stop();
-    void setup();
     
+    void setup();
+    void initializeVariables();
+    void initializeMotors();
     void initializeArduino();
     void setupArduino(const int & version);
-    void initializeMotors();
-    void initializeVariables();
-    
-    void update();
     void updateArduino();
     
-    void goHome();
+    void update();
     void journeyOn(bool new_coffee);
-    bool journeysDone();
-    void shootFace();
-    void shootCoffee();
     void planJourney();
     void fireEngines();
-    int getSteps(float here, float there, bool is_x);
+    int  getSteps(float here, float there, bool is_x);
+    bool journeysDone();
+    
+    void shootFace();
+    void shootCoffee();
+    void goHome();
     
     void jogLeft();
     void jogRight();
@@ -38,7 +38,6 @@ public:
     void plungerUp();
     void plungerDown();
 
-    
     void threadedFunction();
     void draw();
     void digitalPinChanged(const int & pinNum);
