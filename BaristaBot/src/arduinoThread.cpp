@@ -32,6 +32,7 @@ void arduinoThread::setup(){
 void arduinoThread::initializeVariables(){
     start_path = false;
     start_transition = true;
+    home = ofPoint(HOME_X, HOME_Y);
 }
 
 void arduinoThread::initializeMotors(){
@@ -134,16 +135,21 @@ void arduinoThread::journeyOn(bool new_coffee){
         // starting a transition
         if (start_transition){
             INK.stop();
-            usleep(INK_TIMEOUT); // wait for ink to stop
+            plungerUp();            // pull up to fast stop flow
+            usleep(INK_TIMEOUT);    // wait for ink to stop
             fireEngines();
             return;
         }
         // starting a new path, ink flows
         else if (start_path){
             start_path = false;
+            if (INK.isThreadRunning()) INK.stop();
+            plungerDown();
             INK.ready(100000, INK_DELAY);
-            INK.start();
-            usleep(INK_TIMEOUT); // wait for ink to start
+            if (!INK.isThreadRunning()) {
+                INK.start();
+            }
+//            usleep(INK_TIMEOUT); // wait for ink to start
         }
         // drawing last segment in a path
         else if (end_path) {
@@ -193,6 +199,7 @@ void arduinoThread::planJourney(){
     }
     // continuing a path except for the last stage
     else if (points_i++ < points.size()-2) {
+        if (points.size() == 1) return; // CHANGE LATER
         target = points.at(points_i);
     }
     // ending a path
@@ -209,6 +216,7 @@ void arduinoThread::planJourney(){
     // finishing the print
     else {
         INK.stop();
+//        plungerUp();
         usleep(INK_TIMEOUT);
         shootCoffee();
     }
@@ -304,8 +312,10 @@ void arduinoThread::shootFace(){
     Z.ready(14000, 450);
     Z.start();
     while (Z.isThreadRunning()); // wait before doing Y
-    Y.ready(30000, 450);
+    Y.ready(30000-home.y, 450);
     Y.start();
+    X.ready(home.x, DELAY_MIN);
+    X.start();
 }
 
 void arduinoThread::shootCoffee(){
@@ -326,23 +336,13 @@ void arduinoThread::shootCoffee(){
 
 void arduinoThread::goHome(){
     // CHANGE all this to hit limits
-    if (curState == FACE_PHOTO) {
-        Z.ready(-14000, 450);
-        Z.start();
-        while (Z.isThreadRunning());    // wait before doing Y
-        ofSleepMillis(500);             // wait more
-        Y.ready(-30000-256, 450);
-    } else {
-        curState = HOMING;
-        Y.ready(-256, DELAY_MIN+110);
-        Z.ready(-256, DELAY_MIN);
-        Z.start();
-    }
-    
-    X.ready(-256, DELAY_MIN+50);
-    
-    X.start();
+    Y.ready(-30000+home.y, 450);
     Y.start();
+    while (Y.isThreadRunning());    // wait before doing Z
+    Z.ready(-14000, 450);
+    Z.start();
+    X.ready(home.x, DELAY_MIN+50);
+    X.start();
 }
 
 void arduinoThread::jogRight() {
@@ -398,7 +398,7 @@ void arduinoThread::plungerUp() {
         INK.INC = 0;
         return;
     }
-    INK.ready(-1000, 50);
+    INK.ready(-500, 50);
     INK.start();
 }
 void arduinoThread::plungerDown() {
@@ -406,7 +406,7 @@ void arduinoThread::plungerDown() {
         INK.INC = 0;
         return;
     }
-    INK.ready(2000, INK_DELAY);
+    INK.ready(1000, 50);
     INK.start();
 }
 

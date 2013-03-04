@@ -21,7 +21,7 @@ class arduinoThread : public ofThread{
 #define X_SLEEP_PIN 14
 #define Y_SLEEP_PIN 15
 #define Z_SLEEP_PIN 16
-#define INK_SLEEP_PIN 17
+#define INK_SLEEP_PIN 17 // is 17
 
 #define X_LIMIT_PIN 10
 #define Y_LIMIT_PIN 12
@@ -29,10 +29,13 @@ class arduinoThread : public ofThread{
 #define INK_LIMIT_PIN 13
     
 // CONSTANTS
-#define DELAY_MIN 450       // in microseconds (20000 is good for debugging w/o robot)
-#define TOL 400             // in steps, not for the syringe
-#define INK_TIMEOUT 200000  // in microseconds
-#define INK_DELAY 500       // in microseconds
+#define DELAY_MIN 500       // in microseconds (20000 is good for debugging w/o robot)
+#define TOL 200             // in steps, not for the syringe
+#define INK_TIMEOUT 500000  // in microseconds
+#define INK_DELAY 600       // in microseconds
+
+#define HOME_X -128
+#define HOME_Y 128
 
 public:
     void start();
@@ -89,7 +92,7 @@ public:
     
     ofArduino ard;
     motorThread X, Y, Z, INK;
-    ofPoint current, target;
+    ofPoint home, current, target;
     vector<ofPolyline> paths;
     vector<ofPoint> points;
     string ex, wy, hex, hwy;

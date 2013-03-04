@@ -29,6 +29,7 @@ class motorThread : public ofThread{
     
     void ready(int stps, int dly) {
         STEPS = abs(s = stps);
+        INC = 0;
         DELAY = dly;
         DIR = (stps > 0) ? ARD_LOW : ARD_HIGH;
         lock();
@@ -62,14 +63,14 @@ class motorThread : public ofThread{
     //--------------------------------------------------------------
     void threadedFunction(){
         while(isThreadRunning() != 0){
+            if (++INC > STEPS) stop();
+
             lock();
             
                 ard->sendDigital(STEP_PIN, GO = !GO);
 
             unlock();
             usleep(DELAY);
-
-            if (INC++ >= STEPS) stop();
         }
     }
     
