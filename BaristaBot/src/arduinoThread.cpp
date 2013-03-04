@@ -110,26 +110,27 @@ void arduinoThread::goHome(){
 void arduinoThread::planJourney(){
     
     // starting a new path
-    if (points_i == 0) {
+    if (points_i++ == 0) {
         start_path = true;
-        current = *points.begin();
-        target = points.at(++points_i);
+        start_transition = false;
+//        current = *points.begin();
+        target = points.at(points_i);
     }
     // continuing a path except for the last stage
-    else if (points_i+1 < points.size()-1) {
+    else if (points_i++ < points.size()-2) {
         continuing_path = true;
-        target = points.at(++points_i);
+        target = points.at(points_i);
     }
     // ending a path
-    else if (points_i+1 == points.size()-1) {
+    else if (points_i++ < points.size()-1) {
         continuing_path = false;
-        target = points.at(++points_i);
+        target = points.at(points_i);
     }
     // starting a transition
-    else if (paths_i < paths.size()-1) {
+    else if (paths_i++ < paths.size()-1) {
         start_transition = true;
-        current = *points.end();
-        points = paths.at(++paths_i).getVertices();
+//        current = *points.end();
+        points = paths.at(paths_i).getVertices();
         target = points.at(points_i = 0);
     }
     // finishing the print
@@ -170,6 +171,8 @@ void arduinoThread::fireEngines(){
     Y.ready(sdelta_y, delay_y);
     X.start();
     Y.start();
+    
+    current = target;
 }
 
 void arduinoThread::journeyOn(bool new_coffee){
@@ -185,10 +188,10 @@ void arduinoThread::journeyOn(bool new_coffee){
         
         // starting a new path
         if (start_path){
-            INK.ready(10000, 1000);
+            INK.ready(100000, 250);
             INK.start();
             start_path = false;
-            continuing_path = true;
+//            continuing_path = true;
         }
         // ending a path
         else if (!continuing_path) {
@@ -207,7 +210,7 @@ void arduinoThread::journeyOn(bool new_coffee){
             int sx = abs(getSteps(current.x, target.x, true));
             int sy = abs(getSteps(current.y, target.y, false));
             
-            // if we're alread above tolerance, break
+            // if we're already above tolerance, break
             if (sx > TOL && sy > TOL) break;
             // if one dimension gets too big, break
             if (sx > TOL*2 || sy > TOL*2) break;
@@ -349,7 +352,7 @@ void arduinoThread::plungerUp() {
         INK.INC = 0;
         return;
     }
-    INK.ready(200, DELAY_MIN);
+    INK.ready(-1000, 50);
     INK.start();
 }
 void arduinoThread::plungerDown() {
@@ -357,7 +360,7 @@ void arduinoThread::plungerDown() {
         INK.INC = 0;
         return;
     }
-    INK.ready(-200, DELAY_MIN);
+    INK.ready(2000, 350);
     INK.start();
 }
 
