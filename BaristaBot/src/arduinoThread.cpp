@@ -267,12 +267,12 @@ int arduinoThread::getSteps(float here, float there, bool is_x) {
     // estimate 236.2 steps per mm in X
     // estimate 118.1 steps per mm in Y
     if (is_x) {
-        ex += "\nhere.x:     " + ofToString(int(here/cropped_size*80*150))
+        ex = "\nhere.x:     " + ofToString(int(here/cropped_size*80*150))
            + "\nthere.x:    " + ofToString(int(there/cropped_size*80*150))+ hex;
         int sdelta = int(mmdelta * 200);
         return sdelta;
     } else {
-        wy += "\nhere.y:     " + ofToString(int(here/cropped_size*80*118))
+        wy = "\nhere.y:     " + ofToString(int(here/cropped_size*80*118))
            + "\nthere.y:    " + ofToString(int(there/cropped_size*80*118)) + hwy;
         int sdelta = int(mmdelta * 118);
         return sdelta;
