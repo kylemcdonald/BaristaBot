@@ -100,16 +100,17 @@ void ofApp::setup() {
 	
 	gui.setup();
 	gui.addPanel("Settings");
-	gui.addSlider("black", 65, -255, 255, true);        // kyle's 0
-	gui.addSlider("sigma1", 0.85, 0.01, 2.0, false);    // kyle's 0.4
-	gui.addSlider("sigma2", 4.45, 0.01, 10.0, false);   // kyle's 3.0
+	gui.addSlider("black", 48, -255, 255, true);        // kyle's 0, 65
+	gui.addSlider("sigma1", 0.85, 0.01, 2.0, false);    // kyle's 0.4, 0.85
+	gui.addSlider("sigma2", 4.45, 0.01, 10.0, false);   // kyle's 3.0, 4.45
 	gui.addSlider("tau", 0.97, 0.8, 1.0, false);        // kyle's 0.97
 	gui.addSlider("halfw", 4, 1, 8, true);              // kyle's 4
-	gui.addSlider("smoothPasses", 3, 1, 4, true);       // kyle's 2
-	gui.addSlider("thresh", 121.8, 0, 255, false);      // kyle's 128
-	gui.addSlider("minGapLength", 6.8, 2, 12, false);   // kyle's 2
-	gui.addSlider("minPathLength", 20, 0, 50, true);    // kyle's 20
-	gui.addSlider("facePadding", 1.77, 0, 2, false);    // kyle's 1.5
+	gui.addSlider("smoothPasses", 4, 1, 4, true);       // kyle's 2, 3
+	gui.addSlider("thresh", 121.8, 0, 255, false);      // kyle's 128, 121.8
+	gui.addSlider("minGapLength", 5.5, 2, 12, false);   // kyle's 2, 6.8
+	gui.addSlider("minPathLength", 40, 0, 50, true);    // kyle's 20
+	gui.addSlider("facePadding", 1.5, 0, 2, false);    // kyle's 1.5, 1.77
+    gui.addSlider("verticalOffset", int(-croppedSize/12), int(-croppedSize/2), int(croppedSize/2), false);
 	gui.loadSettings("settings.xml");
     
     AT.setup();
@@ -132,6 +133,7 @@ void ofApp::update(){
 		float minGapLength = gui.getValueF("minGapLength");
 		int minPathLength = gui.getValueI("minPathLength");
 		float facePadding = gui.getValueF("facePadding");
+        int verticalOffset = gui.getValueI("verticalOffset");
 		
 		convertColor(cam, gray, CV_RGB2GRAY);
 		
@@ -153,6 +155,7 @@ void ofApp::update(){
 			faceRect.getPositionRef() /= faceTrackingScaleFactor;
 			faceRect.scale(1 / faceTrackingScaleFactor);
 			faceRect.scaleFromCenter(facePadding);
+            faceRect.translateY(verticalOffset);
 		}
 		
 		ofRectangle camBoundingBox(0, 0, camWidth, camHeight);

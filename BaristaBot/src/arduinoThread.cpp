@@ -125,49 +125,70 @@ void arduinoThread::journeyOn(bool new_coffee){
         current = ofPoint(cropped_size, cropped_size);
         target = *points.begin();
         paths_i = points_i = 0;
-    } else {
+        fireEngines();
+    }
+
+    else {
         planJourney();
         
+        // starting a transition
+        if (start_transition){
+            fireEngines();
+            return;
+        }
         // starting a new path
-        if (start_path){
+        else if (start_path){
             start_path = false;
             continuing_path = true;
         }
+        // so if new path or continuing see if we should change target
+        else if (continuing_path) {
+
+        }
         // ending a path
-        else if (!continuing_path) {
+        else {
             fireEngines();
             return;
         }
-        // starting a transition
-        else if (start_transition){
+
+        int sx = abs(getSteps(current.x, target.x, true));
+        int sy = abs(getSteps(current.y, target.y, false));
+        
+        // if we're already above tolerance, fire
+        if (sx > TOL && sy > TOL) {
+            fireEngines();
+            return;
+        }
+        // if one dimension gets too big, fire
+        else if (sx > TOL*2 || sy > TOL*2) {
             fireEngines();
             return;
         }
         
-        // so if new path or continuing see if we should change target
-        while (continuing_path) {
-            int sx = abs(getSteps(current.x, target.x, true));
-            int sy = abs(getSteps(current.y, target.y, false));
-            
-            // if we're already above tolerance, break
-            if (sx > TOL && sy > TOL) break;
-            // if one dimension gets too big, break
-            if (sx > TOL*2 || sy > TOL*2) break;
-            
-            planJourney();
-            point_count++;
-        }
+        // if you didn't fire and return out then you're hitting planJourney() again
+        point_count++;
     }
-    fireEngines();
 }
 
 
 void arduinoThread::planJourney(){
     // starting a new path
     if (points_i++ == 0) {
-        start_path = true;
-        start_transition = false;
-        target = points.at(points_i);
+        // if this path has only one point it's a transition
+        if (points.size() == 1) {
+            // if it's the last path just skip it
+            if (paths_i == paths.size()-1) {
+                shootCoffee();
+            } else {
+                start_transition = true;
+                points = paths.at(paths_i).getVertices();
+                target = points.at(points_i = 0);
+            }
+        } else {
+            start_path = true;
+            start_transition = false;
+            target = points.at(points_i);
+        }
     }
     // continuing a path except for the last stage
     else if (points_i++ < points.size()-2) {
@@ -182,7 +203,6 @@ void arduinoThread::planJourney(){
     // starting a transition
     else if (paths_i++ < paths.size()-1) {
         start_transition = true;
-        //        current = *points.end();
         points = paths.at(paths_i).getVertices();
         target = points.at(points_i = 0);
     }
@@ -203,6 +223,12 @@ void arduinoThread::fireEngines(){
     int sx = abs(sdelta_x = getSteps(current.x, target.x, true));
     int sy = abs(sdelta_y = getSteps(current.y, target.y, false));
     
+    // if nowhere to go, skip it
+    if (sx == 0 && sy == 0) {
+        journeyOn(false);
+        return;
+    }
+    
     // get delays
     if (!start_transition) {
         if (sy > sx && sx != 0) {
@@ -220,10 +246,10 @@ void arduinoThread::fireEngines(){
     Y.start();
     
     // debugging
-    ex += "\nsx:         " + ofToString(sx)        + "\n\ndelay_x:    " + ofToString(delay_x)
-       +  "\ncurrent.x:  " + ofToString(current.x) + "\ntarget.x:   "   + ofToString(target.x);
-    wy += "\nsy:         " + ofToString(sy)        + "\n\ndelay_y:    " + ofToString(delay_y)
-       +  "\ncurrent.y:  " + ofToString(current.y) + "\ntarget.y:   "   + ofToString(target.y);
+    hex = "\nsdelta_x:   " + ofToString(sdelta_x)        + "\ndelay_x:    " + ofToString(delay_x);
+       // +  "\ncurrent.x:  " + ofToString(current.x) + "\ntarget.x:   "   + ofToString(target.x);
+    hwy = "\nsdelta_y:   " + ofToString(sdelta_y)        + "\ndelay_y:    " + ofToString(delay_y);
+       // +  "\ncurrent.y:  " + ofToString(current.y) + "\ntarget.y:   "   + ofToString(target.y);
 
     // after the move, we are at the target, our new current position
     current = target;
@@ -241,11 +267,13 @@ int arduinoThread::getSteps(float here, float there, bool is_x) {
     // estimate 236.2 steps per mm in X
     // estimate 118.1 steps per mm in Y
     if (is_x) {
-        ex = "\nhere.x:     " + ofToString(int(here/cropped_size*80*150)) + "\nthere.x:    " + ofToString(int(there/cropped_size*80*150));
-        int sdelta = int(mmdelta * 150);
+        ex += "\nhere.x:     " + ofToString(int(here/cropped_size*80*150))
+           + "\nthere.x:    " + ofToString(int(there/cropped_size*80*150))+ hex;
+        int sdelta = int(mmdelta * 200);
         return sdelta;
     } else {
-        wy = "\nhere.y:     " + ofToString(int(here/cropped_size*80*118)) + "\nthere.y:    " + ofToString(int(there/cropped_size*80*118));
+        wy += "\nhere.y:     " + ofToString(int(here/cropped_size*80*118))
+           + "\nthere.y:    " + ofToString(int(there/cropped_size*80*118)) + hwy;
         int sdelta = int(mmdelta * 118);
         return sdelta;
     }
@@ -279,8 +307,8 @@ void arduinoThread::shootFace(){
 void arduinoThread::shootCoffee(){
     curState = SHOOT_COFFEE;
     // change these value depending on observation
-    Z.ready(2000, 500);
-    Z.start();
+//    Z.ready(2000, 500);
+//    Z.start();
     
     
     // **** TAKE PHOTO ****
@@ -378,19 +406,21 @@ void arduinoThread::threadedFunction(){
 
 void arduinoThread::draw(){
    
-    string str = "curState = " + ofToString(stateName[curState]) + ". ";
+    string str = "curState = " + ofToString(stateName[curState]);
     if (!bSetupArduino){
-		str += "arduino not ready...";
+		str += "\narduino not ready...";
 	} else {
-        str += "Total Paths " + ofToString(paths.size()) + ", Points in Current Path " + ofToString(points.size()) + ".";
+        str += "\nI need a fucking coffee.";
     }
     ofDrawBitmapString(str, 50, 660);
     
     str = "Path:       " + ofToString(paths_i) + "\n\nPoint:      " + ofToString(points_i) + "\npoint_count " + ofToString(point_count);
     ofDrawBitmapString(str, 50, 720);
+    str = "/ " + ofToString(paths.size()) + "\n\n/ " + ofToString(points.size());
+    ofDrawBitmapString(str, 220, 720);
 
     ofDrawBitmapString(ex, 50, 780);
-    ofDrawBitmapString(wy, 200, 780);
+    ofDrawBitmapString(wy, 220, 780);
     
     X.draw();
     Y.draw();
