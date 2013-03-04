@@ -132,63 +132,54 @@ ofPoint arduinoThread::getNextTarget() {
     return next;
 }
 
-int arduinoThread::getSteps(float here, float there, bool is_x) {
-    // first normalize
-    // FYI 0,0 is the upper left corner, 1,1 is lower right
-    float ndelta = (there - here) / cropped_size;
+
+void arduinoThread::planJourney(){
     
-    // then convert to mm, an 80 mm square
-    float mmdelta = ndelta * 80;
-    
-    // then convert to steps
-    // estimate 236.2 steps per mm in X
-    // estimate 118.1 steps per mm in Y
-    if (is_x) {
-        int sdelta = int(mmdelta * 236);
-        return sdelta;
-    } else {
-        int sdelta = int(mmdelta * 118);
-        return sdelta;
+    // starting a new path
+    if (points_i == 0) {
+        start_path = true;
+        current = *points.begin();
+        target = points.at(++points_i);
+    }
+    // continuing a path except for the last stage
+    else if (points_i+1 < points.size()-1) {
+        continuing_path = true;
+        target = points.at(++points_i);
+    }
+    // ending a path
+    else if (points_i+1 == points.size()-1){
+        continuing_path = false;
+        target = points.at(++points_i);
+    }
+    // starting a transition
+    else if (++paths_i < paths.size()) {
+        start_transition = true;
+        current = *points.end();
+        points = paths.at(paths_i).getVertices();
+        target = points.at(points_i = 0);
+    }
+    // finishing the print
+    else {
+        print_done = true;
+        points_i = paths_i = 0;
+        target = home;
     }
 }
 
-void arduinoThread::journeyOn(bool new_coffee){
+void arduinoThread::fireEngines(){
     int sdelta_x = 0;
     int sdelta_y = 0;
     int sx = 0;
     int sy = 0;
-    int point_count = 0;
     int delay_x = DELAY_MIN;
     int delay_y = DELAY_MIN;
-    ofPoint current;
-    ofPoint target;
     
-    if (start_transition) {
-        if (new_coffee){
-            paths_i = points_i = 0;
-            current = home;
-            target = *points.begin();
-        }
-        sx = abs(sdelta_x = getSteps(current.x, target.x, true));
-        sy = abs(sdelta_y = getSteps(current.y, target.y, false));
-        delay_x += 77; // so they aren't running at same speed
-    }
-    else {
-        // if either movement is smaller than the tolerance of the robot
-        // get more points and add them up until tolerance is passed
-        while (sx < TOL || sy < TOL) {
-            // keep going unless one dimension gets too big
-            if (sx > TOL*2 || sy > TOL*2) {
-                break;
-            }
-            current = target;
-            target = getNextTarget();
-            
-            sx = abs(sdelta_x += getSteps(current.x, target.x, true));
-            sy = abs(sdelta_y += getSteps(current.y, target.y, false));
-            point_count++;
-        }
-        // now find the delays based on ratio of steps x and y
+    // get steps
+    sx = abs(sdelta_x = getSteps(current.x, target.x, true));
+    sy = abs(sdelta_y = getSteps(current.y, target.y, false));
+    
+    // get delays
+    if (!start_transition) {
         if (sy > sx && sx != 0) {
             delay_x = DELAY_MIN * sy / sx;
         } else if (sx > sy && sy != 0) {
@@ -208,6 +199,79 @@ void arduinoThread::journeyOn(bool new_coffee){
     Y.ready(sdelta_y, delay_y);
     X.start();
     Y.start();
+}
+
+void arduinoThread::journeyOn(bool new_coffee){
+    
+    if (new_coffee) {
+        start_transition = true;
+        current = home;
+        target = *points.begin();
+        paths_i = points_i = 0;
+        fireEngines();
+    } else {
+        planJourney();
+        
+        // starting a new path
+        if (start_path){
+            INK.ready(10000, 1000);
+            INK.start();
+            start_path = false;
+            continuing_path = true;
+        }
+        // ending a path
+        else if (!continuing_path) {
+            fireEngines();
+            return;
+        }
+        // starting a transition
+        else if (start_transition){
+            INK.stop();
+            fireEngines();
+            return;
+        }
+        // print is done
+        else if (print_done) {
+            print_done = false;
+            shootCoffee();
+            return;
+        }
+        
+        // so if new path or continuing see if we should change target
+        point_count = 0;
+        while (continuing_path) {
+            int sx = abs(getSteps(current.x, target.x, true));
+            int sy = abs(getSteps(current.y, target.y, false));
+            
+            // if we're alread above tolerance, break
+            if (sx > TOL && sy > TOL) break;
+            // if one dimension gets too big, break
+            if (sx > TOL*2 || sy > TOL*2) break;
+            
+            planJourney();
+            point_count++;
+        }
+    }
+}
+
+int arduinoThread::getSteps(float here, float there, bool is_x) {
+    // first normalize
+    // FYI 0,0 is the upper left corner, 1,1 is lower right
+    float ndelta = (there - here) / cropped_size;
+    
+    // then convert to mm, an 80 mm square
+    float mmdelta = ndelta * 80;
+    
+    // then convert to steps
+    // estimate 236.2 steps per mm in X
+    // estimate 118.1 steps per mm in Y
+    if (is_x) {
+        int sdelta = int(mmdelta * 236);
+        return sdelta;
+    } else {
+        int sdelta = int(mmdelta * 118);
+        return sdelta;
+    }
 }
 
 bool arduinoThread::journeysDone(){

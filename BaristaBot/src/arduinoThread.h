@@ -26,6 +26,8 @@ public:
     void shootFace();
     void shootCoffee();
     ofPoint getNextTarget();
+    void planJourney();
+    void fireEngines();
     int getSteps(float here, float there, bool is_x);
     
     void jogLeft();
@@ -49,7 +51,7 @@ public:
     
     ofArduino ard;
     motorThread X, Y, Z, INK;
-    ofPoint home; //, current, target;
+    ofPoint home, current, target;
     vector<ofPolyline> paths;
     vector<ofPoint> points;
     
@@ -95,7 +97,8 @@ public:
     
     int cropped_size;
     int paths_i, points_i;
-    bool start_path, start_transition, print_done;
+    int point_count;
+    bool start_path, continuing_path, end_path, start_transition, print_done;
         
     string ex, wy;
 };
