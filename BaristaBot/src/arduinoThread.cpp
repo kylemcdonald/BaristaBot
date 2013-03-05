@@ -133,6 +133,7 @@ void arduinoThread::journeyOn(bool new_coffee){
         // starting a transition
         if (start_transition){
             INK.stop();
+            usleep(10000);    // wait for ink to stop
             plungerUp();            // pull up to fast stop flow
             usleep(INK_TIMEOUT);    // wait for ink to stop
             fireEngines();
@@ -143,12 +144,12 @@ void arduinoThread::journeyOn(bool new_coffee){
             start_path = false;
             if (INK.isThreadRunning()) INK.stop();
             plungerDown();
-            usleep(INK_TIMEOUT);    // wait for ink to stop
-            INK.ready(100000, INK_DELAY);
+            usleep(INK_TIMEOUT/4);    // wait for ink to stop
+            INK.ready(999999, INK_DELAY);
             if (!INK.isThreadRunning()) {
                 INK.start();
             }
-            usleep(INK_TIMEOUT); // wait for ink to start
+//            usleep(INK_TIMEOUT); // wait for ink to start
         }
         // drawing last segment in a path
         else if (end_path) {
@@ -279,12 +280,12 @@ int arduinoThread::getSteps(float here, float there, bool is_x) {
     if (is_x) {
         ex = "\nhere.x:     " + ofToString(int(here/cropped_size*80*150))
            + "\nthere.x:    " + ofToString(int(there/cropped_size*80*150)) + hex;
-        int sdelta = -int(mmdelta * 200);
+        int sdelta = -int(mmdelta * 220);
         return sdelta;
     } else {
         wy = "\nhere.y:     " + ofToString(int(here/cropped_size*80*118))
            + "\nthere.y:    " + ofToString(int(there/cropped_size*80*118)) + hwy;
-        int sdelta = int(mmdelta * 127);
+        int sdelta = int(mmdelta * 130);
         return sdelta;
     }
 }
@@ -392,7 +393,7 @@ void arduinoThread::plungerUp() {
         INK.INC = 0;
         return;
     }
-    INK.ready(-1000, 800);
+    INK.ready(-500, 800);
     INK.start();
 }
 void arduinoThread::plungerDown() {
@@ -400,7 +401,7 @@ void arduinoThread::plungerDown() {
         INK.INC = 0;
         return;
     }
-    INK.ready(1000, 800);
+    INK.ready(500, 800);
     INK.start();
 }
 
@@ -440,32 +441,36 @@ void arduinoThread::draw(){
 void arduinoThread::digitalPinChanged(const int & pinNum) {
     // note: this will throw tons of false positives on a bare mega, needs resistors
 //    cout << "pinNum: " << pinNum << endl;
-    if (pinNum == X_LIMIT_PIN) {
-        X.stop();
-        if (curState == HOMING) {
-            Y.ready(-100000, DELAY_MIN);
-            Y.start();
-        } else {
-            X.freeze();
-        }
-    } else if (pinNum == Z_LIMIT_PIN) {
-        Z.stop();
-        if (curState != HOMING) {
-            Z.freeze();
-        } else {
-            curState = HOME;
-        }
-    } else if (pinNum == Y_LIMIT_PIN) {
-        Y.stop();
-        if (curState == HOMING) {
-            Z.ready(-100000, DELAY_MIN);
-            Z.start();
-        } else {
-            Y.freeze();
-        }
-    } else if (pinNum == INK_LIMIT_PIN) {
-        INK.freeze();
-    }
+//    if (pinNum == X_LIMIT_PIN) {
+//        if (x_homing) {
+//            X.stop();
+//            x_homing = false;
+//        }
+//        X.stop();
+//        if (x_homing) {
+//            Y.ready(-100000, DELAY_MIN);
+//            Y.start();
+//        } else {
+//            X.freeze();
+//        }
+//    } else if (pinNum == Z_LIMIT_PIN) {
+//        Z.stop();
+//        if (curState != HOMING) {
+//            Z.freeze();
+//        } else {
+//            curState = HOME;
+//        }
+//    } else if (pinNum == Y_LIMIT_PIN) {
+//        Y.stop();
+//        if (curState == HOMING) {
+//            Z.ready(-100000, DELAY_MIN);
+//            Z.start();
+//        } else {
+//            Y.freeze();
+//        }
+//    } else if (pinNum == INK_LIMIT_PIN) {
+//        INK.freeze();
+//    }
 }
 
 

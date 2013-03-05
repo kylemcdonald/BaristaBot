@@ -277,7 +277,8 @@ void ofApp::keyPressed(int key) {
             // once you have a good face photo, press p
             // machine will lower and go home then print starts automatically
             // after print machine raises up and takes a coffee photo
-            AT.goHome();
+//            AT.goHome();
+            AT.curState = AT.HOME;
             break;
         case 'c':
             // take a look at the coffee photo, if it's not good press c
