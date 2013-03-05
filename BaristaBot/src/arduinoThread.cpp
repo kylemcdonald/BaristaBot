@@ -187,7 +187,8 @@ void arduinoThread::planJourney(){
         if (points.size() == 1) {
             // if it's the last path just skip it
             if (paths_i == paths.size()-1) {
-                shootCoffee();
+//                shootCoffee();
+                shootFace();
             } else {
                 start_transition = true;
                 points = paths.at(paths_i).getVertices();
@@ -220,7 +221,8 @@ void arduinoThread::planJourney(){
         INK.stop();
 //        plungerUp();
 //        usleep(INK_TIMEOUT);
-        shootCoffee();
+//        shootCoffee();
+        shootFace();
     }
 }
 
@@ -276,12 +278,13 @@ int arduinoThread::getSteps(float here, float there, bool is_x) {
     float mmdelta = ndelta * 80;
     
     // then convert to steps
+    // NOTE reversing X
     // estimate 236.2 steps per mm in X
     // estimate 118.1 steps per mm in Y
     if (is_x) {
         ex = "\nhere.x:     " + ofToString(int(here/cropped_size*80*150))
            + "\nthere.x:    " + ofToString(int(there/cropped_size*80*150)) + hex;
-        int sdelta = int(mmdelta * 200);
+        int sdelta = -int(mmdelta * 200);
         return sdelta;
     } else {
         wy = "\nhere.y:     " + ofToString(int(here/cropped_size*80*118))
@@ -318,26 +321,26 @@ void arduinoThread::shootFace(){
     Y.start();
 }
 
-void arduinoThread::shootCoffee(){
-    curState = SHOOT_COFFEE;
-    // change these value depending on observation
-    Z.ready(3000, 450);
-    Z.start();
-    while (Z.isThreadRunning()); // wait to complete
-
-    ofSleepMillis(1000);
-    // **** TAKE PHOTO ****
-    // operator pushes button to accept it, 
-    // that sends the machine up, ready for next face photo
-    ofSleepMillis(1000);
-
-    shootFace();
-}
+//void arduinoThread::shootCoffee(){
+//    curState = SHOOT_COFFEE;
+//    // change these value depending on observation
+//    Z.ready(3000, 450);
+//    Z.start();
+//    while (Z.isThreadRunning()); // wait to complete
+//
+//    ofSleepMillis(1000);
+//    // **** TAKE PHOTO ****
+//    // operator pushes button to accept it, 
+//    // that sends the machine up, ready for next face photo
+//    ofSleepMillis(1000);
+//
+//    shootFace();
+//}
 
 void arduinoThread::goHome(){
     homing = true;
-    Y.ready(-100000, DELAY_MIN);
-    Y.start();
+    X.ready(-100000, DELAY_MIN);
+    X.start();
     // others go home after pin change events below
 }
 
@@ -444,13 +447,15 @@ void arduinoThread::digitalPinChanged(const int & pinNum) {
     cout << "pinNum: " << pinNum << endl;
     if (pinNum == X_LIMIT_PIN) {
         X.stop();
-        if (!homing) X.freeze();
+        if (homing) {
+            Y.ready(-100000, DELAY_MIN);
+            Y.start();
+        } else {
+            X.freeze();
+        }
     } else if (pinNum == Z_LIMIT_PIN) {
         Z.stop();
-        if (homing) {
-            X.ready(-100000, DELAY_MIN);
-            X.start();
-        } else {
+        if (!homing) {
             Z.freeze();
         }
     } else if (pinNum == Y_LIMIT_PIN) {
