@@ -311,13 +311,11 @@ bool arduinoThread::journeysDone(){
 void arduinoThread::shootFace(){
     curState = SHOOT_FACE;
     // change these value depending on observation
-    Z.ready(14000, 450);
+    Z.ready(14000, DELAY_MIN);
     Z.start();
     while (Z.isThreadRunning()); // wait before doing Y
-    Y.ready(10000-home.y, 450);
+    Y.ready(10000, DELAY_MIN);
     Y.start();
-    X.ready(home.x, DELAY_MIN);
-    X.start();
 }
 
 void arduinoThread::shootCoffee(){
@@ -449,23 +447,14 @@ void arduinoThread::draw(){
 void arduinoThread::digitalPinChanged(const int & pinNum) {
     // note: this will throw tons of false positives on a bare mega, needs resistors
     if (ard.getDigital(X_LIMIT_PIN)) {
-        if (homing) {
-            X.stop();
-        } else {
-            X.freeze();
-        }
+        X.stop();
+        if (!homing) X.freeze();
     } else if (ard.getDigital(Z_LIMIT_PIN)) {
-        if (homing) {
-            Z.stop();
-        } else {
-            Z.freeze();
-        }
+        Z.stop();
+        if (!homing) Z.freeze();
     } else if (ard.getDigital(Y_LIMIT_PIN)) {
-        if (homing) {
-            Y.stop();
-        } else {
-            Y.freeze();
-        }
+        Y.stop();
+        if (!homing) Y.freeze();
     } else if (ard.getDigital(INK_LIMIT_PIN)) {
         INK.freeze();
     }
