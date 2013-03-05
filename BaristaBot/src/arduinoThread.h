@@ -81,13 +81,14 @@ public:
         START,
         IDLE,
         HOMING,
+        HOME,
         SHOOT_FACE,
         FACE_PHOTO,
         PRINTING,
         SHOOT_COFFEE,
         COFFEE_PHOTO,
     };
-    const char* stateName[20] = {"START", "IDLE", "HOMING", "SHOOT_FACE", "FACE_PHOTO", "PRINTING", "SHOOT_COFFEE", "COFFEE_PHOTO"};
+    const char* stateName[20] = {"START", "IDLE", "HOMING", "HOME", "SHOOT_FACE", "FACE_PHOTO", "PRINTING", "SHOOT_COFFEE", "COFFEE_PHOTO"};
     state curState;
     
     ofArduino ard;
@@ -100,8 +101,7 @@ public:
     int cropped_size;
     int paths_i, points_i;
     int point_count;
-    bool start_path, end_path, start_transition, homing;
-    bool x_home, y_home, z_home, ink_home;
+    bool start_path, end_path, start_transition;
     bool bSetupArduino;     // flag variable for setting up arduino once
 };
 

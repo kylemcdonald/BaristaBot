@@ -30,7 +30,7 @@ void arduinoThread::setup(){
 }
 
 void arduinoThread::initializeVariables(){
-    start_path = homing = x_home = y_home = z_home = ink_home = false;
+    start_path = false;
     start_transition = true;
     home = ofPoint(HOME_X, HOME_Y);
 }
@@ -101,12 +101,9 @@ void arduinoThread::update(){
     unlock();
     
     switch (curState) {
-        case FACE_PHOTO:
-            if (journeysDone() && !Z.isThreadRunning()) {
-                journeyOn(true);
-                homing = x_home = y_home = z_home = false;
-                curState = PRINTING;
-            }
+        case HOME:
+            journeyOn(true);
+            curState = PRINTING;
             break;
         case PRINTING:
             if (journeysDone()) {
@@ -187,8 +184,7 @@ void arduinoThread::planJourney(){
         if (points.size() == 1) {
             // if it's the last path just skip it
             if (paths_i == paths.size()-1) {
-//                shootCoffee();
-                shootFace();
+                shootCoffee();
             } else {
                 start_transition = true;
                 points = paths.at(paths_i).getVertices();
@@ -221,8 +217,7 @@ void arduinoThread::planJourney(){
         INK.stop();
 //        plungerUp();
 //        usleep(INK_TIMEOUT);
-//        shootCoffee();
-        shootFace();
+        shootCoffee();
     }
 }
 
@@ -321,8 +316,8 @@ void arduinoThread::shootFace(){
     Y.start();
 }
 
-//void arduinoThread::shootCoffee(){
-//    curState = SHOOT_COFFEE;
+void arduinoThread::shootCoffee(){
+    curState = SHOOT_COFFEE;
 //    // change these value depending on observation
 //    Z.ready(3000, 450);
 //    Z.start();
@@ -333,13 +328,13 @@ void arduinoThread::shootFace(){
 //    // operator pushes button to accept it, 
 //    // that sends the machine up, ready for next face photo
 //    ofSleepMillis(1000);
-//
-//    shootFace();
-//}
+
+    shootFace();
+}
 
 void arduinoThread::goHome(){
-    homing = true;
-    X.ready(-100000, DELAY_MIN);
+    curState = HOMING;
+    X.ready(100000, DELAY_MIN);
     X.start();
     // others go home after pin change events below
 }
@@ -444,10 +439,10 @@ void arduinoThread::draw(){
 
 void arduinoThread::digitalPinChanged(const int & pinNum) {
     // note: this will throw tons of false positives on a bare mega, needs resistors
-    cout << "pinNum: " << pinNum << endl;
+//    cout << "pinNum: " << pinNum << endl;
     if (pinNum == X_LIMIT_PIN) {
         X.stop();
-        if (homing) {
+        if (curState == HOMING) {
             Y.ready(-100000, DELAY_MIN);
             Y.start();
         } else {
@@ -455,12 +450,14 @@ void arduinoThread::digitalPinChanged(const int & pinNum) {
         }
     } else if (pinNum == Z_LIMIT_PIN) {
         Z.stop();
-        if (!homing) {
+        if (curState != HOMING) {
             Z.freeze();
+        } else {
+            curState = HOME;
         }
     } else if (pinNum == Y_LIMIT_PIN) {
         Y.stop();
-        if (homing) {
+        if (curState == HOMING) {
             Z.ready(-100000, DELAY_MIN);
             Z.start();
         } else {
