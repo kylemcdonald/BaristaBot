@@ -21,7 +21,7 @@ class arduinoThread : public ofThread{
 #define X_SLEEP_PIN 14
 #define Y_SLEEP_PIN 15
 #define Z_SLEEP_PIN 16
-#define INK_SLEEP_PIN 19 // is 17
+#define INK_SLEEP_PIN 17 // is 17
 
 #define X_LIMIT_PIN 10
 #define Y_LIMIT_PIN 12
@@ -36,8 +36,8 @@ class arduinoThread : public ofThread{
 
 #define HOME_X -128
 #define HOME_Y 128
-#define SCALE_X 210     // estimate 236.2 steps per mm in X
-#define SCALE_Y 126     // estimate 118.1 steps per mm in Y
+#define SCALE_X 200     // estimate 236.2 steps per mm in X
+#define SCALE_Y 124     // estimate 118.1 steps per mm in Y
 
 
 public:
@@ -93,8 +93,9 @@ public:
         PRINTING,
         SHOOT_COFFEE,
         COFFEE_PHOTO,
+        DONE
     };
-    const char* stateName[20] = {"START", "IDLE", "HOMING", "HOME", "SHOOT_FACE", "FACE_PHOTO", "PRINTING", "SHOOT_COFFEE", "COFFEE_PHOTO"};
+    const char* stateName[20] = {"START", "IDLE", "HOMING", "HOME", "SHOOT_FACE", "FACE_PHOTO", "PRINTING", "SHOOT_COFFEE", "COFFEE_PHOTO", "DONE"};
     state curState;
     
     ofArduino ard;

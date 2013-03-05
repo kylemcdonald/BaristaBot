@@ -101,14 +101,25 @@ void arduinoThread::update(){
     unlock();
     
     switch (curState) {
+        // arm has raised and is ready to take a photo
+        case SHOOT_FACE:
+            break;
+        // photo taken, arm is going to the limit switches: home
+        case HOMING:
+            break;
+        // X, Z, and Y have hit limits
         case HOME:
             journeyOn(true);
             curState = PRINTING;
             break;
+        // print has started from first point
         case PRINTING:
             if (journeysDone()) {
                 journeyOn(false);
             }
+            break;
+        // print is finished and arm is raising up
+        case DONE:
             break;
         default:
             break;
@@ -178,7 +189,7 @@ void arduinoThread::stopInk(){
     INK.stop();
     usleep(10000);    // wait for ink to stop
     plungerUp();            // pull up to fast stop flow
-//    usleep(INK_TIMEOUT);    // wait for ink to stop
+    usleep(INK_TIMEOUT/2);    // wait for ink to stop
 }
 
 void arduinoThread::planJourney(){
