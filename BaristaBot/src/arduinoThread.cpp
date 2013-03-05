@@ -274,19 +274,16 @@ int arduinoThread::getSteps(float here, float there, bool is_x) {
     // then convert to mm, an 80 mm square
     float mmdelta = ndelta * 80;
     
-    // then convert to steps
-    // NOTE reversing X
-    // estimate 236.2 steps per mm in X
-    // estimate 118.1 steps per mm in Y
+    // then convert to steps (NOTE reversing X)
     if (is_x) {
         ex = "\nhere.x:     " + ofToString(int(here/cropped_size*80*150))
            + "\nthere.x:    " + ofToString(int(there/cropped_size*80*150)) + hex;
-        int sdelta = -int(mmdelta * 220);
+        int sdelta = -int(mmdelta * SCALE_X);
         return sdelta;
     } else {
         wy = "\nhere.y:     " + ofToString(int(here/cropped_size*80*118))
            + "\nthere.y:    " + ofToString(int(there/cropped_size*80*118)) + hwy;
-        int sdelta = int(mmdelta * 130);
+        int sdelta = int(mmdelta * SCALE_Y);
         return sdelta;
     }
 }

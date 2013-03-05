@@ -36,6 +36,9 @@ class arduinoThread : public ofThread{
 
 #define HOME_X -128
 #define HOME_Y 128
+#define SCALE_X 210     // estimate 236.2 steps per mm in X
+#define SCALE_Y 126     // estimate 118.1 steps per mm in Y
+
 
 public:
     void start();
