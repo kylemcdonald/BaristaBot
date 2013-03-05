@@ -30,7 +30,7 @@ void arduinoThread::setup(){
 }
 
 void arduinoThread::initializeVariables(){
-    start_path = homing = false;
+    start_path = homing = x_home = y_home = z_home = ink_home = false;
     start_transition = true;
     home = ofPoint(HOME_X, HOME_Y);
 }
@@ -104,7 +104,7 @@ void arduinoThread::update(){
         case FACE_PHOTO:
             if (journeysDone() && !Z.isThreadRunning()) {
                 journeyOn(true);
-                homing = false;
+                homing = x_home = y_home = z_home = false;
                 curState = PRINTING;
             }
             break;
@@ -338,12 +338,7 @@ void arduinoThread::goHome(){
     homing = true;
     Y.ready(-100000, DELAY_MIN);
     Y.start();
-    while (Y.isThreadRunning());    // wait before doing Z
-    Z.ready(-100000, DELAY_MIN);
-    Z.start();
-    while (Z.isThreadRunning());    // wait before doing X
-    X.ready(-100000, DELAY_MIN);
-    X.start();
+    // others go home after pin change events below
 }
 
 void arduinoThread::jogRight() {
@@ -446,16 +441,27 @@ void arduinoThread::draw(){
 
 void arduinoThread::digitalPinChanged(const int & pinNum) {
     // note: this will throw tons of false positives on a bare mega, needs resistors
-    if (ard.getDigital(X_LIMIT_PIN)) {
+    cout << "pinNum: " << pinNum << endl;
+    if (pinNum == X_LIMIT_PIN) {
         X.stop();
         if (!homing) X.freeze();
-    } else if (ard.getDigital(Z_LIMIT_PIN)) {
+    } else if (pinNum == Z_LIMIT_PIN) {
         Z.stop();
-        if (!homing) Z.freeze();
-    } else if (ard.getDigital(Y_LIMIT_PIN)) {
+        if (homing) {
+            X.ready(-100000, DELAY_MIN);
+            X.start();
+        } else {
+            Z.freeze();
+        }
+    } else if (pinNum == Y_LIMIT_PIN) {
         Y.stop();
-        if (!homing) Y.freeze();
-    } else if (ard.getDigital(INK_LIMIT_PIN)) {
+        if (homing) {
+            Z.ready(-100000, DELAY_MIN);
+            Z.start();
+        } else {
+            Y.freeze();
+        }
+    } else if (pinNum == INK_LIMIT_PIN) {
         INK.freeze();
     }
 }
