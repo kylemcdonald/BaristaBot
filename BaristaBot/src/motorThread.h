@@ -13,7 +13,7 @@ class motorThread : public ofThread{
 
     int STEP_PIN, DIR_PIN, SLEEP_PIN;
     int s, STEPS, DELAY, INC;
-    bool DIR, GO;
+    bool DIR, GO, be_still;
 
 
     //--------------------------------------------------------------
@@ -25,6 +25,7 @@ class motorThread : public ofThread{
         DIR_PIN = dir_p;
         SLEEP_PIN = sleep_p;
         name = nom;
+        be_still = false;
     }
     
     void ready(int stps, int dly) {
@@ -59,10 +60,14 @@ class motorThread : public ofThread{
         unlock();
     }
 
+    void freeze() {
+        stop();
+        be_still = true;
+    }
     
     //--------------------------------------------------------------
     void threadedFunction(){
-        while(isThreadRunning() != 0){
+        while(isThreadRunning() != 0 && !be_still){
             if (++INC > STEPS) stop();
 
             lock();

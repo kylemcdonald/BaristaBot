@@ -100,7 +100,7 @@ public:
     int cropped_size;
     int paths_i, points_i;
     int point_count;
-    bool start_path, end_path, start_transition;
+    bool start_path, end_path, start_transition, homing;
     bool bSetupArduino;     // flag variable for setting up arduino once
 };
 

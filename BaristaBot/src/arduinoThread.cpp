@@ -30,7 +30,7 @@ void arduinoThread::setup(){
 }
 
 void arduinoThread::initializeVariables(){
-    start_path = false;
+    start_path = homing = false;
     start_transition = true;
     home = ofPoint(HOME_X, HOME_Y);
 }
@@ -104,6 +104,7 @@ void arduinoThread::update(){
         case FACE_PHOTO:
             if (journeysDone() && !Z.isThreadRunning()) {
                 journeyOn(true);
+                homing = false;
                 curState = PRINTING;
             }
             break;
@@ -336,13 +337,14 @@ void arduinoThread::shootCoffee(){
 }
 
 void arduinoThread::goHome(){
-    // CHANGE all this to hit limits
-    Y.ready(-10000+home.y, 450);
+    homing = true;
+    Y.ready(-100000, DELAY_MIN);
     Y.start();
     while (Y.isThreadRunning());    // wait before doing Z
-    Z.ready(-14000, 450);
+    Z.ready(-100000, DELAY_MIN);
     Z.start();
-    X.ready(home.x, DELAY_MIN+50);
+    while (Z.isThreadRunning());    // wait before doing X
+    X.ready(-100000, DELAY_MIN);
     X.start();
 }
 
@@ -429,7 +431,8 @@ void arduinoThread::draw(){
     }
     ofDrawBitmapString(str, 50, 660);
     
-    str = "Path:       " + ofToString(paths_i) + "\n\nPoint:      " + ofToString(points_i) + "\npoint_count " + ofToString(point_count);
+    str = "Path:       " + ofToString(paths_i) + "\n\nPoint:      "
+        + ofToString(points_i) + "\npoint_count " + ofToString(point_count);
     ofDrawBitmapString(str, 50, 720);
     str = "/ " + ofToString(paths.size()) + "\n\n/ " + ofToString(points.size());
     ofDrawBitmapString(str, 220, 720);
@@ -446,13 +449,25 @@ void arduinoThread::draw(){
 void arduinoThread::digitalPinChanged(const int & pinNum) {
     // note: this will throw tons of false positives on a bare mega, needs resistors
     if (ard.getDigital(X_LIMIT_PIN)) {
-        X.stop();
+        if (homing) {
+            X.stop();
+        } else {
+            X.freeze();
+        }
     } else if (ard.getDigital(Z_LIMIT_PIN)) {
-        Z.stop();
+        if (homing) {
+            Z.stop();
+        } else {
+            Z.freeze();
+        }
     } else if (ard.getDigital(Y_LIMIT_PIN)) {
-        Y.stop();
+        if (homing) {
+            Y.stop();
+        } else {
+            Y.freeze();
+        }
     } else if (ard.getDigital(INK_LIMIT_PIN)) {
-        INK.stop();
+        INK.freeze();
     }
 }
 
