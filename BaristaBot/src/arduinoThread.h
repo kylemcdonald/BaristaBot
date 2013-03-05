@@ -21,7 +21,7 @@ class arduinoThread : public ofThread{
 #define X_SLEEP_PIN 14
 #define Y_SLEEP_PIN 15
 #define Z_SLEEP_PIN 16
-#define INK_SLEEP_PIN 17 // is 17
+#define INK_SLEEP_PIN 19 // is 17
 
 #define X_LIMIT_PIN 10
 #define Y_LIMIT_PIN 12
@@ -54,6 +54,9 @@ public:
     void fireEngines();
     int  getSteps(float here, float there, bool is_x);
     bool journeysDone();
+    
+    void startInk();
+    void stopInk();
     
     void shootFace();
     void shootCoffee();

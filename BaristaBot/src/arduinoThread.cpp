@@ -126,30 +126,19 @@ void arduinoThread::journeyOn(bool new_coffee){
         paths_i = points_i = 0;
         fireEngines();
     }
-
     else {
         planJourney();
         
         // starting a transition
         if (start_transition){
-            INK.stop();
-            usleep(10000);    // wait for ink to stop
-            plungerUp();            // pull up to fast stop flow
-            usleep(INK_TIMEOUT);    // wait for ink to stop
+            stopInk();
             fireEngines();
             return;
         }
         // starting a new path, ink flows
         else if (start_path){
             start_path = false;
-            if (INK.isThreadRunning()) INK.stop();
-            plungerDown();
-            usleep(INK_TIMEOUT/4);    // wait for ink to stop
-            INK.ready(999999, INK_DELAY);
-            if (!INK.isThreadRunning()) {
-                INK.start();
-            }
-//            usleep(INK_TIMEOUT); // wait for ink to start
+            startInk();
         }
         // drawing last segment in a path
         else if (end_path) {
@@ -177,6 +166,20 @@ void arduinoThread::journeyOn(bool new_coffee){
     }
 }
 
+void arduinoThread::startInk(){
+//    if (INK.isThreadRunning()) INK.stop();
+    plungerDown();
+    usleep(INK_TIMEOUT/4);    // wait for ink to stop
+    INK.ready(999999, INK_DELAY);
+    if (!INK.isThreadRunning()) INK.start();
+}
+
+void arduinoThread::stopInk(){
+    INK.stop();
+    usleep(10000);    // wait for ink to stop
+    plungerUp();            // pull up to fast stop flow
+//    usleep(INK_TIMEOUT);    // wait for ink to stop
+}
 
 void arduinoThread::planJourney(){
     // starting a new path
@@ -215,9 +218,7 @@ void arduinoThread::planJourney(){
     }
     // finishing the print
     else {
-        INK.stop();
-//        plungerUp();
-//        usleep(INK_TIMEOUT);
+        stopInk();
         shootCoffee();
     }
 }
