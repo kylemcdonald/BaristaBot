@@ -86,9 +86,14 @@ void arduinoThread::setupArduino(const int & version) {
 //----------------------------------------------------------------------------------------------
 //----------------------------------------------------------------------------------------------
 void arduinoThread::update(){
-    lock();
-        ard.update();
-    unlock();
+    ard.update();
+    
+    if (x_inc >= x_steps || x_steps == 0) {
+        ard.sendDigital(X_SLEEP_PIN, ARD_LOW);
+    }
+    if (y_inc >= y_steps || y_steps == 0) {
+        ard.sendDigital(Y_SLEEP_PIN, ARD_LOW);
+    }
     
     switch (curState) {
         // arm has raised and is ready to take a photo
@@ -276,14 +281,14 @@ int arduinoThread::getSteps(float here, float there, bool is_x) {
     
     // then convert to steps (NOTE reversing X)
     if (is_x) {
-        ex = "\nhere.x:     " + ofToString(int(here/cropped_size*80*SCALE_X))
-           + "\nthere.x:    " + ofToString(int(there/cropped_size*80*SCALE_X)) + hex;
-        int sdelta = -int(mmdelta * SCALE_X);
+        ex = "\nhere.x:     " + ofToString(int(here/cropped_size*80*SCALE_X*16))
+           + "\nthere.x:    " + ofToString(int(there/cropped_size*80*SCALE_X*16)) + hex;
+        int sdelta = -int(mmdelta * SCALE_X * 16); // 1/16th steps
         return sdelta;
     } else {
-        wy = "\nhere.y:     " + ofToString(int(here/cropped_size*80*SCALE_Y))
-           + "\nthere.y:    " + ofToString(int(there/cropped_size*80*SCALE_Y)) + hwy;
-        int sdelta = int(mmdelta * SCALE_Y);
+        wy = "\nhere.y:     " + ofToString(int(here/cropped_size*80*SCALE_Y*16))
+           + "\nthere.y:    " + ofToString(int(there/cropped_size*80*SCALE_Y*16)) + hwy;
+        int sdelta = int(mmdelta * SCALE_Y * 16);
         return sdelta;
     }
 }
@@ -421,8 +426,7 @@ void arduinoThread::plungerDown() {
 //----------------------------------------------------------------------------------------------
 void arduinoThread::threadedFunction(){
     while(isThreadRunning() != 0){
-        usleep(1); // don't let it run too fast
-        
+                
         // X axis
         if (ofGetElapsedTimeMicros() - x_timer > x_delay) {
             if (x_steps > 0 && x_inc/2 < x_steps) {
@@ -430,6 +434,8 @@ void arduinoThread::threadedFunction(){
                 x_timer = ofGetElapsedTimeMicros();
                 x_inc++;
             }
+        } else {
+            usleep(1); // don't let it run too fast
         }
         // Y axis
         if (ofGetElapsedTimeMicros() - y_timer > y_delay) {
@@ -438,6 +444,8 @@ void arduinoThread::threadedFunction(){
                 y_timer = ofGetElapsedTimeMicros();
                 y_inc++;
             }
+        } else {
+            usleep(1); // don't let it run too fast
         }
     }
 }
@@ -461,10 +469,20 @@ void arduinoThread::draw(){
     ofDrawBitmapString(ex, 50, 780);
     ofDrawBitmapString(wy, 220, 780);
     
-    X.draw();
-    Y.draw();
-    Z.draw();
-    INK.draw();
+    str = ":  Step " + ofToString(x_inc);
+    ofDrawBitmapString(str, 50, 1000-X_STEP_PIN*7);
+    str = " / " + ofToString(x_steps);
+    ofDrawBitmapString(str, 220, 1000-X_STEP_PIN*7);
+    
+    str = ":  Step " + ofToString(y_inc);
+    ofDrawBitmapString(str, 50, 1000-Y_STEP_PIN*7);
+    str = " / " + ofToString(y_steps);
+    ofDrawBitmapString(str, 220, 1000-Y_STEP_PIN*7);
+    
+//    X.draw();
+//    Y.draw();
+//    Z.draw();
+//    INK.draw();
 }
 
 void arduinoThread::digitalPinChanged(const int & pinNum) {
