@@ -120,6 +120,8 @@ void ofApp::setup() {
     gui.addSlider("INK_STOP_DELAY", 800, 200, 2000, true);
     gui.addSlider("INK_STOP_STEPS", 300, 100, 1000, true);
     gui.addSlider("INK_WAIT", 500000, 100000, 1000000, true);
+    gui.addSlider("home_x", 0, -256, 256, true);
+    gui.addSlider("home_y", 0, -256, 256, true);
     gui.loadSettings("printvariables.xml");
     
     AT.setup();
@@ -150,6 +152,8 @@ void ofApp::update(){
         AT.INK_STOP_DELAY = gui.getValueI("INK_STOP_DELAY");
         AT.INK_STOP_STEPS = gui.getValueI("INK_STOP_STEPS");
         AT.INK_WAIT = gui.getValueI("INK_WAIT");
+        AT.home_x = gui.getValueI("home_x");
+        AT.home_y = gui.getValueI("home_y");
         
 		convertColor(cam, gray, CV_RGB2GRAY);
 		
@@ -300,7 +304,11 @@ void ofApp::keyPressed(int key) {
             // machine will lower and go home then print starts automatically
             // after print machine raises up and takes a coffee photo
 //            AT.curState = AT.HOME;
-            AT.curState = AT.FACE_PHOTO;
+            if (paths.size() > 0) {
+                AT.curState = AT.FACE_PHOTO;
+            } else {
+                AT.curState = AT.NEED_PHOTO;
+            }
             break;
         case 'c':
             // take a look at the coffee photo, if it's not good press c

@@ -50,7 +50,9 @@ public:
     int INK_STOP_DELAY;
     int INK_STOP_STEPS;
     int INK_WAIT;
-
+    
+    int home_x;
+    int home_y;
     
     void start();
     void stop();
@@ -108,6 +110,7 @@ public:
         HOMING,
         HOME,
         SHOOT_FACE,
+        NEED_PHOTO,
         FACE_PHOTO,
         PREPRINT,
         PRINTING,
@@ -117,11 +120,11 @@ public:
         ERROR,
         RESET
     };
-    const char* stateName[20] = {"START", "IDLE", "HOMING", "HOME", "SHOOT_FACE", "FACE_PHOTO", "PREPRINT", "PRINTING", "SHOOT_COFFEE", "COFFEE_PHOTO", "DONE", "ERROR", "RESET"};
+    const char* stateName[20] = {"START", "IDLE", "HOMING", "HOME", "SHOOT_FACE", "NEED_PHOTO", "FACE_PHOTO", "PREPRINT", "PRINTING", "SHOOT_COFFEE", "COFFEE_PHOTO", "DONE", "ERROR", "RESET"};
     state curState;
     
     ofArduino ard;
-    ofPoint home, current, target;
+    ofPoint current, target;
     vector<ofPolyline> paths;
     vector<ofPoint> points;
     string ex, wy, hex, hwy;

@@ -15,7 +15,9 @@ void arduinoThread::stop(){
     ard.sendDigital(Y_SLEEP_PIN, ARD_LOW);
     ard.sendDigital(Z_SLEEP_PIN, ARD_LOW);
     ard.sendDigital(INK_SLEEP_PIN, ARD_LOW);
-
+    
+    ard.sendReset();
+    ofSleepMillis(10);
     ard.disconnect();
 }
 
@@ -29,7 +31,6 @@ void arduinoThread::setup(){
 void arduinoThread::initializeVariables(){
     start_path = false;
     start_transition = true;
-    home = ofPoint(0, 0);
     
     x_timer = y_timer = z_timer = i_timer = ofGetElapsedTimeMicros();
     x_steps = y_steps = z_steps = i_steps = x_inc = y_inc = z_inc = i_inc = 0;
@@ -111,12 +112,13 @@ void arduinoThread::update(){
             ard.sendDigital(INK_SLEEP_PIN, ARD_HIGH);
             // sleep Z
             ard.sendDigital(Z_SLEEP_PIN, ARD_LOW);
-            journeyOn(true);
+            ofSleepMillis(10);
             curState = PREPRINT;
             point_count = 1;
             break;
         // this is when arm moves from home to first point
         case PREPRINT:
+            journeyOn(true);
             if (journeysDone()) {
                 curState = PRINTING;
             }
@@ -137,6 +139,10 @@ void arduinoThread::update(){
             ard.sendDigital(Z_SLEEP_PIN, ARD_LOW);
             ard.sendDigital(INK_SLEEP_PIN, ARD_LOW);
             break;
+        case RESET:
+            if (journeysDone()){
+                curState = IDLE;
+            }
         default:
             break;
     }
@@ -147,7 +153,7 @@ void arduinoThread::journeyOn(bool new_coffee){
     
     if (new_coffee) {
         start_transition = true;
-        current = home; // ofPoint(cropped_size, cropped_size);
+        current = ofPoint(home_x, home_y);
         target = *points.begin();
         paths_i = points_i = 0;
         fireEngines();
@@ -623,9 +629,6 @@ void arduinoThread::homeZ(){
 }
 
 
-
-
-
 void arduinoThread::digitalPinChanged(const int & pinNum) {
     // note: this will throw tons of false positives on a bare mega, needs resistors
     if (curState == HOMING) {
@@ -643,7 +646,7 @@ void arduinoThread::digitalPinChanged(const int & pinNum) {
         }
     }
     // if not homing or reseting and the switch is down, it's an error
-    else if (curState != PREPRINT && curState != RESET) {
+    else if (curState != PREPRINT && curState != RESET && curState != HOME) {
         if (ard.getDigital(pinNum) == ARD_HIGH){
             curState = ERROR;
         }
