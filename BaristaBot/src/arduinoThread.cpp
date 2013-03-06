@@ -145,8 +145,6 @@ void arduinoThread::journeyOn(bool new_coffee){
     else {
         planJourney();
         
-        
-        
         // starting a transition
         if (start_transition){
             start_transition = false;
@@ -169,6 +167,11 @@ void arduinoThread::journeyOn(bool new_coffee){
             int sx = abs(getSteps(current.x, target.x, true));
             int sy = abs(getSteps(current.y, target.y, false));
             
+            // we've hit the last point
+            if (paths_i >= paths.size() && points_i >= points.size()) {
+                fireEngines();
+            }
+            
             // if we're already above tolerance, fire
             if (sx > TOL && sy > TOL) {
                 fireEngines();
@@ -180,7 +183,7 @@ void arduinoThread::journeyOn(bool new_coffee){
             else {
                 // if you didn't fire and return out then you're hitting planJourney() again
                 point_count++;
-                journeyOn(false);
+                update();
             }
         }
     }
@@ -193,6 +196,7 @@ void arduinoThread::planJourney(){
     if (points.size() == 1) {
         // if it's the last polyline just skip it
         if (paths_i == paths.size()-1) {
+            stopInk();
             shootCoffee();
         }
         // if it's not the last line move to the point and get the next polyline
