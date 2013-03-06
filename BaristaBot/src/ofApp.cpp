@@ -286,6 +286,38 @@ void ofApp::keyPressed(int key) {
             break;
             
         // programmers controls
+        case 's':
+            AT.curState = AT.SHOOT_FACE;
+        case '1':
+            AT.DELAY_MIN = 500;
+            break;
+        case '2':
+            AT.DELAY_MIN = 700;
+            break;
+        case '3':
+            AT.DELAY_MIN = 900;
+            break;
+        case '4':
+            AT.DELAY_MIN = 1100;
+            break;
+        case '5':
+            AT.DELAY_MIN = 1300;
+            break;
+        case '6':
+            AT.DELAY_MIN = 1500;
+            break;
+        case '7':
+            AT.DELAY_MIN = 1700;
+            break;
+        case '8':
+            AT.DELAY_MIN = 1900;
+            break;
+        case '9':
+            AT.DELAY_MIN = 2100;
+            break;
+        case '0':
+            AT.DELAY_MIN = 2300;
+            break;
         case 'h':
             // for debugging
             AT.goHome();

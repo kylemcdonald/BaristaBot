@@ -319,12 +319,12 @@ bool arduinoThread::journeysDone(){
 //----------------------------------------------------------------------------------------------
 void arduinoThread::shootFace(){
     curState = SHOOT_FACE;
-    // change these value depending on observation
-    Z.ready(14000, DELAY_MIN);
-    Z.start();
-    while (Z.isThreadRunning()); // wait before doing Y
-    Y.ready(10000, DELAY_MIN);
-    Y.start();
+//    // change these value depending on observation
+//    Z.ready(14000, DELAY_MIN);
+//    Z.start();
+//    while (Z.isThreadRunning()); // wait before doing Y
+//    Y.ready(10000, DELAY_MIN);
+//    Y.start();
 }
 
 void arduinoThread::shootCoffee(){
