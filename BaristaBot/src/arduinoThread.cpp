@@ -98,7 +98,7 @@ void arduinoThread::update(){
             break;
         // photo taken, arm is going to the limit switches: home
         case FACE_PHOTO:
-            goHome();
+//            goHome();
             curState = HOMING;
             break;
         case HOMING:
@@ -354,6 +354,8 @@ void arduinoThread::shootCoffee(){
 
     // let X and Y and Ink sleep
     ard.sendDigital(X_SLEEP_PIN, ARD_LOW);
+    ard.sendDigital(Y_SLEEP_PIN, ARD_LOW);
+    ard.sendDigital(Z_SLEEP_PIN, ARD_LOW);
     ard.sendDigital(INK_SLEEP_PIN, ARD_LOW);
     
     shootFace();
@@ -367,7 +369,7 @@ void arduinoThread::shootFace(){
     ard.sendDigital(Z_DIR_PIN, ARD_LOW);
     z_steps = 6000;
     z_inc = 0;
-    z_delay = DELAY_MIN;
+    z_delay = DELAY_FAST+200;
     
     ofSleepMillis(10);
     
@@ -376,14 +378,17 @@ void arduinoThread::shootFace(){
     ard.sendDigital(Y_DIR_PIN, ARD_LOW);
     y_steps = 3000;
     y_inc = 0;
-    y_delay = DELAY_MIN;
+    y_delay = DELAY_FAST;
 }
 
 void arduinoThread::goHome(){
     curState = HOMING;
+    
+    ard.sendDigital(X_SLEEP_PIN, ARD_HIGH);
+    ard.sendDigital(X_DIR_PIN, ARD_LOW);
     x_steps = 100000;
     x_inc = 0;
-    x_delay = DELAY_MIN;
+    x_delay = DELAY_FAST;
     // others go home after pin change events below
 }
 
@@ -395,56 +400,56 @@ void arduinoThread::jogRight() {
     ard.sendDigital(X_DIR_PIN, ARD_LOW);
     x_steps = 1000;
     x_inc = 0;
-    x_delay = DELAY_MIN;
+    x_delay = DELAY_FAST;
 }
 void arduinoThread::jogLeft() {
     ard.sendDigital(X_SLEEP_PIN, ARD_HIGH);
     ard.sendDigital(X_DIR_PIN, ARD_HIGH);
     x_steps = 1000;
     x_inc = 0;
-    x_delay = DELAY_MIN;
+    x_delay = DELAY_FAST;
 }
 void arduinoThread::jogForward() {
     ard.sendDigital(Y_SLEEP_PIN, ARD_HIGH);
     ard.sendDigital(Y_DIR_PIN, ARD_LOW);
     y_steps = 1000;
     y_inc = 0;
-    y_delay = DELAY_MIN;
+    y_delay = DELAY_FAST;
 }
 void arduinoThread::jogBack() {
     ard.sendDigital(Y_SLEEP_PIN, ARD_HIGH);
     ard.sendDigital(Y_DIR_PIN, ARD_HIGH);
     y_steps = 1000;
     y_inc = 0;
-    y_delay = DELAY_MIN;
+    y_delay = DELAY_FAST;
 }
 void arduinoThread::jogUp() {
     ard.sendDigital(Z_SLEEP_PIN, ARD_HIGH);
     ard.sendDigital(Z_DIR_PIN, ARD_LOW);
     z_steps = 1000;
     z_inc = 0;
-    z_delay = DELAY_MIN;
+    z_delay = DELAY_FAST+200;
 }
 void arduinoThread::jogDown() {
     ard.sendDigital(Z_SLEEP_PIN, ARD_HIGH);
     ard.sendDigital(Z_DIR_PIN, ARD_HIGH);
     z_steps = 1000;
     z_inc = 0;
-    z_delay = DELAY_MIN;
+    z_delay = DELAY_FAST;
 }
 void arduinoThread::plungerUp() {
     ard.sendDigital(INK_SLEEP_PIN, ARD_HIGH);
     ard.sendDigital(INK_DIR_PIN, ARD_LOW);
     i_steps = 500;
     i_inc = 0;
-    i_delay = 800;
+    i_delay = DELAY_FAST;
 }
 void arduinoThread::plungerDown() {
     ard.sendDigital(INK_SLEEP_PIN, ARD_HIGH);
     ard.sendDigital(INK_DIR_PIN, ARD_HIGH);
     i_steps = 500;
     i_inc = 0;
-    i_delay = 800;
+    i_delay = DELAY_FAST;
 }
 
 
@@ -572,8 +577,11 @@ void arduinoThread::digitalPinChanged(const int & pinNum) {
     if (pinNum == X_LIMIT_PIN && ard.getDigital(X_LIMIT_PIN)) {
         x_steps = x_inc = 0;
         if (curState == HOMING) {
-            y_steps = -100000;
+            ard.sendDigital(Y_SLEEP_PIN, ARD_HIGH);
+            ard.sendDigital(Y_DIR_PIN, ARD_LOW);
+            y_steps = 100000;
             y_inc = 0;
+            y_delay = DELAY_FAST;
         }
         else {
             curState = ERROR;
@@ -582,8 +590,11 @@ void arduinoThread::digitalPinChanged(const int & pinNum) {
     else if (pinNum == Y_LIMIT_PIN && ard.getDigital(Y_LIMIT_PIN)) {
         y_steps = y_inc = 0;
         if (curState == HOMING) {
-            z_steps = -100000;
+            ard.sendDigital(Z_SLEEP_PIN, ARD_HIGH);
+            ard.sendDigital(Z_DIR_PIN, ARD_LOW);
+            z_steps = 100000;
             z_inc = 0;
+            z_delay = DELAY_FAST;
         }
         else {
             curState = ERROR;
