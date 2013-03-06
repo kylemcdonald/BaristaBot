@@ -294,13 +294,13 @@ int arduinoThread::getSteps(float here, float there, bool is_x) {
         ex = "\nhere.x:     " + ofToString(int(here/cropped_size*80*SCALE_X))
            + "\nthere.x:    " + ofToString(int(there/cropped_size*80*SCALE_X)) + hex;
         int sdelta = -int(mmdelta * SCALE_X);
-        cout << "sdelta: " << sdelta << endl;
+//        cout << "sdelta: " << sdelta << endl;
         return sdelta;
     } else {
         wy = "\nhere.y:     " + ofToString(int(here/cropped_size*80*SCALE_Y))
            + "\nthere.y:    " + ofToString(int(there/cropped_size*80*SCALE_Y)) + hwy;
         int sdelta = int(mmdelta * SCALE_Y);
-        cout << "sdelta: " << sdelta << endl;
+//        cout << "sdelta: " << sdelta << endl;
         return sdelta;
     }
 }
@@ -371,50 +371,66 @@ void arduinoThread::shootCoffee(){
 
 void arduinoThread::goHome(){
     curState = HOMING;
-    x_inc = 0;
     x_steps = 100000;
+    x_inc = 0;
     x_delay = DELAY_MIN;
     // others go home after pin change events below
 }
 
 void arduinoThread::jogRight() {
-    x_inc = 0;
+    ard.sendDigital(X_SLEEP_PIN, ARD_HIGH);
+    ard.sendDigital(X_DIR_PIN, ARD_LOW);
     x_steps = 1000;
+    x_inc = 0;
     x_delay = DELAY_MIN;
 }
 void arduinoThread::jogLeft() {
+    ard.sendDigital(X_SLEEP_PIN, ARD_HIGH);
+    ard.sendDigital(X_DIR_PIN, ARD_HIGH);
+    x_steps = 1000;
     x_inc = 0;
-    x_steps = -1000;
     x_delay = DELAY_MIN;
 }
 void arduinoThread::jogForward() {
-    y_inc = 0;
+    ard.sendDigital(Y_SLEEP_PIN, ARD_HIGH);
+    ard.sendDigital(Y_DIR_PIN, ARD_LOW);
     y_steps = 1000;
+    y_inc = 0;
     y_delay = DELAY_MIN;
 }
 void arduinoThread::jogBack() {
+    ard.sendDigital(Y_SLEEP_PIN, ARD_HIGH);
+    ard.sendDigital(Y_DIR_PIN, ARD_HIGH);
+    y_steps = 1000;
     y_inc = 0;
-    y_steps = -1000;
     y_delay = DELAY_MIN;
 }
 void arduinoThread::jogUp() {
-    z_inc = 0;
+    ard.sendDigital(Z_SLEEP_PIN, ARD_HIGH);
+    ard.sendDigital(Z_DIR_PIN, ARD_LOW);
     z_steps = 1000;
+    z_inc = 0;
     z_delay = DELAY_MIN;
 }
 void arduinoThread::jogDown() {
+    ard.sendDigital(Z_SLEEP_PIN, ARD_HIGH);
+    ard.sendDigital(Z_DIR_PIN, ARD_HIGH);
+    z_steps = 1000;
     z_inc = 0;
-    z_steps = -1000;
     z_delay = DELAY_MIN;
 }
 void arduinoThread::plungerUp() {
+    ard.sendDigital(INK_SLEEP_PIN, ARD_HIGH);
+    ard.sendDigital(INK_DIR_PIN, ARD_LOW);
+    i_steps = 500;
     i_inc = 0;
-    i_steps = -500;
     i_delay = 800;
 }
 void arduinoThread::plungerDown() {
-    i_inc = 0;
+    ard.sendDigital(INK_SLEEP_PIN, ARD_HIGH);
+    ard.sendDigital(INK_DIR_PIN, ARD_HIGH);
     i_steps = 500;
+    i_inc = 0;
     i_delay = 800;
 }
 

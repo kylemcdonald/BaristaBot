@@ -261,7 +261,7 @@ void ofApp::draw() {
 
 int ofApp::getPoints(int steps){
     int points = float(steps) / 100 / 80 * croppedSize;
-    cout << "getPoints: " << points << endl;
+//    cout << "getPoints: " << points << endl;
     return points;
 }
 
@@ -292,7 +292,7 @@ void ofApp::keyPressed(int key) {
             break;
             
         // programmers controls
-        case 't':
+        case 'a':
             // load pattern: 20,400 steps in Y with 500 step X zigs every 500 Y steps
             
             for (int i = 21; i > 0; i--) {
@@ -312,36 +312,48 @@ void ofApp::keyPressed(int key) {
             AT.unlock();
             break;
         case 's':
+            // stop in the middle of a print and reset with same image
+            // must manually put machine back at origin
             AT.curState = AT.SHOOT_FACE;
+            AT.lock();
+            AT.paths = paths;
+            AT.points = paths.begin()->getVertices();
+            AT.unlock();
         case '1':
             AT.DELAY_MIN = 500;
             break;
         case '2':
-            AT.DELAY_MIN = 700;
+            AT.DELAY_MIN = 600;
             break;
         case '3':
-            AT.DELAY_MIN = 900;
+            AT.DELAY_MIN = 700;
             break;
         case '4':
-            AT.DELAY_MIN = 1100;
+            AT.DELAY_MIN = 800;
             break;
         case '5':
-            AT.DELAY_MIN = 1300;
+            AT.DELAY_MIN = 900;
             break;
         case '6':
-            AT.DELAY_MIN = 1500;
+            AT.DELAY_MIN = 1000;
             break;
-        case '7':
-            AT.DELAY_MIN = 1700;
+        case 'q':
+            AT.HIGH_DELAY = 50;
             break;
-        case '8':
-            AT.DELAY_MIN = 1900;
+        case 'w':
+            AT.HIGH_DELAY = 60;
             break;
-        case '9':
-            AT.DELAY_MIN = 2100;
+        case 'e':
+            AT.HIGH_DELAY = 70;
             break;
-        case '0':
-            AT.DELAY_MIN = 2300;
+        case 'r':
+            AT.HIGH_DELAY = 80;
+            break;
+        case 't':
+            AT.HIGH_DELAY = 90;
+            break;
+        case 'y':
+            AT.HIGH_DELAY = 100;
             break;
         case 'h':
             // for debugging

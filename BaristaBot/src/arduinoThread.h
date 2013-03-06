@@ -40,6 +40,9 @@ class arduinoThread : public ofThread{
 
 
 public:
+    int DELAY_MIN = 1000;
+    int HIGH_DELAY = 50;
+    
     void start();
     void stop();
     
@@ -109,8 +112,7 @@ public:
     int x_steps, y_steps, z_steps, i_steps, x_inc, y_inc, z_inc, i_inc;
     bool x_go, y_go, z_go, i_go;
     
-    int DELAY_MIN = 2000;
-    int HIGH_DELAY = 100;
+
     int cropped_size;
     int paths_i, points_i;
     int point_count;
