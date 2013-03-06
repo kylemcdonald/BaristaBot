@@ -30,7 +30,7 @@ class arduinoThread : public ofThread{
     
 // CONSTANTS
 //#define DELAY_MIN 550        // in microseconds (20000 is good for debugging w/o robot)
-#define TOL 500              // in steps, not for the syringe
+#define TOL 100              // in steps, not for the syringe
 #define INK_TIMEOUT 1500000  // in microseconds
 #define INK_DELAY 2000        // in microseconds
 

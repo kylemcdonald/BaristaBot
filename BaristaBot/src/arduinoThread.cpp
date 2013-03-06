@@ -255,8 +255,7 @@ void arduinoThread::fireEngines(){
     }
     
     // send variables to motors and start them
-    // NOTE x is flipped here to test 
-    X.ready(-sdelta_x, delay_x);
+    X.ready(sdelta_x, delay_x);
     Y.ready(sdelta_y, delay_y);
     X.start();
     Y.start();
