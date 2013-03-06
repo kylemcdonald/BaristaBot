@@ -40,8 +40,8 @@ class arduinoThread : public ofThread{
 
 
 public:
-    int DELAY_MIN = 20;
-    int HIGH_DELAY = 5;
+    int DELAY_MIN = 2000;
+    int HIGH_DELAY = 50;
     
     void start();
     void stop();

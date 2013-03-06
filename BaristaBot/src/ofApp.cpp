@@ -100,8 +100,8 @@ void ofApp::setup() {
 	
 	gui.setup();
 	gui.addPanel("Settings");
-	gui.addSlider("black", 20, -255, 255, true);        // kyle's 0, 65, 48
-	gui.addSlider("sigma1", 0.85, 0.01, 2.0, false);    // kyle's 0.4, 0.85
+	gui.addSlider("black", 42, -255, 255, true);        // kyle's 0, 65, 48, 20
+	gui.addSlider("sigma1", 0.99, 0.01, 2.0, false);    // kyle's 0.4, 0.85
 	gui.addSlider("sigma2", 4.45, 0.01, 10.0, false);   // kyle's 3.0, 4.45
 	gui.addSlider("tau", 0.97, 0.8, 1.0, false);        // kyle's 0.97
 	gui.addSlider("halfw", 4, 1, 8, true);              // kyle's 4
