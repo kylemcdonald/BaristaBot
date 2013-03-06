@@ -12,6 +12,11 @@ void arduinoThread::start(){
 
 void arduinoThread::stop(){
     stopThread();
+    ard.sendDigital(X_SLEEP_PIN, ARD_LOW);
+    ard.sendDigital(Y_SLEEP_PIN, ARD_LOW);
+    ard.sendDigital(Z_SLEEP_PIN, ARD_LOW);
+    ard.sendDigital(INK_SLEEP_PIN, ARD_LOW);
+
     ard.disconnect();
 }
 
@@ -27,9 +32,9 @@ void arduinoThread::initializeVariables(){
     start_transition = true;
     home = ofPoint(HOME_X, HOME_Y);
     
-    x_timer = y_timer = i_timer = ofGetElapsedTimeMicros();
-    x_steps = y_steps = i_steps = x_inc = y_inc = i_inc = 0;
-    x_go = y_go = i_go = ARD_LOW;
+    x_timer = y_timer = z_timer = i_timer = ofGetElapsedTimeMicros();
+    x_steps = y_steps = z_steps = i_steps = x_inc = y_inc = z_inc = i_inc = 0;
+    x_go = y_go = z_go = i_go = ARD_LOW;
 }
 
 
@@ -88,13 +93,6 @@ void arduinoThread::setupArduino(const int & version) {
 void arduinoThread::update(){
     ard.update();
     
-    if (x_inc >= x_steps || x_steps == 0) {
-        ard.sendDigital(X_SLEEP_PIN, ARD_LOW);
-    }
-    if (y_inc >= y_steps || y_steps == 0) {
-        ard.sendDigital(Y_SLEEP_PIN, ARD_LOW);
-    }
-    
     switch (curState) {
         // arm has raised and is ready to take a photo
         case SHOOT_FACE:
@@ -104,6 +102,12 @@ void arduinoThread::update(){
             break;
         // X, Z, and Y have hit limits
         case HOME:
+            // start X, Y, and I
+            ard.sendDigital(X_SLEEP_PIN, ARD_HIGH);
+            ard.sendDigital(Y_SLEEP_PIN, ARD_HIGH);
+            ard.sendDigital(INK_SLEEP_PIN, ARD_HIGH);
+            // sleep Z
+            ard.sendDigital(Z_SLEEP_PIN, ARD_LOW);
             journeyOn(true);
             curState = PRINTING;
             break;
@@ -115,6 +119,13 @@ void arduinoThread::update(){
             break;
         // print is finished and arm is raising up
         case DONE:
+            break;
+        case ERROR:
+            x_steps = y_steps = z_steps = i_steps = x_inc = y_inc = z_inc = i_inc = 0;
+            ard.sendDigital(X_SLEEP_PIN, ARD_LOW);
+            ard.sendDigital(Y_SLEEP_PIN, ARD_LOW);
+            ard.sendDigital(Z_SLEEP_PIN, ARD_LOW);
+            ard.sendDigital(INK_SLEEP_PIN, ARD_LOW);
             break;
         default:
             break;
@@ -249,10 +260,8 @@ void arduinoThread::fireEngines(){
     
     // toggle direction pins and enable motors
     bool DIR = (sdelta_x > 0) ? ARD_LOW : ARD_HIGH;
-    ard.sendDigital(X_SLEEP_PIN, ARD_HIGH);
     ard.sendDigital(X_DIR_PIN, DIR);
     DIR = (sdelta_y > 0) ? ARD_LOW : ARD_HIGH;
-    ard.sendDigital(Y_SLEEP_PIN, ARD_HIGH);
     ard.sendDigital(Y_DIR_PIN, DIR);
     
     // send variables to motors and start them
@@ -295,26 +304,28 @@ int arduinoThread::getSteps(float here, float there, bool is_x) {
 
 
 bool arduinoThread::journeysDone(){
-    if (x_inc < x_steps || y_inc < y_steps)
+    if (x_inc < x_steps || y_inc < y_steps) {
         return false;
-    return true;
+    } else {
+        return true;
+    }
 }
 
 
 
 void arduinoThread::startInk(){
-//    //    if (INK.isThreadRunning()) INK.stop();
-//    plungerDown();
-//    usleep(INK_TIMEOUT/4);    // wait for ink to stop
-//    INK.ready(999999, INK_DELAY);
-//    if (!INK.isThreadRunning()) INK.start();
+    plungerDown();
+    usleep(INK_TIMEOUT);    // wait for ink to stop
+    i_inc = 0;
+    i_steps = 999999;
+    i_delay = INK_DELAY;
 }
 
 void arduinoThread::stopInk(){
-//    INK.stop();
-//    usleep(10000);    // wait for ink to stop
-//    plungerUp();            // pull up to fast stop flow
-//    usleep(INK_TIMEOUT/2);    // wait for ink to stop
+    i_steps = i_inc = 0;
+    usleep(10000);    // wait for ink to stop
+    plungerUp();            // pull up to fast stop flow
+    usleep(INK_TIMEOUT*2);    // wait for ink to stop
 }
 
 
@@ -336,6 +347,11 @@ void arduinoThread::shootFace(){
 
 void arduinoThread::shootCoffee(){
     curState = SHOOT_COFFEE;
+    // let X and Y and Ink sleep
+    ard.sendDigital(X_SLEEP_PIN, ARD_LOW);
+    ard.sendDigital(Y_SLEEP_PIN, ARD_LOW);
+    ard.sendDigital(INK_SLEEP_PIN, ARD_LOW);
+
 //    // change these value depending on observation
 //    Z.ready(3000, 450);
 //    Z.start();
@@ -352,100 +368,94 @@ void arduinoThread::shootCoffee(){
 
 void arduinoThread::goHome(){
     curState = HOMING;
-    X.ready(100000, DELAY_MIN);
-    X.start();
+    x_inc = 0;
+    x_steps = 100000;
+    x_delay = DELAY_MIN;
     // others go home after pin change events below
 }
 
 void arduinoThread::jogRight() {
-    if (X.isThreadRunning()) {
-        X.INC = 0;
-        return;
-    }
-    X.ready(1000, DELAY_MIN);
-    X.start();
+    x_inc = 0;
+    x_steps = 1000;
+    x_delay = DELAY_MIN;
 }
 void arduinoThread::jogLeft() {
-    if (X.isThreadRunning()) {
-        X.INC = 0;
-        return;
-    }
-    X.ready(-1000, DELAY_MIN);
-    X.start();
+    x_inc = 0;
+    x_steps = -1000;
+    x_delay = DELAY_MIN;
 }
 void arduinoThread::jogForward() {
-    if (Y.isThreadRunning()) {
-        Y.INC = 0;
-        return;
-    }
-    Y.ready(1000, DELAY_MIN);
-    Y.start();
+    y_inc = 0;
+    y_steps = 1000;
+    y_delay = DELAY_MIN;
 }
 void arduinoThread::jogBack() {
-    if (Y.isThreadRunning()) {
-        Y.INC = 0;
-        return;
-    }
-    Y.ready(-1000, DELAY_MIN);
-    Y.start();
+    y_inc = 0;
+    y_steps = -1000;
+    y_delay = DELAY_MIN;
 }
 void arduinoThread::jogUp() {
-    if (Z.isThreadRunning()) {
-        Z.INC = 0;
-        return;
-    }
-    Z.ready(1000, DELAY_MIN);
-    Z.start();
+    z_inc = 0;
+    z_steps = 1000;
+    z_delay = DELAY_MIN;
 }
 void arduinoThread::jogDown() {
-    if (Z.isThreadRunning()) {
-        Z.INC = 0;
-        return;
-    }
-    Z.ready(-1000, DELAY_MIN);
-    Z.start();
+    z_inc = 0;
+    z_steps = -1000;
+    z_delay = DELAY_MIN;
 }
 void arduinoThread::plungerUp() {
-    if (INK.isThreadRunning()) {
-        INK.INC = 0;
-        return;
-    }
-    INK.ready(-500, 800);
-    INK.start();
+    i_inc = 0;
+    i_steps = -500;
+    i_delay = 800;
 }
 void arduinoThread::plungerDown() {
-    if (INK.isThreadRunning()) {
-        INK.INC = 0;
-        return;
-    }
-    INK.ready(500, 800);
-    INK.start();
+    i_inc = 0;
+    i_steps = 500;
+    i_delay = 800;
 }
 
 
 //----------------------------------------------------------------------------------------------
 void arduinoThread::threadedFunction(){
     while(isThreadRunning() != 0){
-                
+        usleep(1);
+
         // X axis
-        if (ofGetElapsedTimeMicros() - x_timer > x_delay) {
-            if (x_steps > 0 && x_inc/2 < x_steps) {
+        unsigned long long now = ofGetElapsedTimeMicros();
+        if (now - x_timer > x_delay) {
+            if (x_steps > 0 && x_inc < x_steps*2) {
+                x_timer = now;
                 ard.sendDigital(X_STEP_PIN, x_go = !x_go);
-                x_timer = ofGetElapsedTimeMicros();
                 x_inc++;
             }
-        } else {
-            usleep(1); // don't let it run too fast
         }
         // Y axis
-        if (ofGetElapsedTimeMicros() - y_timer > y_delay) {
-            if (y_steps > 0 && y_inc/2 < y_steps) {
+        now = ofGetElapsedTimeMicros();
+        if (now - y_timer > y_delay) {
+            if (y_steps > 0 && y_inc < y_steps*2) {
+                y_timer = now;
                 ard.sendDigital(Y_STEP_PIN, y_go = !y_go);
-                y_timer = ofGetElapsedTimeMicros();
                 y_inc++;
             }
-        } else {
-            usleep(1); // don't let it run too fast
+        }
+        // Z axis
+        now = ofGetElapsedTimeMicros();
+        if (now - z_timer > z_delay) {
+            if (z_steps > 0 && z_inc < z_steps*2) {
+                z_timer = now;
+                ard.sendDigital(Z_STEP_PIN, z_go = !z_go);
+                z_inc++;
+            }
+        }
+        // Syringe
+        now = ofGetElapsedTimeMicros();
+        if (now - i_timer > i_delay) {
+            if (i_steps > 0 && i_inc < i_steps*2) {
+                i_timer = now;
+                ard.sendDigital(INK_STEP_PIN, i_go = !i_go);
+                i_inc++;
+            }
         }
     }
 }
@@ -479,45 +489,52 @@ void arduinoThread::draw(){
     str = " / " + ofToString(y_steps);
     ofDrawBitmapString(str, 220, 1000-Y_STEP_PIN*7);
     
-//    X.draw();
-//    Y.draw();
-//    Z.draw();
-//    INK.draw();
+    str = ":  Step " + ofToString(z_inc);
+    ofDrawBitmapString(str, 50, 1000-Z_STEP_PIN*7);
+    str = " / " + ofToString(z_steps);
+    ofDrawBitmapString(str, 220, 1000-Z_STEP_PIN*7);
+    
+    str = ":  Step " + ofToString(i_inc);
+    ofDrawBitmapString(str, 50, 1000-INK_STEP_PIN*7);
+    str = " / " + ofToString(i_steps);
+    ofDrawBitmapString(str, 220, 1000-INK_STEP_PIN*7);
 }
 
 void arduinoThread::digitalPinChanged(const int & pinNum) {
     // note: this will throw tons of false positives on a bare mega, needs resistors
 //    cout << "pinNum: " << pinNum << endl;
-//    if (pinNum == X_LIMIT_PIN) {
-//        if (x_homing) {
-//            X.stop();
-//            x_homing = false;
-//        }
-//        X.stop();
-//        if (x_homing) {
-//            Y.ready(-100000, DELAY_MIN);
-//            Y.start();
-//        } else {
-//            X.freeze();
-//        }
-//    } else if (pinNum == Z_LIMIT_PIN) {
-//        Z.stop();
-//        if (curState != HOMING) {
-//            Z.freeze();
-//        } else {
-//            curState = HOME;
-//        }
-//    } else if (pinNum == Y_LIMIT_PIN) {
-//        Y.stop();
-//        if (curState == HOMING) {
-//            Z.ready(-100000, DELAY_MIN);
-//            Z.start();
-//        } else {
-//            Y.freeze();
-//        }
-//    } else if (pinNum == INK_LIMIT_PIN) {
-//        INK.freeze();
-//    }
+    if (pinNum == X_LIMIT_PIN && ard.getDigital(X_LIMIT_PIN)) {
+        x_steps = x_inc = 0;
+        if (curState == HOMING) {
+            y_steps = -100000;
+            y_inc = 0;
+        }
+        else {
+            curState = ERROR;
+        }
+    }
+    else if (pinNum == Y_LIMIT_PIN && ard.getDigital(Y_LIMIT_PIN)) {
+        y_steps = y_inc = 0;
+        if (curState == HOMING) {
+            z_steps = -100000;
+            z_inc = 0;
+        }
+        else {
+            curState = ERROR;
+        }
+    }
+    else if (pinNum == Z_LIMIT_PIN && ard.getDigital(Z_LIMIT_PIN)) {
+        z_steps = z_inc = 0;
+        if (curState == HOMING) {
+            curState = HOME;
+        }
+        else {
+            curState = ERROR;
+        }
+    }
+    else if (pinNum == INK_LIMIT_PIN && ard.getDigital(INK_LIMIT_PIN)) {
+        curState = ERROR;
+    }
 }
 
 

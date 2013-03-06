@@ -2,7 +2,6 @@
 #define _ARDUINO_THREAD
 
 #include "ofMain.h"
-#include "motorThread.h"
 
 
 class arduinoThread : public ofThread{
@@ -31,7 +30,7 @@ class arduinoThread : public ofThread{
 // CONSTANTS
 //#define DELAY_MIN 550        // in microseconds (20000 is good for debugging w/o robot)
 #define TOL 100              // in steps, not for the syringe
-#define INK_TIMEOUT 1500000  // in microseconds
+#define INK_TIMEOUT 400000  // in microseconds
 #define INK_DELAY 2000        // in microseconds
 
 #define HOME_X -128
@@ -93,22 +92,22 @@ public:
         PRINTING,
         SHOOT_COFFEE,
         COFFEE_PHOTO,
-        DONE
+        DONE,
+        ERROR
     };
-    const char* stateName[20] = {"START", "IDLE", "HOMING", "HOME", "SHOOT_FACE", "FACE_PHOTO", "PRINTING", "SHOOT_COFFEE", "COFFEE_PHOTO", "DONE"};
+    const char* stateName[20] = {"START", "IDLE", "HOMING", "HOME", "SHOOT_FACE", "FACE_PHOTO", "PRINTING", "SHOOT_COFFEE", "COFFEE_PHOTO", "DONE", "ERROR"};
     state curState;
     
     ofArduino ard;
-    motorThread X, Y, Z, INK;
     ofPoint home, current, target;
     vector<ofPolyline> paths;
     vector<ofPoint> points;
     string ex, wy, hex, hwy;
     
-    unsigned long long x_timer, y_timer, i_timer;
-    int x_delay, y_delay, i_delay;
-    int x_steps, y_steps, i_steps, x_inc, y_inc, i_inc;
-    bool x_go, y_go, i_go;
+    unsigned long long x_timer, y_timer, z_timer, i_timer;
+    int x_delay, y_delay, z_delay, i_delay;
+    int x_steps, y_steps, z_steps, i_steps, x_inc, y_inc, z_inc, i_inc;
+    bool x_go, y_go, z_go, i_go;
     
     int DELAY_MIN = 10;
     int cropped_size;
