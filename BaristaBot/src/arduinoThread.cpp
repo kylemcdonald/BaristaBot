@@ -99,7 +99,8 @@ void arduinoThread::update(){
         // photo taken, arm is going to the limit switches: home
         case FACE_PHOTO:
 //            goHome();
-            curState = HOMING;
+//            curState = HOMING;
+            curState = HOME;
             break;
         case HOMING:
             break;
@@ -364,31 +365,31 @@ void arduinoThread::shootCoffee(){
 void arduinoThread::shootFace(){
     curState = SHOOT_FACE;
 
-    // Raise the Z stage
-    ard.sendDigital(Z_SLEEP_PIN, ARD_HIGH);
-    ard.sendDigital(Z_DIR_PIN, ARD_LOW);
-    z_steps = 6000;
-    z_inc = 0;
-    z_delay = DELAY_FAST+200;
-    
-    ofSleepMillis(10);
-    
-    // Raise the Y stage
-    ard.sendDigital(Y_SLEEP_PIN, ARD_HIGH);
-    ard.sendDigital(Y_DIR_PIN, ARD_LOW);
-    y_steps = 3000;
-    y_inc = 0;
-    y_delay = DELAY_FAST;
+//    // Raise the Z stage
+//    ard.sendDigital(Z_SLEEP_PIN, ARD_HIGH);
+//    ard.sendDigital(Z_DIR_PIN, ARD_LOW);
+//    z_steps = 6000;
+//    z_inc = 0;
+//    z_delay = DELAY_FAST+200;
+//    
+//    ofSleepMillis(10);
+//    
+//    // Raise the Y stage
+//    ard.sendDigital(Y_SLEEP_PIN, ARD_HIGH);
+//    ard.sendDigital(Y_DIR_PIN, ARD_LOW);
+//    y_steps = 3000;
+//    y_inc = 0;
+//    y_delay = DELAY_FAST;
 }
 
 void arduinoThread::goHome(){
     curState = HOMING;
     
-    ard.sendDigital(X_SLEEP_PIN, ARD_HIGH);
-    ard.sendDigital(X_DIR_PIN, ARD_LOW);
-    x_steps = 100000;
-    x_inc = 0;
-    x_delay = DELAY_FAST;
+//    ard.sendDigital(X_SLEEP_PIN, ARD_HIGH);
+//    ard.sendDigital(X_DIR_PIN, ARD_LOW);
+//    x_steps = 100000;
+//    x_inc = 0;
+//    x_delay = DELAY_FAST;
     // others go home after pin change events below
 }
 
@@ -439,14 +440,14 @@ void arduinoThread::jogDown() {
 }
 void arduinoThread::plungerUp() {
     ard.sendDigital(INK_SLEEP_PIN, ARD_HIGH);
-    ard.sendDigital(INK_DIR_PIN, ARD_LOW);
+    ard.sendDigital(INK_DIR_PIN, ARD_HIGH);
     i_steps = 500;
     i_inc = 0;
     i_delay = DELAY_FAST;
 }
 void arduinoThread::plungerDown() {
     ard.sendDigital(INK_SLEEP_PIN, ARD_HIGH);
-    ard.sendDigital(INK_DIR_PIN, ARD_HIGH);
+    ard.sendDigital(INK_DIR_PIN, ARD_LOW);
     i_steps = 500;
     i_inc = 0;
     i_delay = DELAY_FAST;
