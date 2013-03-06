@@ -29,7 +29,7 @@ class arduinoThread : public ofThread{
     
 // CONSTANTS
 //#define DELAY_MIN 550        // in microseconds (20000 is good for debugging w/o robot)
-#define TOL 100              // in steps, not for the syringe
+#define TOL 1              // in steps, not for the syringe
 #define INK_TIMEOUT 400000  // in microseconds
 #define INK_DELAY 2000        // in microseconds
 
@@ -109,7 +109,7 @@ public:
     int x_steps, y_steps, z_steps, i_steps, x_inc, y_inc, z_inc, i_inc;
     bool x_go, y_go, z_go, i_go;
     
-    int DELAY_MIN = 10;
+    int DELAY_MIN = 1500;
     int cropped_size;
     int paths_i, points_i;
     int point_count;

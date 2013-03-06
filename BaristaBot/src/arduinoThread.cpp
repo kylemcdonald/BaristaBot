@@ -1,7 +1,6 @@
 
 #include "ofMain.h"
 #include "arduinoThread.h"
-#include "motorThread.h"
 
 
 //----------------------------------------------------------------------------------------------
@@ -145,6 +144,8 @@ void arduinoThread::journeyOn(bool new_coffee){
     }
     else {
         planJourney();
+        
+        
         
         // starting a transition
         if (start_transition){
@@ -290,14 +291,14 @@ int arduinoThread::getSteps(float here, float there, bool is_x) {
     
     // then convert to steps (NOTE reversing X)
     if (is_x) {
-        ex = "\nhere.x:     " + ofToString(int(here/cropped_size*80*SCALE_X*16))
-           + "\nthere.x:    " + ofToString(int(there/cropped_size*80*SCALE_X*16)) + hex;
-        int sdelta = -int(mmdelta * SCALE_X * 16); // 1/16th steps
+        ex = "\nhere.x:     " + ofToString(int(here/cropped_size*80*SCALE_X))
+           + "\nthere.x:    " + ofToString(int(there/cropped_size*80*SCALE_X)) + hex;
+        int sdelta = -int(mmdelta * SCALE_X);
         return sdelta;
     } else {
-        wy = "\nhere.y:     " + ofToString(int(here/cropped_size*80*SCALE_Y*16))
-           + "\nthere.y:    " + ofToString(int(there/cropped_size*80*SCALE_Y*16)) + hwy;
-        int sdelta = int(mmdelta * SCALE_Y * 16);
+        wy = "\nhere.y:     " + ofToString(int(here/cropped_size*80*SCALE_Y))
+           + "\nthere.y:    " + ofToString(int(there/cropped_size*80*SCALE_Y)) + hwy;
+        int sdelta = int(mmdelta * SCALE_Y);
         return sdelta;
     }
 }

@@ -10,7 +10,6 @@
 #include "myvec.h"
 
 #include "arduinoThread.h"
-#include "motorThread.h"
 
 class ofApp : public ofBaseApp{
 public:
