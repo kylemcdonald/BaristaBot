@@ -142,7 +142,7 @@ void arduinoThread::journeyOn(bool new_coffee){
         
         // starting a transition
         if (start_transition){
-            start_transition = false; // CHANGE?
+//            start_transition = false; // CHANGE?
             stopInk();
             fireEngines();
             return;
@@ -178,20 +178,6 @@ void arduinoThread::journeyOn(bool new_coffee){
     }
 }
 
-void arduinoThread::startInk(){
-//    if (INK.isThreadRunning()) INK.stop();
-    plungerDown();
-    usleep(INK_TIMEOUT/4);    // wait for ink to stop
-    INK.ready(999999, INK_DELAY);
-    if (!INK.isThreadRunning()) INK.start();
-}
-
-void arduinoThread::stopInk(){
-    INK.stop();
-    usleep(10000);    // wait for ink to stop
-    plungerUp();            // pull up to fast stop flow
-    usleep(INK_TIMEOUT/2);    // wait for ink to stop
-}
 
 void arduinoThread::planJourney(){
     // starting a new path
@@ -309,6 +295,20 @@ bool arduinoThread::journeysDone(){
 
 
 
+void arduinoThread::startInk(){
+    //    if (INK.isThreadRunning()) INK.stop();
+    plungerDown();
+    usleep(INK_TIMEOUT/4);    // wait for ink to stop
+    INK.ready(999999, INK_DELAY);
+    if (!INK.isThreadRunning()) INK.start();
+}
+
+void arduinoThread::stopInk(){
+    INK.stop();
+    usleep(10000);    // wait for ink to stop
+    plungerUp();            // pull up to fast stop flow
+    usleep(INK_TIMEOUT/2);    // wait for ink to stop
+}
 
 
 
