@@ -109,6 +109,7 @@ void arduinoThread::update(){
             ard.sendDigital(Z_SLEEP_PIN, ARD_LOW);
             journeyOn(true);
             curState = PRINTING;
+            point_count = 1;
             break;
         // print has started from first point
         case PRINTING:
@@ -133,7 +134,6 @@ void arduinoThread::update(){
 
 
 void arduinoThread::journeyOn(bool new_coffee){
-    point_count = 1;
     
     if (new_coffee) {
         start_transition = true;
@@ -180,6 +180,7 @@ void arduinoThread::journeyOn(bool new_coffee){
             else {
                 // if you didn't fire and return out then you're hitting planJourney() again
                 point_count++;
+                journeyOn(false);
             }
         }
     }
@@ -275,10 +276,12 @@ void arduinoThread::fireEngines(){
 
     // debugging
     hex = "\nsdelta_x:   " + ofToString(sdelta_x) + "\ndelay_x:    " + ofToString(delay_x);
-    hwy = "\nsdelta_y:   " + ofToString(sdelta_y) + "\ndelay_y:    " + ofToString(delay_y);
+    hwy = "\nsdelta_y:   " + ofToString(sdelta_y) + "\ndelay_y:    " + ofToString(delay_y)
+        + "\npoint_count " + ofToString(point_count);
 
     // after the move, we are at the target, our new current position
     current = target;
+    point_count = 1;
 }
 
 
@@ -524,7 +527,7 @@ void arduinoThread::draw(){
     ofDrawBitmapString(str, 50, 660);
     
     str = "Path:       " + ofToString(paths_i) + "\n\nPoint:      "
-        + ofToString(points_i) + "\npoint_count " + ofToString(point_count);
+        + ofToString(points_i);
     ofDrawBitmapString(str, 50, 720);
     str = "/ " + ofToString(paths.size()) + "\n\n/ " + ofToString(points.size());
     ofDrawBitmapString(str, 220, 720);

@@ -29,18 +29,18 @@ class arduinoThread : public ofThread{
     
 // CONSTANTS
 //#define DELAY_MIN 550        // in microseconds (20000 is good for debugging w/o robot)
-#define TOL 1              // in steps, not for the syringe
+#define TOL 20              // in steps, not for the syringe
 #define INK_TIMEOUT 400000  // in microseconds
 #define INK_DELAY 2000        // in microseconds
 
 #define HOME_X -128
 #define HOME_Y 128
-#define SCALE_X 125     // estimate 236.2 steps per mm in X - 110
-#define SCALE_Y 100     // estimate 118.1 steps per mm in Y - 80
+#define SCALE_X 62     // estimate 236.2 steps per mm in X || 125 GOOD but big
+#define SCALE_Y 50     // estimate 118.1 steps per mm in Y || 100 GOOD but big
 
 
 public:
-    int DELAY_MIN = 1000;
+    int DELAY_MIN = 2000;
     int HIGH_DELAY = 50;
     
     void start();
