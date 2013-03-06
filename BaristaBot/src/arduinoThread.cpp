@@ -142,77 +142,85 @@ void arduinoThread::journeyOn(bool new_coffee){
         
         // starting a transition
         if (start_transition){
-//            start_transition = false; // CHANGE?
+            start_transition = false;
             stopInk();
             fireEngines();
-            return;
         }
-        // starting a new path, ink flows
+        // starting a new poy, ink flows
         else if (start_path){
             start_path = false;
             startInk();
+            fireEngines();
         }
-        // drawing last segment in a path
+        // drawing last segment in a polyline
         else if (end_path) {
             end_path = false;
             fireEngines();
-            return;
         }
-
-        int sx = abs(getSteps(current.x, target.x, true));
-        int sy = abs(getSteps(current.y, target.y, false));
-        
-        // if we're already above tolerance, fire
-        if (sx > TOL && sy > TOL) {
-            fireEngines();
-            return;
+        // check to see if movements are long enough, if not add a point
+        else {
+            int sx = abs(getSteps(current.x, target.x, true));
+            int sy = abs(getSteps(current.y, target.y, false));
+            
+            // if we're already above tolerance, fire
+            if (sx > TOL && sy > TOL) {
+                fireEngines();
+            }
+            // if one dimension gets too big, fire
+            else if (sx > TOL*4 || sy > TOL*4) {
+                fireEngines();
+            }
+            else {
+                // if you didn't fire and return out then you're hitting planJourney() again
+                point_count++;
+            }
         }
-        // if one dimension gets too big, fire
-        else if (sx > TOL*2 || sy > TOL*2) {
-            fireEngines();
-            return;
-        }
-        
-        // if you didn't fire and return out then you're hitting planJourney() again
-        point_count++;
     }
 }
 
-
+// increments through path and sets the target point, the next x and y values to move to
 void arduinoThread::planJourney(){
-    // starting a new path
-    if (points_i++ == 0) {
-        // if this path has only one point it's a transition
-        if (points.size() == 1) {
-            // if it's the last path just skip it
-            if (paths_i == paths.size()-1) {
-                shootCoffee();
-            } else {
-                start_transition = true;
-                points = paths.at(paths_i).getVertices();
-                target = points.at(points_i = 0);
-            }
-        } else {
-            start_path = true;
-            start_transition = false;
+
+    // if the current polyline has just one point, it's a transition
+    if (points.size() == 1) {
+        // if it's the last polyline just skip it
+        if (paths_i == paths.size()-1) {
+            shootCoffee();
+        }
+        // if it's not the last line move to the point and get the next polyline
+        else {
+            start_transition = true;
+            paths_i++;
+            points = paths.at(paths_i).getVertices();
+            points_i = 0;
             target = points.at(points_i);
         }
     }
+    // starting a new path, points_i is where we are currently, where the machine is
+    else if (points_i == 0) {
+        start_path = true;
+        start_transition = false;
+        points_i++;
+        target = points.at(points_i);
+    }
     // continuing a path except for the last stage
-    else if (points_i++ < points.size()-2) {
-        if (points.size() == 1) return; // CHANGE LATER
+    else if (points_i < points.size()-2) {
+        points_i++;
         target = points.at(points_i);
     }
     // ending a path
-    else if (points_i++ < points.size()-1) {
+    else if (points_i < points.size()-1) {
         end_path = true;
+        points_i++;
         target = points.at(points_i);
     }
     // starting a transition
-    else if (paths_i++ < paths.size()-1) {
+    else if (paths_i < paths.size()-1) {
         start_transition = true;
+        paths_i++;
+        points_i = 0;
         points = paths.at(paths_i).getVertices();
-        target = points.at(points_i = 0);
+        target = points.at(points_i);
     }
     // finishing the print
     else {
@@ -234,7 +242,6 @@ void arduinoThread::fireEngines(){
     
     // if nowhere to go, skip it
     if (sx == 0 && sy == 0) {
-        journeyOn(false);
         return;
     }
     
