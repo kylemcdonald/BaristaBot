@@ -142,6 +142,7 @@ void arduinoThread::journeyOn(bool new_coffee){
         
         // starting a transition
         if (start_transition){
+            start_transition = false; // CHANGE?
             stopInk();
             fireEngines();
             return;
