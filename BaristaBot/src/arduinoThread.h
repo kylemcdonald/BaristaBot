@@ -30,14 +30,14 @@ class arduinoThread : public ofThread{
     
 // CONSTANTS
 //#define DELAY_MIN 550        // in microseconds (20000 is good for debugging w/o robot)
-#define TOL 100              // in steps, not for the syringe
+#define TOL 1              // in steps, not for the syringe
 #define INK_TIMEOUT 1500000  // in microseconds
 #define INK_DELAY 2000        // in microseconds
 
 #define HOME_X -128
 #define HOME_Y 128
-#define SCALE_X 180     // estimate 236.2 steps per mm in X
-#define SCALE_Y 124     // estimate 118.1 steps per mm in Y
+#define SCALE_X 100     // estimate 236.2 steps per mm in X
+#define SCALE_Y 80     // estimate 118.1 steps per mm in Y
 
 
 public:
@@ -105,7 +105,12 @@ public:
     vector<ofPoint> points;
     string ex, wy, hex, hwy;
     
-    int DELAY_MIN = 500;
+    unsigned long long x_timer, y_timer, i_timer;
+    int x_delay, y_delay, i_delay;
+    int x_steps, y_steps, i_steps, x_inc, y_inc, i_inc;
+    bool x_go, y_go, i_go;
+    
+    int DELAY_MIN = 800;
     int cropped_size;
     int paths_i, points_i;
     int point_count;

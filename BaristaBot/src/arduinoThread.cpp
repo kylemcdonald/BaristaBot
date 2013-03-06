@@ -12,12 +12,6 @@ void arduinoThread::start(){
 
 void arduinoThread::stop(){
     stopThread();
-    
-    if (X.isThreadRunning()) X.stop();
-    if (Y.isThreadRunning()) Y.stop();
-    if (Z.isThreadRunning()) Z.stop();
-    if (INK.isThreadRunning()) INK.stop();
-    
     ard.disconnect();
 }
 
@@ -25,7 +19,6 @@ void arduinoThread::stop(){
 void arduinoThread::setup(){
     // do not change this sequence
     initializeVariables();
-    initializeMotors();
     initializeArduino();
 }
 
@@ -33,15 +26,12 @@ void arduinoThread::initializeVariables(){
     start_path = false;
     start_transition = true;
     home = ofPoint(HOME_X, HOME_Y);
+    
+    x_timer = y_timer = i_timer = ofGetElapsedTimeMicros();
+    x_steps = y_steps = i_steps = x_inc = y_inc = i_inc = 0;
+    x_go = y_go = i_go = ARD_LOW;
 }
 
-void arduinoThread::initializeMotors(){
-    // pass arduino reference and pins to motor threads
-    X.setArduino    (ard, X_STEP_PIN,   X_DIR_PIN,   X_SLEEP_PIN,   "Motor X");
-    Y.setArduino    (ard, Y_STEP_PIN,   Y_DIR_PIN,   Y_SLEEP_PIN,   "Motor Y");
-    Z.setArduino    (ard, Z_STEP_PIN,   Z_DIR_PIN,   Z_SLEEP_PIN,   "Motor Z");
-    INK.setArduino  (ard, INK_STEP_PIN, INK_DIR_PIN, INK_SLEEP_PIN, "Motor I");
-}
 
 void arduinoThread::initializeArduino() {
     // StandardFirmata for OF is at 57600 by default
@@ -246,25 +236,31 @@ void arduinoThread::fireEngines(){
     }
     
     // get delays
-    if (!start_transition) {
-        if (sy > sx && sx != 0) {
-            delay_x = DELAY_MIN * sy / sx;
-        } else if (sx > sy && sy != 0) {
-            delay_y = DELAY_MIN * sx / sy;
-        }
+    if (sy > sx && sx != 0) {
+        delay_x = DELAY_MIN * sy / sx;
+    } else if (sx > sy && sy != 0) {
+        delay_y = DELAY_MIN * sx / sy;
     }
     
-    // send variables to motors and start them
-    X.ready(sdelta_x, delay_x);
-    Y.ready(sdelta_y, delay_y);
-    X.start();
-    Y.start();
+    // toggle direction pins and enable motors
+    bool DIR = (sdelta_x > 0) ? ARD_LOW : ARD_HIGH;
+    ard.sendDigital(X_SLEEP_PIN, ARD_HIGH);
+    ard.sendDigital(X_DIR_PIN, DIR);
+    DIR = (sdelta_y > 0) ? ARD_LOW : ARD_HIGH;
+    ard.sendDigital(Y_SLEEP_PIN, ARD_HIGH);
+    ard.sendDigital(Y_DIR_PIN, DIR);
     
+    // send variables to motors and start them
+    x_steps = sx;
+    x_inc = 0;
+    x_delay = delay_x;
+    y_steps = sy;
+    y_inc = 0;
+    y_delay = delay_y;
+
     // debugging
-    hex = "\nsdelta_x:   " + ofToString(sdelta_x)        + "\ndelay_x:    " + ofToString(delay_x);
-       // +  "\ncurrent.x:  " + ofToString(current.x) + "\ntarget.x:   "   + ofToString(target.x);
-    hwy = "\nsdelta_y:   " + ofToString(sdelta_y)        + "\ndelay_y:    " + ofToString(delay_y);
-       // +  "\ncurrent.y:  " + ofToString(current.y) + "\ntarget.y:   "   + ofToString(target.y);
+    hex = "\nsdelta_x:   " + ofToString(sdelta_x) + "\ndelay_x:    " + ofToString(delay_x);
+    hwy = "\nsdelta_y:   " + ofToString(sdelta_y) + "\ndelay_y:    " + ofToString(delay_y);
 
     // after the move, we are at the target, our new current position
     current = target;
@@ -280,13 +276,13 @@ int arduinoThread::getSteps(float here, float there, bool is_x) {
     
     // then convert to steps (NOTE reversing X)
     if (is_x) {
-        ex = "\nhere.x:     " + ofToString(int(here/cropped_size*80*150))
-           + "\nthere.x:    " + ofToString(int(there/cropped_size*80*150)) + hex;
+        ex = "\nhere.x:     " + ofToString(int(here/cropped_size*80*SCALE_X))
+           + "\nthere.x:    " + ofToString(int(there/cropped_size*80*SCALE_X)) + hex;
         int sdelta = -int(mmdelta * SCALE_X);
         return sdelta;
     } else {
-        wy = "\nhere.y:     " + ofToString(int(here/cropped_size*80*118))
-           + "\nthere.y:    " + ofToString(int(there/cropped_size*80*118)) + hwy;
+        wy = "\nhere.y:     " + ofToString(int(here/cropped_size*80*SCALE_Y))
+           + "\nthere.y:    " + ofToString(int(there/cropped_size*80*SCALE_Y)) + hwy;
         int sdelta = int(mmdelta * SCALE_Y);
         return sdelta;
     }
@@ -294,7 +290,7 @@ int arduinoThread::getSteps(float here, float there, bool is_x) {
 
 
 bool arduinoThread::journeysDone(){
-    if (X.isThreadRunning() || Y.isThreadRunning())
+    if (x_inc < x_steps || y_inc < y_steps)
         return false;
     return true;
 }
@@ -302,18 +298,18 @@ bool arduinoThread::journeysDone(){
 
 
 void arduinoThread::startInk(){
-    //    if (INK.isThreadRunning()) INK.stop();
-    plungerDown();
-    usleep(INK_TIMEOUT/4);    // wait for ink to stop
-    INK.ready(999999, INK_DELAY);
-    if (!INK.isThreadRunning()) INK.start();
+//    //    if (INK.isThreadRunning()) INK.stop();
+//    plungerDown();
+//    usleep(INK_TIMEOUT/4);    // wait for ink to stop
+//    INK.ready(999999, INK_DELAY);
+//    if (!INK.isThreadRunning()) INK.start();
 }
 
 void arduinoThread::stopInk(){
-    INK.stop();
-    usleep(10000);    // wait for ink to stop
-    plungerUp();            // pull up to fast stop flow
-    usleep(INK_TIMEOUT/2);    // wait for ink to stop
+//    INK.stop();
+//    usleep(10000);    // wait for ink to stop
+//    plungerUp();            // pull up to fast stop flow
+//    usleep(INK_TIMEOUT/2);    // wait for ink to stop
 }
 
 
@@ -425,7 +421,24 @@ void arduinoThread::plungerDown() {
 //----------------------------------------------------------------------------------------------
 void arduinoThread::threadedFunction(){
     while(isThreadRunning() != 0){
-
+        usleep(1); // don't let it run too fast
+        
+        // X axis
+        if (ofGetElapsedTimeMicros() - x_timer > x_delay) {
+            if (x_steps > 0 && x_inc/2 < x_steps) {
+                ard.sendDigital(X_STEP_PIN, x_go = !x_go);
+                x_timer = ofGetElapsedTimeMicros();
+                x_inc++;
+            }
+        }
+        // Y axis
+        if (ofGetElapsedTimeMicros() - y_timer > y_delay) {
+            if (y_steps > 0 && y_inc/2 < y_steps) {
+                ard.sendDigital(Y_STEP_PIN, y_go = !y_go);
+                y_timer = ofGetElapsedTimeMicros();
+                y_inc++;
+            }
+        }
     }
 }
 
