@@ -98,9 +98,9 @@ void arduinoThread::update(){
             break;
         // photo taken, arm is going to the limit switches: home
         case FACE_PHOTO:
-//            goHome();
-//            curState = HOMING;
-            curState = HOME;
+            goHome();
+            curState = HOMING;
+//            curState = HOME;
             break;
         case HOMING:
             break;
@@ -365,31 +365,31 @@ void arduinoThread::shootCoffee(){
 void arduinoThread::shootFace(){
     curState = SHOOT_FACE;
 
-//    // Raise the Z stage
-//    ard.sendDigital(Z_SLEEP_PIN, ARD_HIGH);
-//    ard.sendDigital(Z_DIR_PIN, ARD_LOW);
-//    z_steps = 6000;
-//    z_inc = 0;
-//    z_delay = DELAY_FAST+200;
-//    
-//    ofSleepMillis(10);
-//    
-//    // Raise the Y stage
-//    ard.sendDigital(Y_SLEEP_PIN, ARD_HIGH);
-//    ard.sendDigital(Y_DIR_PIN, ARD_LOW);
-//    y_steps = 3000;
-//    y_inc = 0;
-//    y_delay = DELAY_FAST;
+    // Raise the Z stage
+    ard.sendDigital(Z_SLEEP_PIN, ARD_HIGH);
+    ard.sendDigital(Z_DIR_PIN, ARD_LOW);
+    z_steps = 6000;
+    z_inc = 0;
+    z_delay = DELAY_FAST+200;
+    
+    ofSleepMillis(10);
+    
+    // Raise the Y stage
+    ard.sendDigital(Y_SLEEP_PIN, ARD_HIGH);
+    ard.sendDigital(Y_DIR_PIN, ARD_LOW);
+    y_steps = 3000;
+    y_inc = 0;
+    y_delay = DELAY_FAST;
 }
 
 void arduinoThread::goHome(){
     curState = HOMING;
     
-//    ard.sendDigital(X_SLEEP_PIN, ARD_HIGH);
-//    ard.sendDigital(X_DIR_PIN, ARD_LOW);
-//    x_steps = 100000;
-//    x_inc = 0;
-//    x_delay = DELAY_FAST;
+    ard.sendDigital(X_SLEEP_PIN, ARD_HIGH);
+    ard.sendDigital(X_DIR_PIN, ARD_LOW);
+    x_steps = 100000;
+    x_inc = 0;
+    x_delay = DELAY_FAST;
     // others go home after pin change events below
 }
 
@@ -579,7 +579,7 @@ void arduinoThread::digitalPinChanged(const int & pinNum) {
         x_steps = x_inc = 0;
         if (curState == HOMING) {
             ard.sendDigital(Y_SLEEP_PIN, ARD_HIGH);
-            ard.sendDigital(Y_DIR_PIN, ARD_LOW);
+            ard.sendDigital(Y_DIR_PIN, ARD_HIGH);
             y_steps = 100000;
             y_inc = 0;
             y_delay = DELAY_FAST;
