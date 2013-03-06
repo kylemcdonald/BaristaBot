@@ -259,8 +259,9 @@ void ofApp::draw() {
     AT.draw();
 }
 
-float ofApp::getPoints(int steps){
-    float points = float(steps) / 125 / 80 * croppedSize;
+int ofApp::getPoints(int steps){
+    int points = float(steps) / 100 / 80 * croppedSize;
+    cout << "getPoints: " << points << endl;
     return points;
 }
 
@@ -294,14 +295,15 @@ void ofApp::keyPressed(int key) {
         case 't':
             // load pattern: 20,400 steps in Y with 500 step X zigs every 500 Y steps
             
-            for (int i = 1; i < 22; i++) {
+            for (int i = 21; i > 0; i--) {
                 int x = getPoints(400);
                 if (i%2) { x += getPoints(400); }
                 int y = getPoints(i*400);
-                ln.addVertex(x + croppedSize+50, y);
+                ln.addVertex(x + croppedSize, y);
             }
-            ln.addVertex(getPoints(4000) + croppedSize+50, getPoints(8400));
-            ln.addVertex(getPoints(4000) + croppedSize+50, getPoints(400));
+            ln.addVertex(getPoints(2000) + croppedSize, getPoints(400));
+            ln.addVertex(getPoints(2000) + croppedSize, getPoints(8400));
+            ln.addVertex(getPoints(800) + croppedSize, getPoints(8400));
             
             paths.push_back(ln);
             AT.lock();

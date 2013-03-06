@@ -21,7 +21,7 @@ public:
 	void keyPressed(int key);
     void exit();
     
-    float getPoints(int steps);
+    int getPoints(int steps);
     
     imatrix img;
 	ETF etf;

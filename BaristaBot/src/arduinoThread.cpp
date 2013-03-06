@@ -294,11 +294,13 @@ int arduinoThread::getSteps(float here, float there, bool is_x) {
         ex = "\nhere.x:     " + ofToString(int(here/cropped_size*80*SCALE_X))
            + "\nthere.x:    " + ofToString(int(there/cropped_size*80*SCALE_X)) + hex;
         int sdelta = -int(mmdelta * SCALE_X);
+        cout << "sdelta: " << sdelta << endl;
         return sdelta;
     } else {
         wy = "\nhere.y:     " + ofToString(int(here/cropped_size*80*SCALE_Y))
            + "\nthere.y:    " + ofToString(int(there/cropped_size*80*SCALE_Y)) + hwy;
         int sdelta = int(mmdelta * SCALE_Y);
+        cout << "sdelta: " << sdelta << endl;
         return sdelta;
     }
 }
