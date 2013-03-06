@@ -29,7 +29,7 @@ class arduinoThread : public ofThread{
 #define INK_LIMIT_PIN 13
     
 // CONSTANTS
-#define DELAY_MIN 550        // in microseconds (20000 is good for debugging w/o robot)
+//#define DELAY_MIN 500        // in microseconds (20000 is good for debugging w/o robot)
 #define TOL 1              // in steps, not for the syringe
 #define INK_TIMEOUT 1500000  // in microseconds
 #define INK_DELAY 2000        // in microseconds
@@ -105,6 +105,7 @@ public:
     vector<ofPoint> points;
     string ex, wy, hex, hwy;
     
+    int DELAY_MIN = 500;
     int cropped_size;
     int paths_i, points_i;
     int point_count;

@@ -307,37 +307,37 @@ void ofApp::keyPressed(int key) {
             AT.points = paths.begin()->getVertices();
             AT.unlock();
             break;
-//        case 's':
-//            saved_path = path;
+        case 's':
+            AT.curState = AT.SHOOT_FACE;
         case '1':
-            AT.X.DELAY = 500;
+            AT.DELAY_MIN = 500;
             break;
         case '2':
-            AT.X.DELAY = 700;
+            AT.DELAY_MIN = 700;
             break;
         case '3':
-            AT.X.DELAY = 900;
+            AT.DELAY_MIN = 900;
             break;
         case '4':
-            AT.X.DELAY = 1100;
+            AT.DELAY_MIN = 1100;
             break;
         case '5':
-            AT.X.DELAY = 1300;
+            AT.DELAY_MIN = 1300;
             break;
         case '6':
-            AT.X.DELAY = 1500;
+            AT.DELAY_MIN = 1500;
             break;
         case '7':
-            AT.X.DELAY = 1700;
+            AT.DELAY_MIN = 1700;
             break;
         case '8':
-            AT.X.DELAY = 1900;
+            AT.DELAY_MIN = 1900;
             break;
         case '9':
-            AT.X.DELAY = 2100;
+            AT.DELAY_MIN = 2100;
             break;
         case '0':
-            AT.X.DELAY = 2300;
+            AT.DELAY_MIN = 2300;
             break;
         case 'h':
             // for debugging
