@@ -259,6 +259,10 @@ void ofApp::draw() {
     AT.draw();
 }
 
+float ofApp::getPoints(int steps){
+    float points = float(steps) / 125 / 80 / croppedSize;
+    return points;
+}
 
 //--------------------------------------------------------------
 void ofApp::keyPressed(int key) {	
@@ -286,6 +290,55 @@ void ofApp::keyPressed(int key) {
             break;
             
         // programmers controls
+        case 't':
+            // load pattern: 20,500 steps in Y with 500 step X zigs every 500 Y steps
+
+            for (int i = 0; i < 201; i++) {
+                float x = getPoints(100);
+                if (i%2) {
+                    x = -x;
+                }
+                float y = getPoints(i*100);
+                ln.addVertex(x, y);
+            }
+            paths.push_back(ln);
+            AT.lock();
+            AT.paths = paths;
+            AT.points = paths.begin()->getVertices();
+            AT.unlock();
+            break;
+//        case 's':
+//            saved_path = path;
+        case '1':
+            AT.X.DELAY = 500;
+            break;
+        case '2':
+            AT.X.DELAY = 700;
+            break;
+        case '3':
+            AT.X.DELAY = 900;
+            break;
+        case '4':
+            AT.X.DELAY = 1100;
+            break;
+        case '5':
+            AT.X.DELAY = 1300;
+            break;
+        case '6':
+            AT.X.DELAY = 1500;
+            break;
+        case '7':
+            AT.X.DELAY = 1700;
+            break;
+        case '8':
+            AT.X.DELAY = 1900;
+            break;
+        case '9':
+            AT.X.DELAY = 2100;
+            break;
+        case '0':
+            AT.X.DELAY = 2300;
+            break;
         case 'h':
             // for debugging
             AT.goHome();

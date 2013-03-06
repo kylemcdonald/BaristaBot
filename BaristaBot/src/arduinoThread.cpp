@@ -142,6 +142,7 @@ void arduinoThread::journeyOn(bool new_coffee){
         
         // starting a transition
         if (start_transition){
+            start_transition = false;
             stopInk();
             fireEngines();
             return;
@@ -199,7 +200,7 @@ void arduinoThread::planJourney(){
         if (points.size() == 1) {
             // if it's the last path just skip it
             if (paths_i == paths.size()-1) {
-                shootCoffee();
+//                shootCoffee();
             } else {
                 start_transition = true;
                 points = paths.at(paths_i).getVertices();
@@ -230,7 +231,7 @@ void arduinoThread::planJourney(){
     // finishing the print
     else {
         stopInk();
-        shootCoffee();
+//        shootCoffee();
     }
 }
 
