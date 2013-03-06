@@ -21,6 +21,8 @@ public:
 	void keyPressed(int key);
     void exit();
     
+    float getPoints(int steps);
+    
     imatrix img;
 	ETF etf;
     ofxAutoControlPanel gui;
@@ -32,6 +34,7 @@ public:
     
     vector<cv::Rect> objects;
 	vector<ofPolyline> paths;
+    ofPolyline ln;
 
     
 	float faceTrackingScaleFactor;

@@ -259,6 +259,11 @@ void ofApp::draw() {
     AT.draw();
 }
 
+float ofApp::getPoints(int steps){
+    float points = float(steps) / 125 / 80 * croppedSize;
+    return points;
+}
+
 
 //--------------------------------------------------------------
 void ofApp::keyPressed(int key) {	
@@ -286,6 +291,24 @@ void ofApp::keyPressed(int key) {
             break;
             
         // programmers controls
+        case 't':
+            // load pattern: 20,400 steps in Y with 500 step X zigs every 500 Y steps
+            
+            for (int i = 1; i < 22; i++) {
+                int x = getPoints(400);
+                if (i%2) { x += getPoints(400); }
+                int y = getPoints(i*400);
+                ln.addVertex(x + croppedSize+50, y);
+            }
+            ln.addVertex(getPoints(4000) + croppedSize+50, getPoints(8400));
+            ln.addVertex(getPoints(4000) + croppedSize+50, getPoints(400));
+            
+            paths.push_back(ln);
+            AT.lock();
+            AT.paths = paths;
+            AT.points = paths.begin()->getVertices();
+            AT.unlock();
+            break;
         case 's':
             AT.curState = AT.SHOOT_FACE;
         case '1':

@@ -33,7 +33,7 @@ void arduinoThread::initializeVariables(){
     
     x_timer = y_timer = z_timer = i_timer = ofGetElapsedTimeMicros();
     x_steps = y_steps = z_steps = i_steps = x_inc = y_inc = z_inc = i_inc = 0;
-    x_go = y_go = z_go = i_go = ARD_LOW;
+    x_go = y_go = z_go = i_go = ARD_HIGH;
 }
 
 
@@ -419,43 +419,77 @@ void arduinoThread::plungerDown() {
 
 //----------------------------------------------------------------------------------------------
 void arduinoThread::threadedFunction(){
+    unsigned long long now = ofGetElapsedTimeMicros();
+    
     while(isThreadRunning() != 0){
         usleep(1);
 
         // X axis
-        unsigned long long now = ofGetElapsedTimeMicros();
-        if (now - x_timer > x_delay) {
-            if (x_steps > 0 && x_inc < x_steps*2) {
-                x_timer = now;
-                ard.sendDigital(X_STEP_PIN, x_go = !x_go);
-                x_inc++;
+        if (x_steps > 0 && x_inc < x_steps) {
+            now = ofGetElapsedTimeMicros();
+            if (now - x_timer > HIGH_DELAY) {
+                if (x_go) {
+                    x_go = false;
+                    x_timer = now;
+                    ard.sendDigital(X_STEP_PIN, ARD_HIGH);
+                    x_inc++;
+                }
+                else if (now - x_timer > x_delay) {
+                    x_go = true;
+                    x_timer = now;
+                    ard.sendDigital(X_STEP_PIN, ARD_LOW);
+                }
             }
         }
         // Y axis
-        now = ofGetElapsedTimeMicros();
-        if (now - y_timer > y_delay) {
-            if (y_steps > 0 && y_inc < y_steps*2) {
-                y_timer = now;
-                ard.sendDigital(Y_STEP_PIN, y_go = !y_go);
-                y_inc++;
+        if (y_steps > 0 && y_inc < y_steps) {
+            now = ofGetElapsedTimeMicros();
+            if (now - y_timer > HIGH_DELAY) {
+                if (y_go) {
+                    y_go = false;
+                    y_timer = now;
+                    ard.sendDigital(Y_STEP_PIN, ARD_HIGH);
+                    y_inc++;
+                }
+                else if (now - y_timer > y_delay) {
+                    y_go = true;
+                    y_timer = now;
+                    ard.sendDigital(Y_STEP_PIN, ARD_LOW);
+                }
             }
         }
         // Z axis
-        now = ofGetElapsedTimeMicros();
-        if (now - z_timer > z_delay) {
-            if (z_steps > 0 && z_inc < z_steps*2) {
-                z_timer = now;
-                ard.sendDigital(Z_STEP_PIN, z_go = !z_go);
-                z_inc++;
+        if (z_steps > 0 && z_inc < z_steps) {
+            now = ofGetElapsedTimeMicros();
+            if (now - z_timer > HIGH_DELAY) {
+                if (z_go) {
+                    z_go = false;
+                    z_timer = now;
+                    ard.sendDigital(Z_STEP_PIN, ARD_HIGH);
+                    z_inc++;
+                }
+                else if (now - z_timer > z_delay) {
+                    z_go = true;
+                    z_timer = now;
+                    ard.sendDigital(Z_STEP_PIN, ARD_LOW);
+                }
             }
         }
         // Syringe
-        now = ofGetElapsedTimeMicros();
-        if (now - i_timer > i_delay) {
-            if (i_steps > 0 && i_inc < i_steps*2) {
-                i_timer = now;
-                ard.sendDigital(INK_STEP_PIN, i_go = !i_go);
-                i_inc++;
+        if (i_steps > 0 && i_inc < i_steps) {
+            now = ofGetElapsedTimeMicros();
+            if (now - i_timer > HIGH_DELAY) {
+                if (i_go) {
+                    i_go = false;
+                    i_timer = now;
+                    ard.sendDigital(INK_STEP_PIN, ARD_HIGH);
+                    i_inc++;
+                }
+                else if (now - i_timer > i_delay) {
+                    i_go = true;
+                    i_timer = now;
+                    ard.sendDigital(INK_STEP_PIN, ARD_LOW);
+                }
             }
         }
     }
