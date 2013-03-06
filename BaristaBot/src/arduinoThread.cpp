@@ -98,11 +98,11 @@ void arduinoThread::update(){
             break;
         // photo taken, arm is going to the limit switches: home
         case FACE_PHOTO:
-            goHome();
-            curState = HOMING;
-//            curState = HOME;
+//            goHome();
+//            curState = HOMING;
+            curState = HOME;
             break;
-        case HOMING:
+        case HOMING: 
             break;
         // X, Z, and Y have hit limits
         case HOME:
@@ -365,21 +365,21 @@ void arduinoThread::shootCoffee(){
 void arduinoThread::shootFace(){
     curState = SHOOT_FACE;
 
-    // Raise the Z stage
-    ard.sendDigital(Z_SLEEP_PIN, ARD_HIGH);
-    ard.sendDigital(Z_DIR_PIN, ARD_LOW);
-    z_steps = 6000;
-    z_inc = 0;
-    z_delay = DELAY_FAST+200;
-    
-    ofSleepMillis(10);
-    
-    // Raise the Y stage
-    ard.sendDigital(Y_SLEEP_PIN, ARD_HIGH);
-    ard.sendDigital(Y_DIR_PIN, ARD_LOW);
-    y_steps = 3000;
-    y_inc = 0;
-    y_delay = DELAY_FAST;
+//    // Raise the Z stage
+//    ard.sendDigital(Z_SLEEP_PIN, ARD_HIGH);
+//    ard.sendDigital(Z_DIR_PIN, ARD_LOW);
+//    z_steps = 6000;
+//    z_inc = 0;
+//    z_delay = DELAY_FAST+200;
+//    
+//    ofSleepMillis(10);
+//    
+//    // Raise the Y stage
+//    ard.sendDigital(Y_SLEEP_PIN, ARD_HIGH);
+//    ard.sendDigital(Y_DIR_PIN, ARD_LOW);
+//    y_steps = 3000;
+//    y_inc = 0;
+//    y_delay = DELAY_FAST;
 }
 
 void arduinoThread::goHome(){
@@ -575,6 +575,10 @@ void arduinoThread::draw(){
 void arduinoThread::digitalPinChanged(const int & pinNum) {
     // note: this will throw tons of false positives on a bare mega, needs resistors
 //    cout << "pinNum: " << pinNum << endl;
+    if (curState == ERROR) {
+        curState == IDLE;
+    }
+    
     if (pinNum == X_LIMIT_PIN && ard.getDigital(X_LIMIT_PIN)) {
         x_steps = x_inc = 0;
         if (curState == HOMING) {
