@@ -29,7 +29,7 @@ void arduinoThread::setup(){
 void arduinoThread::initializeVariables(){
     start_path = false;
     start_transition = true;
-    home = ofPoint(HOME_X, HOME_Y);
+    home = ofPoint(0, 0);
     
     x_timer = y_timer = z_timer = i_timer = ofGetElapsedTimeMicros();
     x_steps = y_steps = z_steps = i_steps = x_inc = y_inc = z_inc = i_inc = 0;
@@ -98,9 +98,8 @@ void arduinoThread::update(){
             break;
         // photo taken, arm is going to the limit switches: home
         case FACE_PHOTO:
-//            goHome();
-//            curState = HOMING;
-            curState = HOME;
+            goHome();
+//            curState = HOME;
             break;
         case HOMING: 
             break;
@@ -113,8 +112,14 @@ void arduinoThread::update(){
             // sleep Z
             ard.sendDigital(Z_SLEEP_PIN, ARD_LOW);
             journeyOn(true);
-            curState = PRINTING;
+            curState = PREPRINT;
             point_count = 1;
+            break;
+        // this is when arm moves from home to first point
+        case PREPRINT:
+            if (journeysDone()) {
+                curState = PRINTING;
+            }
             break;
         // print has started from first point
         case PRINTING:
@@ -142,7 +147,7 @@ void arduinoThread::journeyOn(bool new_coffee){
     
     if (new_coffee) {
         start_transition = true;
-        current = ofPoint(cropped_size, cropped_size);
+        current = home; // ofPoint(cropped_size, cropped_size);
         target = *points.begin();
         paths_i = points_i = 0;
         fireEngines();
@@ -330,7 +335,7 @@ bool arduinoThread::journeysDone(){
 
 void arduinoThread::startInk(){
     plungerDown();
-    usleep(INK_TIMEOUT);    // wait for ink to stop
+    usleep(INK_WAIT);
     i_inc = 0;
     i_steps = 999999;
     i_delay = INK_DELAY;
@@ -340,7 +345,7 @@ void arduinoThread::stopInk(){
     i_steps = i_inc = 0;
     usleep(10000);    // wait for ink to stop
     plungerUp();            // pull up to fast stop flow
-    usleep(INK_TIMEOUT*2);    // wait for ink to stop
+//    usleep(INK_WAIT*2);    // wait for ink to stop
 }
 
 
@@ -365,32 +370,40 @@ void arduinoThread::shootCoffee(){
 void arduinoThread::shootFace(){
     curState = SHOOT_FACE;
 
-//    // Raise the Z stage
-//    ard.sendDigital(Z_SLEEP_PIN, ARD_HIGH);
-//    ard.sendDigital(Z_DIR_PIN, ARD_LOW);
-//    z_steps = 6000;
-//    z_inc = 0;
-//    z_delay = DELAY_FAST+200;
-//    
-//    ofSleepMillis(10);
-//    
-//    // Raise the Y stage
-//    ard.sendDigital(Y_SLEEP_PIN, ARD_HIGH);
-//    ard.sendDigital(Y_DIR_PIN, ARD_LOW);
-//    y_steps = 3000;
-//    y_inc = 0;
-//    y_delay = DELAY_FAST;
+    // Raise the Z stage
+    ard.sendDigital(Z_SLEEP_PIN, ARD_HIGH);
+    ard.sendDigital(Z_DIR_PIN, ARD_LOW);
+    z_steps = 6000;
+    z_inc = 0;
+    z_delay = DELAY_FAST+200;
+    
+    ofSleepMillis(10);
+    
+    // Raise the Y stage
+    ard.sendDigital(Y_SLEEP_PIN, ARD_HIGH);
+    ard.sendDigital(Y_DIR_PIN, ARD_LOW);
+    y_steps = 3000;
+    y_inc = 0;
+    y_delay = DELAY_FAST;
 }
 
 void arduinoThread::goHome(){
     curState = HOMING;
     
-    ard.sendDigital(X_SLEEP_PIN, ARD_HIGH);
-    ard.sendDigital(X_DIR_PIN, ARD_LOW);
-    x_steps = 100000;
-    x_inc = 0;
-    x_delay = DELAY_FAST;
+    homeX();
     // others go home after pin change events below
+}
+
+void arduinoThread::reset(){
+
+    curState = RESET;
+    jogLeft();
+    ofSleepMillis(20);
+    jogUp();
+    ofSleepMillis(20);
+    jogForward();
+    ofSleepMillis(20);
+    plungerUp();
 }
 
 
@@ -441,16 +454,16 @@ void arduinoThread::jogDown() {
 void arduinoThread::plungerUp() {
     ard.sendDigital(INK_SLEEP_PIN, ARD_HIGH);
     ard.sendDigital(INK_DIR_PIN, ARD_HIGH);
-    i_steps = 500;
+    i_steps = INK_STOP_STEPS;
     i_inc = 0;
-    i_delay = DELAY_FAST;
+    i_delay = INK_STOP_DELAY;
 }
 void arduinoThread::plungerDown() {
     ard.sendDigital(INK_SLEEP_PIN, ARD_HIGH);
     ard.sendDigital(INK_DIR_PIN, ARD_LOW);
-    i_steps = 500;
+    i_steps = INK_START_STEPS;
     i_inc = 0;
-    i_delay = DELAY_FAST;
+    i_delay = INK_START_DELAY;
 }
 
 
@@ -572,50 +585,68 @@ void arduinoThread::draw(){
     ofDrawBitmapString(str, 220, 1000-INK_STEP_PIN*7);
 }
 
+void arduinoThread::stopX () {
+    x_steps = x_inc = 0;
+    ard.sendDigital(X_SLEEP_PIN, ARD_LOW);
+    ofSleepMillis(10);
+}
+void arduinoThread::stopY() {
+    y_steps = y_inc = 0;
+    ard.sendDigital(Y_SLEEP_PIN, ARD_LOW);
+    ofSleepMillis(10);
+}
+void arduinoThread::stopZ(){
+    z_steps = z_inc = 0;
+    ard.sendDigital(Z_SLEEP_PIN, ARD_LOW);
+    ofSleepMillis(10);
+}
+void arduinoThread::homeX(){
+    ard.sendDigital(X_SLEEP_PIN, ARD_HIGH);
+    ard.sendDigital(X_DIR_PIN, ARD_LOW);
+    x_steps = 100000;
+    x_inc = 0;
+    x_delay = DELAY_FAST;
+}
+void arduinoThread::homeY(){
+    ard.sendDigital(Y_SLEEP_PIN, ARD_HIGH);
+    ard.sendDigital(Y_DIR_PIN, ARD_HIGH);
+    y_steps = 100000;
+    y_inc = 0;
+    y_delay = DELAY_FAST;
+}
+void arduinoThread::homeZ(){
+    ard.sendDigital(Z_SLEEP_PIN, ARD_HIGH);
+    ard.sendDigital(Z_DIR_PIN, ARD_HIGH);
+    z_steps = 100000;
+    z_inc = 0;
+    z_delay = DELAY_FAST;
+}
+
+
+
+
+
 void arduinoThread::digitalPinChanged(const int & pinNum) {
     // note: this will throw tons of false positives on a bare mega, needs resistors
-//    cout << "pinNum: " << pinNum << endl;
-    if (curState == ERROR) {
-        curState == IDLE;
-    }
-    
-    if (pinNum == X_LIMIT_PIN && ard.getDigital(X_LIMIT_PIN)) {
-        x_steps = x_inc = 0;
-        if (curState == HOMING) {
-            ard.sendDigital(Y_SLEEP_PIN, ARD_HIGH);
-            ard.sendDigital(Y_DIR_PIN, ARD_HIGH);
-            y_steps = 100000;
-            y_inc = 0;
-            y_delay = DELAY_FAST;
+    if (curState == HOMING) {
+        if (pinNum == X_LIMIT_PIN && ard.getDigital(X_LIMIT_PIN)) {
+            stopX();
+            homeY();
         }
-        else {
-            curState = ERROR;
+        if (pinNum == Y_LIMIT_PIN && ard.getDigital(Y_LIMIT_PIN)) {
+            stopY();
+            homeZ();
         }
-    }
-    else if (pinNum == Y_LIMIT_PIN && ard.getDigital(Y_LIMIT_PIN)) {
-        y_steps = y_inc = 0;
-        if (curState == HOMING) {
-            ard.sendDigital(Z_SLEEP_PIN, ARD_HIGH);
-            ard.sendDigital(Z_DIR_PIN, ARD_LOW);
-            z_steps = 100000;
-            z_inc = 0;
-            z_delay = DELAY_FAST;
-        }
-        else {
-            curState = ERROR;
-        }
-    }
-    else if (pinNum == Z_LIMIT_PIN && ard.getDigital(Z_LIMIT_PIN)) {
-        z_steps = z_inc = 0;
-        if (curState == HOMING) {
+        if (pinNum == Z_LIMIT_PIN && ard.getDigital(Z_LIMIT_PIN)) {
+            stopZ();
             curState = HOME;
         }
-        else {
+    }
+    // if not homing or reseting and the switch is down, it's an error
+    else if (curState != PREPRINT && curState != RESET) {
+        if (ard.getDigital(pinNum) == ARD_HIGH){
             curState = ERROR;
         }
-    }
-    else if (pinNum == INK_LIMIT_PIN && ard.getDigital(INK_LIMIT_PIN)) {
-        curState = ERROR;
     }
 }
 

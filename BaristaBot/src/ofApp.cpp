@@ -99,7 +99,7 @@ void ofApp::setup() {
 	imitate(thinned, cropped);
 	
 	gui.setup();
-	gui.addPanel("Settings");
+	gui.addPanel("Photo Settings");
 	gui.addSlider("black", 42, -255, 255, true);        // kyle's 0, 65, 48, 20
 	gui.addSlider("sigma1", 0.99, 0.01, 2.0, false);    // kyle's 0.4, 0.85
 	gui.addSlider("sigma2", 4.45, 0.01, 10.0, false);   // kyle's 3.0, 4.45
@@ -112,6 +112,15 @@ void ofApp::setup() {
 	gui.addSlider("facePadding", 1.5, 0, 2, false);    // kyle's 1.5, 1.77
     gui.addSlider("verticalOffset", int(-croppedSize/12), int(-croppedSize/2), int(croppedSize/2), false);
 	gui.loadSettings("settings.xml");
+    
+    gui.addPanel("Print Variables");
+    gui.addSlider("INK_DELAY", 7000, 2000, 8000, true);
+    gui.addSlider("INK_START_DELAY", 800, 200, 2000, true);
+    gui.addSlider("INK_START_STEPS", 500, 100, 1000, true);
+    gui.addSlider("INK_STOP_DELAY", 800, 200, 2000, true);
+    gui.addSlider("INK_STOP_STEPS", 300, 100, 1000, true);
+    gui.addSlider("INK_WAIT", 500000, 100000, 1000000, true);
+    gui.loadSettings("printvariables.xml");
     
     AT.setup();
     AT.cropped_size = croppedSize;
@@ -134,7 +143,14 @@ void ofApp::update(){
 		int minPathLength = gui.getValueI("minPathLength");
 		float facePadding = gui.getValueF("facePadding");
         int verticalOffset = gui.getValueI("verticalOffset");
-		
+        
+        AT.INK_DELAY = gui.getValueI("INK_DELAY");
+        AT.INK_START_DELAY = gui.getValueI("INK_START_DELAY");
+        AT.INK_START_STEPS = gui.getValueI("INK_START_STEPS");
+        AT.INK_STOP_DELAY = gui.getValueI("INK_STOP_DELAY");
+        AT.INK_STOP_STEPS = gui.getValueI("INK_STOP_STEPS");
+        AT.INK_WAIT = gui.getValueI("INK_WAIT");
+        
 		convertColor(cam, gray, CV_RGB2GRAY);
 		
 		resize(gray, graySmall);
@@ -310,6 +326,10 @@ void ofApp::keyPressed(int key) {
             AT.paths = paths;
             AT.points = paths.begin()->getVertices();
             AT.unlock();
+            break;
+        case 'R':
+            AT.curState = AT.RESET;
+            AT.reset();
             break;
         case 's':
             // stop in the middle of a print and reset with same image
