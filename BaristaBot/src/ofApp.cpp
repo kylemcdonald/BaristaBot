@@ -272,7 +272,7 @@ void ofApp::keyPressed(int key) {
         case 'n':
             // if coffee photo is good, press n
             // sends the arm up to start over, ready for a new person
-            AT.shootFace();
+            AT.shootCoffee();
             break;
         case ' ':
             // when the arm is up press space to take a face photo
@@ -283,8 +283,8 @@ void ofApp::keyPressed(int key) {
             // once you have a good face photo, press p
             // machine will lower and go home then print starts automatically
             // after print machine raises up and takes a coffee photo
-//            AT.goHome();
-            AT.curState = AT.HOME;
+//            AT.curState = AT.HOME;
+            AT.curState = AT.FACE_PHOTO;
             break;
         case 'c':
             // take a look at the coffee photo, if it's not good press c

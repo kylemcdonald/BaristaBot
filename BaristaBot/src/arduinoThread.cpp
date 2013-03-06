@@ -97,6 +97,10 @@ void arduinoThread::update(){
         case SHOOT_FACE:
             break;
         // photo taken, arm is going to the limit switches: home
+        case FACE_PHOTO:
+            goHome();
+            curState = HOMING;
+            break;
         case HOMING:
             break;
         // X, Z, and Y have hit limits
@@ -345,35 +349,34 @@ void arduinoThread::stopInk(){
 //----------------------------------------------------------------------------------------------
 //----------------------------------------------------------------------------------------------
 //----------------------------------------------------------------------------------------------
-void arduinoThread::shootFace(){
-    curState = SHOOT_FACE;
-//    // change these value depending on observation
-//    Z.ready(14000, DELAY_MIN);
-//    Z.start();
-//    while (Z.isThreadRunning()); // wait before doing Y
-//    Y.ready(10000, DELAY_MIN);
-//    Y.start();
-}
-
 void arduinoThread::shootCoffee(){
     curState = SHOOT_COFFEE;
+
     // let X and Y and Ink sleep
     ard.sendDigital(X_SLEEP_PIN, ARD_LOW);
-    ard.sendDigital(Y_SLEEP_PIN, ARD_LOW);
     ard.sendDigital(INK_SLEEP_PIN, ARD_LOW);
-
-//    // change these value depending on observation
-//    Z.ready(3000, 450);
-//    Z.start();
-//    while (Z.isThreadRunning()); // wait to complete
-//
-//    ofSleepMillis(1000);
-//    // **** TAKE PHOTO ****
-//    // operator pushes button to accept it, 
-//    // that sends the machine up, ready for next face photo
-//    ofSleepMillis(1000);
-
+    
     shootFace();
+}
+
+void arduinoThread::shootFace(){
+    curState = SHOOT_FACE;
+
+    // Raise the Z stage
+    ard.sendDigital(Z_SLEEP_PIN, ARD_HIGH);
+    ard.sendDigital(Z_DIR_PIN, ARD_LOW);
+    z_steps = 6000;
+    z_inc = 0;
+    z_delay = DELAY_MIN;
+    
+    ofSleepMillis(10);
+    
+    // Raise the Y stage
+    ard.sendDigital(Y_SLEEP_PIN, ARD_HIGH);
+    ard.sendDigital(Y_DIR_PIN, ARD_LOW);
+    y_steps = 3000;
+    y_inc = 0;
+    y_delay = DELAY_MIN;
 }
 
 void arduinoThread::goHome(){
@@ -384,6 +387,9 @@ void arduinoThread::goHome(){
     // others go home after pin change events below
 }
 
+
+
+//----------------------------------------------------------------------------------------------
 void arduinoThread::jogRight() {
     ard.sendDigital(X_SLEEP_PIN, ARD_HIGH);
     ard.sendDigital(X_DIR_PIN, ARD_LOW);
