@@ -161,7 +161,7 @@ void ofApp::update(){
 		convertColor(cam, gray, CV_RGB2GRAY);
         
         // Save the original image
-		string fileName = "_photo_" + ofToString(ofGetYear()) + "-" + ofToString(ofGetMonth()) + "-" + ofToString(ofGetDay())
+		string fileName = "_photo__" + ofToString(ofGetYear()) + "-" + ofToString(ofGetMonth()) + "-" + ofToString(ofGetDay())
             + "_" + ofToString(ofGetHours()) + ":" + ofToString(ofGetMinutes()) + ":" + ofToString(ofGetSeconds()) + ".png";
 		gray.saveImage(fileName);
 		cout << "saved " << ofToString(fileName) << endl;
@@ -205,7 +205,7 @@ void ofApp::update(){
 		cropped.update();
         
         // Save the cropped face
-		fileName = "_face_" + ofToString(ofGetYear()) + "-" + ofToString(ofGetMonth()) + "-" + ofToString(ofGetDay())
+		fileName = "_face___" + ofToString(ofGetYear()) + "-" + ofToString(ofGetMonth()) + "-" + ofToString(ofGetDay())
         + "_" + ofToString(ofGetHours()) + ":" + ofToString(ofGetMinutes()) + ":" + ofToString(ofGetSeconds()) + ".png";
 		cropped.saveImage(fileName);
 		cout << "saved " << ofToString(fileName) << endl;
