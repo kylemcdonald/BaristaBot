@@ -161,11 +161,11 @@ void ofApp::update(){
 		convertColor(cam, gray, CV_RGB2GRAY);
         
         // Save the original image
-		string fileName = "_photo__" + ofToString(ofGetYear()) + "-" + ofToString(ofGetMonth()) + "-" + ofToString(ofGetDay())
-            + "_" + ofToString(ofGetHours()) + ":" + ofToString(ofGetMinutes()) + ":" + ofToString(ofGetSeconds()) + ".png";
-		gray.saveImage(fileName);
+		string fileName = ofToString(ofGetYear()) + "-" + ofToString(ofGetMonth()) + "-" + ofToString(ofGetDay())
+        + " " + ofToString(ofGetHours()) + "." + ofToString(ofGetMinutes()) + "." + ofToString(ofGetSeconds()) + " original.png";
+		ofSaveImage(gray.getPixelsRef(), fileName);
 		cout << "saved " << ofToString(fileName) << endl;
-		
+        
 		resize(gray, graySmall);
 		Mat graySmallMat = toCv(graySmall);
 		equalizeHist(graySmallMat, graySmallMat);		
@@ -205,9 +205,9 @@ void ofApp::update(){
 		cropped.update();
         
         // Save the cropped face
-		fileName = "_face___" + ofToString(ofGetYear()) + "-" + ofToString(ofGetMonth()) + "-" + ofToString(ofGetDay())
-        + "_" + ofToString(ofGetHours()) + ":" + ofToString(ofGetMinutes()) + ":" + ofToString(ofGetSeconds()) + ".png";
-		cropped.saveImage(fileName);
+		fileName = ofToString(ofGetYear()) + "-" + ofToString(ofGetMonth()) + "-" + ofToString(ofGetDay())
+        + " " + ofToString(ofGetHours()) + "." + ofToString(ofGetMinutes()) + "." + ofToString(ofGetSeconds()) + " face.png";
+		ofSaveImage(cropped, fileName);
 		cout << "saved " << ofToString(fileName) << endl;
 		
 		int j = 0;
@@ -239,9 +239,9 @@ void ofApp::update(){
 		thinned.update();
         
         // Save the thinned paths
-		fileName = "_thinned_" + ofToString(ofGetYear()) + "-" + ofToString(ofGetMonth()) + "-" + ofToString(ofGetDay())
-        + "_" + ofToString(ofGetHours()) + ":" + ofToString(ofGetMinutes()) + ":" + ofToString(ofGetSeconds()) + ".png";
-		thinned.saveImage(fileName);
+		fileName = ofToString(ofGetYear()) + "-" + ofToString(ofGetMonth()) + "-" + ofToString(ofGetDay())
+        + " " + ofToString(ofGetHours()) + "." + ofToString(ofGetMinutes()) + "." + ofToString(ofGetSeconds()) + " thinned.png";
+		ofSaveImage(thinned, fileName);
 		cout << "saved " << ofToString(fileName) << endl;
 		
 		paths = getPaths(thinned, minGapLength, minPathLength);

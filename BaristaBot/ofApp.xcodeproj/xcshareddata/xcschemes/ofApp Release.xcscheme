@@ -80,7 +80,7 @@
    </AnalyzeAction>
    <ArchiveAction
       buildConfiguration = "Release"
-      customArchiveName = "BaristaBot"
+      customArchiveName = "BB"
       revealArchiveInOrganizer = "YES">
    </ArchiveAction>
 </Scheme>
