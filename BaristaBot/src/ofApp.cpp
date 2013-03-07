@@ -115,15 +115,16 @@ void ofApp::setup() {
     
     gui.addPanel("Print Variables");
     gui.addSlider("Tolerance", 20, 1, 200, true);                             // TOL
-    gui.addSlider("JogSpeed", 900, 500, 1200, true);          // DELAY_FAST
-    gui.addSlider("PrintingLOWdelay", 2000, 1000, 4000, true);    // DELAY_MIN
-    gui.addSlider("PrintingHIGHdelay", 50, 10, 100, true);            // HIGH_DELAY
-    gui.addSlider("InkDelay", 7000, 2000, 8000, true);                 // INK_DELAY
-    gui.addSlider("InkStartDelay", 800, 200, 2000, true);             // INK_START_DELAY
-    gui.addSlider("InkStartSteps", 500, 100, 1000, true);             // INK_START_STEPS
-    gui.addSlider("InkStopDelay", 800, 200, 2000, true);              // INK_STOP_DELAY
-    gui.addSlider("InkStopSteps", 300, 100, 1000, true);              // INK_STOP_STEPS
-    gui.addSlider("InkWait", 500000, 100000, 900000, true);           // INK_WAIT
+    gui.addSlider("Jog Speed", 900, 500, 1200, true);          // DELAY_FAST
+    gui.addSlider("Printing LOW delay", 2000, 1000, 4000, true);    // DELAY_MIN
+    gui.addSlider("Printing HIGH delay", 50, 10, 100, true);            // HIGH_DELAY
+    gui.addSlider("Ink Delay", 7000, 2000, 8000, true);                 // INK_DELAY
+    gui.addSlider("Ink Start Delay", 800, 200, 2000, true);             // INK_START_DELAY
+    gui.addSlider("Ink Start Steps", 500, 100, 1000, true);             // INK_START_STEPS
+    gui.addSlider("Ink Stop Delay", 800, 200, 2000, true);              // INK_STOP_DELAY
+    gui.addSlider("Ink Stop Steps", 300, 100, 1000, true);              // INK_STOP_STEPS
+    gui.addSlider("Ink Wait", 500000, 100000, 900000, true);           // INK_WAIT
+    gui.addSlider("17 turns ink on", 17, 17, 18, true);
     gui.loadSettings("printvariables.xml");
     
     gui.addPanel("Calibration");
@@ -131,6 +132,8 @@ void ofApp::setup() {
     gui.addSlider("SCALE_Y", 50, 40, 100, true); 
     gui.addSlider("home_x", -100, -256, 256, true);
     gui.addSlider("home_y", -100, -256, 256, true);
+    gui.addSlider("Y Height for Pic", 17000, 5000, 20000, true);
+    gui.addSlider("Z Height for Pic", 8000, 2000, 15000, true);
     gui.loadSettings("calibration.xml");
     
     AT.setup();
@@ -235,20 +238,24 @@ void ofApp::update(){
     AT.update();
     
     // update AT variables
-    AT.TOL = gui.getValueI("TOL");
-    AT.DELAY_FAST = gui.getValueI("JogSpeed");
-    AT.DELAY_MIN = gui.getValueI("PrintingLOWdelay");
-    AT.HIGH_DELAY = gui.getValueI("PrintingHIGHdelay");
-    AT.INK_DELAY = gui.getValueI("InkDelay");
-    AT.INK_START_DELAY = gui.getValueI("InkStartDelay");
-    AT.INK_START_STEPS = gui.getValueI("InkStartSteps");
-    AT.INK_STOP_DELAY = gui.getValueI("InkStopDelay");
-    AT.INK_STOP_STEPS = gui.getValueI("InkStopSteps");
-    AT.INK_WAIT = gui.getValueI("InkWait");
+    AT.TOL = gui.getValueI("Tolerance");
+    AT.DELAY_FAST = gui.getValueI("Jog Speed");
+    AT.DELAY_MIN = gui.getValueI("Printing LOW delay");
+    AT.HIGH_DELAY = gui.getValueI("Printing HIGH delay");
+    AT.INK_DELAY = gui.getValueI("Ink Delay");
+    AT.INK_START_DELAY = gui.getValueI("Ink Start Delay");
+    AT.INK_START_STEPS = gui.getValueI("Ink Start Steps");
+    AT.INK_STOP_DELAY = gui.getValueI("Ink Stop Delay");
+    AT.INK_STOP_STEPS = gui.getValueI("Ink Stop Steps");
+    AT.INK_WAIT = gui.getValueI("Ink Wait");
+    AT.INK_SLEEP_PIN = gui.getValueI("17 turns ink on");
+    
     AT.home_x = gui.getValueI("home_x");
     AT.home_y = gui.getValueI("home_y");
     AT.SCALE_X = gui.getValueI("SCALE_X");
     AT.SCALE_Y = gui.getValueI("SCALE_Y");
+    AT.y_height = gui.getValueI("Y Height for Pic");
+    AT.z_height = gui.getValueI("Z Height for Pic");
 }
 
 

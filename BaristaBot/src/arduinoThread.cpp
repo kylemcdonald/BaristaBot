@@ -90,44 +90,25 @@ void arduinoThread::setupArduino(const int & version) {
 //----------------------------------------------------------------------------------------------
 //----------------------------------------------------------------------------------------------
 //----------------------------------------------------------------------------------------------
+//----------------------------------------------------------------------------------------------
+//----------------------------------------------------------------------------------------------
+//----------------------------------------------------------------------------------------------
 void arduinoThread::update(){
     ard.update();
     
     switch (curState) {
         case JOG:
-            if (x_inc >= x_steps) {
-                ard.sendDigital(X_SLEEP_PIN, ARD_LOW);
-                x_inc = x_steps = 0;
-            }
-            if (y_inc >= y_steps) {
-                ard.sendDigital(Y_SLEEP_PIN, ARD_LOW);
-                y_inc = y_steps = 0;
-            }
-            if (z_inc >= z_steps) {
-                ard.sendDigital(Z_SLEEP_PIN, ARD_LOW);
-                z_inc = z_steps = 0;
-            }
-            if (x_inc >= x_steps && y_inc >= y_steps && z_inc >= z_steps) curState = IDLE;
+            sleepDoneMotors();
+            if (allDone()) curState = IDLE;
             break;
         // arm has raised and is ready to take a photo
         case SHOOT_FACE:
-            if (x_inc >= x_steps) {
-                ard.sendDigital(X_SLEEP_PIN, ARD_LOW);
-                x_inc = x_steps = 0;
-            }
-            if (y_inc >= y_steps) {
-                ard.sendDigital(Y_SLEEP_PIN, ARD_LOW);
-                y_inc = y_steps = 0;
-            }
-            if (z_inc >= z_steps) {
-                ard.sendDigital(Z_SLEEP_PIN, ARD_LOW);
-                z_inc = z_steps = 0;
-            }
+            sleepDoneMotors();
+            if (allDone()) curState = IDLE;
             break;
         // photo taken, arm is going to the limit switches: home
         case FACE_PHOTO:
             goHome();
-//            curState = HOME;
             break;
         case HOMING: 
             break;
@@ -359,7 +340,6 @@ int arduinoThread::getSteps(float here, float there, bool is_x) {
     }
 }
 
-
 bool arduinoThread::journeysDone(){
     if (x_inc < x_steps || y_inc < y_steps) {
         return false;
@@ -367,9 +347,22 @@ bool arduinoThread::journeysDone(){
         return true;
     }
 }
+bool arduinoThread::allDone(){
+    if (x_inc>=x_steps && y_inc>=y_steps && z_inc>=z_steps && i_inc>=i_steps) {
+        return true;
+    } else {
+        return false;
+    }
+}
 
 
 
+
+
+
+//----------------------------------------------------------------------------------------------
+//----------------------------------------------------------------------------------------------
+//----------------------------------------------------------------------------------------------
 void arduinoThread::startInk(){
     plungerDown();
     usleep(INK_WAIT);
@@ -378,6 +371,7 @@ void arduinoThread::startInk(){
     i_delay = INK_DELAY;
 }
 void arduinoThread::stopInk(){
+    INK_TRAVEL += i_inc;
     i_steps = i_inc = 0;
     usleep(10000);    // wait for ink to stop
     plungerUp();            // pull up to fast stop flow
@@ -389,6 +383,7 @@ void arduinoThread::plungerUp() {
     i_steps = INK_STOP_STEPS;
     i_inc = 0;
     i_delay = INK_STOP_DELAY;
+    INK_TRAVEL -= INK_STOP_STEPS;
 }
 void arduinoThread::plungerDown() {
     ard.sendDigital(INK_SLEEP_PIN, ARD_HIGH);
@@ -396,6 +391,7 @@ void arduinoThread::plungerDown() {
     i_steps = INK_START_STEPS;
     i_inc = 0;
     i_delay = INK_START_DELAY;
+    INK_TRAVEL += INK_START_STEPS;
 }
 
 
@@ -422,7 +418,7 @@ void arduinoThread::shootFace(){
         // raise the syringe in prep for change out
         ard.sendDigital(INK_SLEEP_PIN, ARD_HIGH);
         ard.sendDigital(INK_DIR_PIN, ARD_HIGH);
-        i_steps = 100000;
+        i_steps = INK_TRAVEL;
         i_inc = 0;
         i_delay = DELAY_FAST;
         ofSleepMillis(20);
@@ -433,18 +429,22 @@ void arduinoThread::shootFace(){
     // Raise the Z stage
     ard.sendDigital(Z_SLEEP_PIN, ARD_HIGH);
     ard.sendDigital(Z_DIR_PIN, ARD_LOW);
-    z_steps = 8000;
+    z_steps = z_height;
     z_inc = 0;
     z_delay = DELAY_FAST;
     
-    ofSleepMillis(20);
+    ofSleepMillis(2000);
     
+    raiseY();
+}
+
+void arduinoThread::raiseY(){
     // Raise the Y stage
     ard.sendDigital(Y_SLEEP_PIN, ARD_HIGH);
     ard.sendDigital(Y_DIR_PIN, ARD_LOW);
-    y_steps = 17000;
+    y_steps = y_height;
     y_inc = 0;
-    y_delay = DELAY_FAST+50;
+    y_delay = DELAY_FAST;
 }
 
 void arduinoThread::goHome(){
@@ -455,19 +455,42 @@ void arduinoThread::goHome(){
 }
 
 void arduinoThread::reset(){
-
+    // moves X, Y, and Z away one jog from the switches
+    // does not move Syringe to avoid air bubbles
     curState = RESET;
     jogLeft();
     ofSleepMillis(20);
     jogUp();
     ofSleepMillis(20);
     jogForward();
-    ofSleepMillis(20);
-    plungerUp();
+//    ofSleepMillis(20);
+//    plungerUp();
+}
+
+void arduinoThread::sleepDoneMotors(){
+    if (x_inc >= x_steps) {
+        ard.sendDigital(X_SLEEP_PIN, ARD_LOW);
+        x_inc = x_steps = 0;
+    }
+    if (y_inc >= y_steps) {
+        ard.sendDigital(Y_SLEEP_PIN, ARD_LOW);
+        y_inc = y_steps = 0;
+    }
+    if (z_inc >= z_steps) {
+        ard.sendDigital(Z_SLEEP_PIN, ARD_LOW);
+        z_inc = z_steps = 0;
+    }
+    if (i_inc >= i_steps) {
+        ard.sendDigital(INK_SLEEP_PIN, ARD_LOW);
+        i_inc = i_steps = 0;
+    }
 }
 
 
 
+
+//----------------------------------------------------------------------------------------------
+//----------------------------------------------------------------------------------------------
 //----------------------------------------------------------------------------------------------
 void arduinoThread::jogRight() {
     ard.sendDigital(X_SLEEP_PIN, ARD_HIGH);
@@ -511,8 +534,48 @@ void arduinoThread::jogDown() {
     z_inc = 0;
     z_delay = DELAY_FAST;
 }
+void arduinoThread::stopX () {
+    x_steps = x_inc = 0;
+    ard.sendDigital(X_SLEEP_PIN, ARD_LOW);
+    ofSleepMillis(20);
+}
+void arduinoThread::stopY() {
+    y_steps = y_inc = 0;
+    ard.sendDigital(Y_SLEEP_PIN, ARD_LOW);
+    ofSleepMillis(20);
+}
+void arduinoThread::stopZ(){
+    z_steps = z_inc = 0;
+    ard.sendDigital(Z_SLEEP_PIN, ARD_LOW);
+    ofSleepMillis(20);
+}
+void arduinoThread::homeX(){
+    ard.sendDigital(X_SLEEP_PIN, ARD_HIGH);
+    ard.sendDigital(X_DIR_PIN, ARD_LOW);
+    x_steps = 100000;
+    x_inc = 0;
+    x_delay = DELAY_FAST;
+}
+void arduinoThread::homeY(){
+    ard.sendDigital(Y_SLEEP_PIN, ARD_HIGH);
+    ard.sendDigital(Y_DIR_PIN, ARD_HIGH);
+    y_steps = 100000;
+    y_inc = 0;
+    y_delay = DELAY_FAST;
+}
+void arduinoThread::homeZ(){
+    ard.sendDigital(Z_SLEEP_PIN, ARD_HIGH);
+    ard.sendDigital(Z_DIR_PIN, ARD_HIGH);
+    z_steps = 100000;
+    z_inc = 0;
+    z_delay = DELAY_FAST;
+}
 
 
+
+//----------------------------------------------------------------------------------------------
+//----------------------------------------------------------------------------------------------
+//----------------------------------------------------------------------------------------------
 //----------------------------------------------------------------------------------------------
 void arduinoThread::threadedFunction(){
     unsigned long long now = ofGetElapsedTimeMicros();
@@ -629,43 +692,6 @@ void arduinoThread::draw(){
     ofDrawBitmapString(str, 50, 1000-INK_STEP_PIN*7);
     str = " / " + ofToString(i_steps);
     ofDrawBitmapString(str, 220, 1000-INK_STEP_PIN*7);
-}
-
-void arduinoThread::stopX () {
-    x_steps = x_inc = 0;
-    ard.sendDigital(X_SLEEP_PIN, ARD_LOW);
-    ofSleepMillis(20);
-}
-void arduinoThread::stopY() {
-    y_steps = y_inc = 0;
-    ard.sendDigital(Y_SLEEP_PIN, ARD_LOW);
-    ofSleepMillis(20);
-}
-void arduinoThread::stopZ(){
-    z_steps = z_inc = 0;
-    ard.sendDigital(Z_SLEEP_PIN, ARD_LOW);
-    ofSleepMillis(20);
-}
-void arduinoThread::homeX(){
-    ard.sendDigital(X_SLEEP_PIN, ARD_HIGH);
-    ard.sendDigital(X_DIR_PIN, ARD_LOW);
-    x_steps = 100000;
-    x_inc = 0;
-    x_delay = DELAY_FAST;
-}
-void arduinoThread::homeY(){
-    ard.sendDigital(Y_SLEEP_PIN, ARD_HIGH);
-    ard.sendDigital(Y_DIR_PIN, ARD_HIGH);
-    y_steps = 100000;
-    y_inc = 0;
-    y_delay = DELAY_FAST;
-}
-void arduinoThread::homeZ(){
-    ard.sendDigital(Z_SLEEP_PIN, ARD_HIGH);
-    ard.sendDigital(Z_DIR_PIN, ARD_HIGH);
-    z_steps = 100000;
-    z_inc = 0;
-    z_delay = DELAY_FAST;
 }
 
 
