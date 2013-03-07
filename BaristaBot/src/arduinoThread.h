@@ -20,40 +20,34 @@ class arduinoThread : public ofThread{
 #define X_SLEEP_PIN 14
 #define Y_SLEEP_PIN 15
 #define Z_SLEEP_PIN 16
-#define INK_SLEEP_PIN 17  // is 17
+#define INK_SLEEP_PIN 18  // is 17
 
 #define X_LIMIT_PIN 10
 #define Y_LIMIT_PIN 12
 #define Z_LIMIT_PIN 11
 #define INK_LIMIT_PIN 13
+
     
-// CONSTANTS
-//#define DELAY_MIN 550        // in microseconds (20000 is good for debugging w/o robot)
-//#define INK_TIMEOUT 500000  // in microseconds
-//#define INK_DELAY 7000        // in microseconds
-
-
-
 public:
     
-    int SCALE_X; // = 62;     // estimate 236.2 steps per mm in X || 125 GOOD but big
-    int SCALE_Y; // 50     // estimate 118.1 steps per mm in Y || 100 GOOD but big
+    int SCALE_X = 62;    // first estimate 236.2 steps per mm in X || 125 GOOD but big
+    int SCALE_Y = 50;    // first estimate 118.1 steps per mm in Y || 100 GOOD but big
     
-    int TOL; // 20              // in steps, not for the syringe
+    int TOL = 20;        // in steps, not for the syringe
     
     int DELAY_FAST = 900;
     int DELAY_MIN = 2000;
     int HIGH_DELAY = 50;
     
-    int INK_DELAY;
-    int INK_START_DELAY;
-    int INK_START_STEPS;
-    int INK_STOP_DELAY;
-    int INK_STOP_STEPS;
-    int INK_WAIT;
+    int INK_DELAY = 7000;
+    int INK_START_DELAY = 800;
+    int INK_START_STEPS = 500;
+    int INK_STOP_DELAY = 800;
+    int INK_STOP_STEPS = 300;
+    int INK_WAIT = 5000000;
     
-    int home_x;
-    int home_y;
+    int home_x = -100;
+    int home_y = -100;
     
     void start();
     void stop();

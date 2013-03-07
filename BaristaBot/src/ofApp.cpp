@@ -109,20 +109,29 @@ void ofApp::setup() {
 	gui.addSlider("thresh", 121.8, 0, 255, false);      // kyle's 128, 121.8
 	gui.addSlider("minGapLength", 5.5, 2, 12, false);   // kyle's 2, 6.8
 	gui.addSlider("minPathLength", 40, 0, 50, true);    // kyle's 20
-	gui.addSlider("facePadding", 1.5, 0, 2, false);    // kyle's 1.5, 1.77
+	gui.addSlider("facePadding", 1.5, 0, 2, false);     // kyle's 1.5, 1.77
     gui.addSlider("verticalOffset", int(-croppedSize/12), int(-croppedSize/2), int(croppedSize/2), false);
 	gui.loadSettings("settings.xml");
     
     gui.addPanel("Print Variables");
-    gui.addSlider("INK_DELAY", 7000, 2000, 8000, true);
-    gui.addSlider("INK_START_DELAY", 800, 200, 2000, true);
-    gui.addSlider("INK_START_STEPS", 500, 100, 1000, true);
-    gui.addSlider("INK_STOP_DELAY", 800, 200, 2000, true);
-    gui.addSlider("INK_STOP_STEPS", 300, 100, 1000, true);
-    gui.addSlider("INK_WAIT", 500000, 100000, 1000000, true);
+    gui.addSlider("Tolerance", 20, 1, 200, true);                             // TOL
+    gui.addSlider("JogSpeed", 900, 500, 1200, true);          // DELAY_FAST
+    gui.addSlider("PrintingLOWdelay", 2000, 1000, 4000, true);    // DELAY_MIN
+    gui.addSlider("PrintingHIGHdelay", 50, 10, 100, true);            // HIGH_DELAY
+    gui.addSlider("InkDelay", 7000, 2000, 8000, true);                 // INK_DELAY
+    gui.addSlider("InkStartDelay", 800, 200, 2000, true);             // INK_START_DELAY
+    gui.addSlider("InkStartSteps", 500, 100, 1000, true);             // INK_START_STEPS
+    gui.addSlider("InkStopDelay", 800, 200, 2000, true);              // INK_STOP_DELAY
+    gui.addSlider("InkStopSteps", 300, 100, 1000, true);              // INK_STOP_STEPS
+    gui.addSlider("InkWait", 500000, 100000, 900000, true);           // INK_WAIT
+    gui.loadSettings("printvariables.xml");
+    
+    gui.addPanel("Calibration");
+    gui.addSlider("SCALE_X", 62, 50, 125, true);
+    gui.addSlider("SCALE_Y", 50, 40, 100, true); 
     gui.addSlider("home_x", -100, -256, 256, true);
     gui.addSlider("home_y", -100, -256, 256, true);
-    gui.loadSettings("printvariables.xml");
+    gui.loadSettings("calibration.xml");
     
     AT.setup();
     AT.cropped_size = croppedSize;
@@ -145,15 +154,6 @@ void ofApp::update(){
 		int minPathLength = gui.getValueI("minPathLength");
 		float facePadding = gui.getValueF("facePadding");
         int verticalOffset = gui.getValueI("verticalOffset");
-        
-        AT.INK_DELAY = gui.getValueI("INK_DELAY");
-        AT.INK_START_DELAY = gui.getValueI("INK_START_DELAY");
-        AT.INK_START_STEPS = gui.getValueI("INK_START_STEPS");
-        AT.INK_STOP_DELAY = gui.getValueI("INK_STOP_DELAY");
-        AT.INK_STOP_STEPS = gui.getValueI("INK_STOP_STEPS");
-        AT.INK_WAIT = gui.getValueI("INK_WAIT");
-        AT.home_x = gui.getValueI("home_x");
-        AT.home_y = gui.getValueI("home_y");
         
 		convertColor(cam, gray, CV_RGB2GRAY);
 		
@@ -233,6 +233,22 @@ void ofApp::update(){
 		AT.unlock();
     }
     AT.update();
+    
+    // update AT variables
+    AT.TOL = gui.getValueI("TOL");
+    AT.DELAY_FAST = gui.getValueI("JogSpeed");
+    AT.DELAY_MIN = gui.getValueI("PrintingLOWdelay");
+    AT.HIGH_DELAY = gui.getValueI("PrintingHIGHdelay");
+    AT.INK_DELAY = gui.getValueI("InkDelay");
+    AT.INK_START_DELAY = gui.getValueI("InkStartDelay");
+    AT.INK_START_STEPS = gui.getValueI("InkStartSteps");
+    AT.INK_STOP_DELAY = gui.getValueI("InkStopDelay");
+    AT.INK_STOP_STEPS = gui.getValueI("InkStopSteps");
+    AT.INK_WAIT = gui.getValueI("InkWait");
+    AT.home_x = gui.getValueI("home_x");
+    AT.home_y = gui.getValueI("home_y");
+    AT.SCALE_X = gui.getValueI("SCALE_X");
+    AT.SCALE_Y = gui.getValueI("SCALE_Y");
 }
 
 
