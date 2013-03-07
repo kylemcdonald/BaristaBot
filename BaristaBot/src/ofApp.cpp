@@ -159,6 +159,12 @@ void ofApp::update(){
         int verticalOffset = gui.getValueI("verticalOffset");
         
 		convertColor(cam, gray, CV_RGB2GRAY);
+        
+        // Save the original image
+		string fileName = "_photo_" + ofToString(ofGetYear()) + "-" + ofToString(ofGetMonth()) + "-" + ofToString(ofGetDay())
+            + "_" + ofToString(ofGetHours()) + ":" + ofToString(ofGetMinutes()) + ":" + ofToString(ofGetSeconds()) + ".png";
+		gray.saveImage(fileName);
+		cout << "saved " << ofToString(fileName) << endl;
 		
 		resize(gray, graySmall);
 		Mat graySmallMat = toCv(graySmall);
@@ -197,6 +203,12 @@ void ofApp::update(){
 		Mat croppedGrayMat(grayMat, roi);
 		resize(croppedGrayMat, cropped);
 		cropped.update();
+        
+        // Save the cropped face
+		fileName = "_face_" + ofToString(ofGetYear()) + "-" + ofToString(ofGetMonth()) + "-" + ofToString(ofGetDay())
+        + "_" + ofToString(ofGetHours()) + ":" + ofToString(ofGetMinutes()) + ":" + ofToString(ofGetSeconds()) + ".png";
+		cropped.saveImage(fileName);
+		cout << "saved " << ofToString(fileName) << endl;
 		
 		int j = 0;
 		unsigned char* grayPixels = cropped.getPixels();
@@ -225,6 +237,12 @@ void ofApp::update(){
 		cld.update();
 		thresholded.update();
 		thinned.update();
+        
+        // Save the thinned paths
+		fileName = "_thinned_" + ofToString(ofGetYear()) + "-" + ofToString(ofGetMonth()) + "-" + ofToString(ofGetDay())
+        + "_" + ofToString(ofGetHours()) + ":" + ofToString(ofGetMinutes()) + ":" + ofToString(ofGetSeconds()) + ".png";
+		thinned.saveImage(fileName);
+		cout << "saved " << ofToString(fileName) << endl;
 		
 		paths = getPaths(thinned, minGapLength, minPathLength);
 		needToUpdate = false;
