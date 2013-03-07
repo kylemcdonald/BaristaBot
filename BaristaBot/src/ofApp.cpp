@@ -153,8 +153,8 @@ void ofApp::update(){
         float thresh = gui.getValueF("thresh");
 		int halfw = gui.getValueI("halfw");
         int smoothPasses = gui.getValueI("smoothPasses");
-		float minGapLength = gui.getValueF("minGapLength");
-		int minPathLength = gui.getValueI("minPathLength");
+		minGapLength = gui.getValueF("minGapLength");
+		minPathLength = gui.getValueI("minPathLength");
 		float facePadding = gui.getValueF("facePadding");
         int verticalOffset = gui.getValueI("verticalOffset");
         
@@ -330,8 +330,8 @@ int ofApp::getPoints(int steps){
 //--------------------------------------------------------------
 void ofApp::keyPressed(int key) {	
     switch (key) {
-        case 'n':
-            // if coffee photo is good, press n
+        case 'N':
+            // if coffee photo is good, press b
             // sends the arm up to start over, ready for a new person
             AT.shootCoffee();
             break;
@@ -388,6 +388,48 @@ void ofApp::keyPressed(int key) {
             AT.paths = paths;
             AT.points = paths.begin()->getVertices();
             AT.unlock();
+        // image1: save the current image
+        case 'i':
+            ofSaveImage(thinned, "saved_image_io.png");
+            break;
+        // image1: load the image
+        case 'o':
+            ofLoadImage(io, "saved_image_io.png");
+            io.update();
+            paths = getPaths(io, minGapLength, minPathLength);
+            AT.lock();
+            AT.paths = paths;
+            AT.points = paths.begin()->getVertices();
+            AT.unlock();
+            break;
+        // image2: save the current image
+        case 'j':
+            ofSaveImage(thinned, "saved_image_jk.png");
+            break;
+        // image2: load the image
+        case 'k':
+            ofLoadImage(jk, "saved_image_jk.png");
+            jk.update();
+            paths = getPaths(jk, minGapLength, minPathLength);
+            AT.lock();
+            AT.paths = paths;
+            AT.points = paths.begin()->getVertices();
+            AT.unlock();
+            break;
+        // image3: save the current image
+        case 'n':
+            ofSaveImage(thinned, "saved_image_nm.png");
+            break;
+        // image3: load the image
+        case 'm':
+            ofLoadImage(nm, "saved_image_nm.png");
+            nm.update();
+            paths = getPaths(nm, minGapLength, minPathLength);
+            AT.lock();
+            AT.paths = paths;
+            AT.points = paths.begin()->getVertices();
+            AT.unlock();
+            break;
         case '1':
             AT.DELAY_MIN = 500;
             break;

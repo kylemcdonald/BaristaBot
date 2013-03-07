@@ -27,7 +27,7 @@ public:
 	ETF etf;
     ofxAutoControlPanel gui;
 	ofVideoGrabber cam;
-	ofImage gray, cld, thresholded, thinned;
+	ofImage gray, cld, thresholded, thinned, io, jk, nm;
     ofImage graySmall, cropped;
     cv::CascadeClassifier classifier;
     arduinoThread AT;
@@ -41,5 +41,8 @@ public:
     int croppedSize;
     int camWidth, camHeight;
 	bool needToUpdate;
+    
+    float minGapLength;
+    int minPathLength;
 
 };
