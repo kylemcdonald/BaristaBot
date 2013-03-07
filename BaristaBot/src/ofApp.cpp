@@ -120,8 +120,8 @@ void ofApp::setup() {
     gui.addSlider("INK_STOP_DELAY", 800, 200, 2000, true);
     gui.addSlider("INK_STOP_STEPS", 300, 100, 1000, true);
     gui.addSlider("INK_WAIT", 500000, 100000, 1000000, true);
-    gui.addSlider("home_x", 0, -256, 256, true);
-    gui.addSlider("home_y", 0, -256, 256, true);
+    gui.addSlider("home_x", -100, -256, 256, true);
+    gui.addSlider("home_y", -100, -256, 256, true);
     gui.loadSettings("printvariables.xml");
     
     AT.setup();
@@ -389,21 +389,27 @@ void ofApp::keyPressed(int key) {
             break;
         case OF_KEY_RIGHT:
             AT.jogRight();
+            AT.curState = AT.JOG;
             break;
         case OF_KEY_LEFT:
             AT.jogLeft();
+            AT.curState = AT.JOG;
             break;
         case OF_KEY_UP:
             AT.jogForward();
+            AT.curState = AT.JOG;
             break;
         case OF_KEY_DOWN:
             AT.jogBack();
+            AT.curState = AT.JOG;
             break;
         case OF_KEY_HOME:
             AT.jogUp();
+            AT.curState = AT.JOG;
             break;
         case OF_KEY_END:
             AT.jogDown();
+            AT.curState = AT.JOG;
             break;
         case OF_KEY_PAGE_UP:
             AT.plungerUp();

@@ -20,7 +20,7 @@ class arduinoThread : public ofThread{
 #define X_SLEEP_PIN 14
 #define Y_SLEEP_PIN 15
 #define Z_SLEEP_PIN 16
-#define INK_SLEEP_PIN 18 // is 17
+#define INK_SLEEP_PIN 17  // is 17
 
 #define X_LIMIT_PIN 10
 #define Y_LIMIT_PIN 12
@@ -29,17 +29,18 @@ class arduinoThread : public ofThread{
     
 // CONSTANTS
 //#define DELAY_MIN 550        // in microseconds (20000 is good for debugging w/o robot)
-#define TOL 20              // in steps, not for the syringe
 //#define INK_TIMEOUT 500000  // in microseconds
 //#define INK_DELAY 7000        // in microseconds
 
-#define HOME_X -128
-#define HOME_Y 128
-#define SCALE_X 62     // estimate 236.2 steps per mm in X || 125 GOOD but big
-#define SCALE_Y 50     // estimate 118.1 steps per mm in Y || 100 GOOD but big
 
 
 public:
+    
+    int SCALE_X; // = 62;     // estimate 236.2 steps per mm in X || 125 GOOD but big
+    int SCALE_Y; // 50     // estimate 118.1 steps per mm in Y || 100 GOOD but big
+    
+    int TOL; // 20              // in steps, not for the syringe
+    
     int DELAY_FAST = 900;
     int DELAY_MIN = 2000;
     int HIGH_DELAY = 50;
@@ -107,6 +108,7 @@ public:
     enum state {
         START,
         IDLE,
+        JOG,
         HOMING,
         HOME,
         SHOOT_FACE,
@@ -120,7 +122,7 @@ public:
         ERROR,
         RESET
     };
-    const char* stateName[20] = {"START", "IDLE", "HOMING", "HOME", "SHOOT_FACE", "NEED_PHOTO", "FACE_PHOTO", "PREPRINT", "PRINTING", "SHOOT_COFFEE", "COFFEE_PHOTO", "DONE", "ERROR", "RESET"};
+    const char* stateName[25] = {"START", "IDLE", "JOG", "HOMING", "HOME", "SHOOT_FACE", "NEED_PHOTO", "FACE_PHOTO", "PREPRINT", "PRINTING", "SHOOT_COFFEE", "COFFEE_PHOTO", "DONE", "ERROR", "RESET"};
     state curState;
     
     ofArduino ard;
