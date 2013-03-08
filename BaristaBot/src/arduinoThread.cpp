@@ -441,7 +441,7 @@ void arduinoThread::shootFace(){
 void arduinoThread::raiseY(){
     // Raise the Y stage
     ard.sendDigital(Y_SLEEP_PIN, ARD_HIGH);
-    ard.sendDigital(Y_DIR_PIN, ARD_LOW);
+    ard.sendDigital(Y_DIR_PIN, ARD_HIGH);
     y_steps = y_height;
     y_inc = 0;
     y_delay = DELAY_FAST;

@@ -132,8 +132,8 @@ void ofApp::setup() {
     gui.addSlider("SCALE_Y", 50, 40, 100, true); 
     gui.addSlider("home_x", -100, -256, 256, true);
     gui.addSlider("home_y", -100, -256, 256, true);
-    gui.addSlider("Y Height for Pic", 17000, 5000, 20000, true);
-    gui.addSlider("Z Height for Pic", 8000, 2000, 15000, true);
+    gui.addSlider("Y Height for Pic", 2000, 0, 10000, true);
+    gui.addSlider("Z Height for Pic", 2000, 0, 15000, true);
     gui.loadSettings("calibration.xml");
     
     AT.setup();
