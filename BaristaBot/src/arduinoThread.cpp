@@ -435,11 +435,11 @@ void arduinoThread::shootFace(){
     
     ofSleepMillis(2000);
     
-    raiseY();
+//    raiseY();
 }
 
 void arduinoThread::raiseY(){
-    // Raise the Y stage
+    // retract the Y stage
     ard.sendDigital(Y_SLEEP_PIN, ARD_HIGH);
     ard.sendDigital(Y_DIR_PIN, ARD_HIGH);
     y_steps = y_height;
@@ -660,7 +660,7 @@ void arduinoThread::draw(){
     if (!bSetupArduino){
 		str += "\narduino not ready...";
 	} else {
-        str += "\nI need a fucking coffee.";
+        str += "\nI need a coffee.";
     }
     ofDrawBitmapString(str, 50, 660);
     
