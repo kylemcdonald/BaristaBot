@@ -40,7 +40,8 @@ void arduinoThread::initializeVariables(){
 
 void arduinoThread::initializeArduino() {
     // StandardFirmata for OF is at 57600 by default
-	ard.connect("/dev/tty.usbmodem1411", 115200);
+//	ard.connect("/dev/tty.usbmodem1411", 115200);
+	ard.connect("/dev/tty.usbmodemfd1131", 115200);
 	ofAddListener(ard.EInitialized, this, &arduinoThread::setupArduino);
 	bSetupArduino = false;
 }
@@ -712,7 +713,7 @@ void arduinoThread::digitalPinChanged(const int & pinNum) {
         }
     }
     // if not homing or reseting and the switch is down, it's an error
-    else if (curState != PREPRINT && curState != RESET && curState != HOME && curState != SHOOT_FACE) {
+    else if (curState != PREPRINT && curState != RESET && curState != HOME && curState != SHOOT_FACE && curState != PRINTING) {
         if (ard.getDigital(pinNum) == ARD_HIGH){
             curState = ERROR;
         }
