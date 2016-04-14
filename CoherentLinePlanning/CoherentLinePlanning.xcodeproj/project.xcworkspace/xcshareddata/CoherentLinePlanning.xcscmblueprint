@@ -1,0 +1,44 @@
+{
+  "DVTSourceControlWorkspaceBlueprintPrimaryRemoteRepositoryKey" : "2CF33ACA70C0C7DCE763574BB634A671479E9C3A",
+  "DVTSourceControlWorkspaceBlueprintWorkingCopyRepositoryLocationsKey" : {
+
+  },
+  "DVTSourceControlWorkspaceBlueprintWorkingCopyStatesKey" : {
+    "311230CAB78E521A7FB11ECA42EEFA8819284098" : 0,
+    "2DE9C8846D9375EAACFABA8963120E8E7719BAF5" : 0,
+    "2CF33ACA70C0C7DCE763574BB634A671479E9C3A" : 0,
+    "37526DA425E5430474A14FBFA1BC4525160B5FC1" : 0
+  },
+  "DVTSourceControlWorkspaceBlueprintIdentifierKey" : "04D7AB4D-DEE0-4F40-8AA4-218774F3715B",
+  "DVTSourceControlWorkspaceBlueprintWorkingCopyPathsKey" : {
+    "311230CAB78E521A7FB11ECA42EEFA8819284098" : "..\/addons\/ofxControlPanel",
+    "2DE9C8846D9375EAACFABA8963120E8E7719BAF5" : "..",
+    "2CF33ACA70C0C7DCE763574BB634A671479E9C3A" : "BaristaBot\/",
+    "37526DA425E5430474A14FBFA1BC4525160B5FC1" : "..\/addons\/ofxCv"
+  },
+  "DVTSourceControlWorkspaceBlueprintNameKey" : "CoherentLinePlanning",
+  "DVTSourceControlWorkspaceBlueprintVersion" : 204,
+  "DVTSourceControlWorkspaceBlueprintRelativePathToProjectKey" : "CoherentLinePlanning\/CoherentLinePlanning.xcodeproj",
+  "DVTSourceControlWorkspaceBlueprintRemoteRepositoriesKey" : [
+    {
+      "DVTSourceControlWorkspaceBlueprintRemoteRepositoryURLKey" : "https:\/\/github.com\/kylemcdonald\/BaristaBot.git",
+      "DVTSourceControlWorkspaceBlueprintRemoteRepositorySystemKey" : "com.apple.dt.Xcode.sourcecontrol.Git",
+      "DVTSourceControlWorkspaceBlueprintRemoteRepositoryIdentifierKey" : "2CF33ACA70C0C7DCE763574BB634A671479E9C3A"
+    },
+    {
+      "DVTSourceControlWorkspaceBlueprintRemoteRepositoryURLKey" : "github.com:kylemcdonald\/openFrameworks.git",
+      "DVTSourceControlWorkspaceBlueprintRemoteRepositorySystemKey" : "com.apple.dt.Xcode.sourcecontrol.Git",
+      "DVTSourceControlWorkspaceBlueprintRemoteRepositoryIdentifierKey" : "2DE9C8846D9375EAACFABA8963120E8E7719BAF5"
+    },
+    {
+      "DVTSourceControlWorkspaceBlueprintRemoteRepositoryURLKey" : "github.com:kylemcdonald\/ofxControlPanel.git",
+      "DVTSourceControlWorkspaceBlueprintRemoteRepositorySystemKey" : "com.apple.dt.Xcode.sourcecontrol.Git",
+      "DVTSourceControlWorkspaceBlueprintRemoteRepositoryIdentifierKey" : "311230CAB78E521A7FB11ECA42EEFA8819284098"
+    },
+    {
+      "DVTSourceControlWorkspaceBlueprintRemoteRepositoryURLKey" : "github.com:kylemcdonald\/ofxCv.git",
+      "DVTSourceControlWorkspaceBlueprintRemoteRepositorySystemKey" : "com.apple.dt.Xcode.sourcecontrol.Git",
+      "DVTSourceControlWorkspaceBlueprintRemoteRepositoryIdentifierKey" : "37526DA425E5430474A14FBFA1BC4525160B5FC1"
+    }
+  ]
+}
